@@ -1844,6 +1844,12 @@ h1, h2 {
 <style>
 /* ── BUSINESS MODULE SCOPED STYLES ── */
 .biz-section{display:none}.biz-section.biz-active{display:block}
+.biz-outlet-btn{font-family:var(--fm);font-size:.72rem;letter-spacing:.08em;padding:.3rem .9rem;border-radius:var(--r-pill);border:.5px solid var(--border);background:var(--surface3);color:var(--t2);cursor:pointer;transition:all .15s}
+.biz-outlet-btn:hover{border-color:var(--moss);color:var(--moss)}
+.biz-outlet-active{background:var(--moss-pale)!important;border-color:var(--moss)!important;color:var(--moss)!important;font-weight:500}
+.biz-outlet-btn{font-family:var(--fm);font-size:.72rem;letter-spacing:.08em;padding:.3rem .9rem;border-radius:var(--r-pill);border:.5px solid var(--border);background:var(--surface3);color:var(--t2);cursor:pointer;transition:all .15s}
+.biz-outlet-btn:hover{border-color:var(--moss);color:var(--moss)}
+.biz-outlet-active{background:var(--moss-pale)!important;border-color:var(--moss)!important;color:var(--moss)!important;font-weight:500}
 .biz-tab-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.4rem}
 .biz-tab{font-family:var(--fm);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;padding:.38rem 1rem;border-radius:var(--r-pill);border:.5px solid var(--border-strong);background:transparent;color:var(--smoke);cursor:pointer;transition:all .2s}
 .biz-tab:hover{background:var(--surface3);color:var(--t1)}
@@ -2026,6 +2032,13 @@ h1, h2 {
     </div>
 
     <!-- SECTION A: IDENTITY -->
+    <!-- Outlet selector — auto-populated from shell outlets -->
+    <div style="margin-bottom:.75rem">
+      <div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--smoke);margin-bottom:.4rem">Analysing</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap" id="biz-outlet-selector">
+        <button class="biz-outlet-btn biz-outlet-active" data-outlet="consolidated" onclick="bizSelectOutlet('consolidated',this)">Consolidated</button>
+      </div>
+    </div>
     <div class="biz-grid-2" style="margin-bottom:.75rem">
       <div class="biz-fg"><label>Property / Outlet</label><input id="biz-m-property" placeholder="e.g. IC Phuket — Plumeria"></div>
       <div class="biz-fg"><label>Market Segment</label>
@@ -2633,6 +2646,61 @@ window.bizDrop = function(e,zoneId){
 };
 var _bizUploadedData = null;
 var _bizFileInfo = null;
+var _bizSelectedOutlet = 'consolidated';
+var _bizSelectedOutlet = 'consolidated';
+
+/* ── OUTLET SELECTOR ── */
+function bizInitOutletSelector(){
+  var sel = document.getElementById('biz-outlet-selector');
+  if(!sel) return;
+  var outlets = [];
+  try{ outlets = JSON.parse(localStorage.getItem('cs_outlets')||localStorage.getItem('cultivate_outlets')||'[]'); }catch(e){}
+  if(!outlets.length && window.csOutlets) outlets = window.csOutlets;
+  if(!outlets.length && typeof getOutlets==='function') try{outlets=getOutlets();}catch(e){}
+  sel.innerHTML = '';
+  var btnNames = ['consolidated'].concat(outlets.map(function(o){return o.name||o.outletName||o;}));
+  btnNames.forEach(function(name){
+    var btn = document.createElement('button');
+    btn.className = 'biz-outlet-btn' + (name===_bizSelectedOutlet?' biz-outlet-active':'');
+    btn.textContent = name==='consolidated'?'Consolidated':name;
+    btn.dataset.outlet = name;
+    btn.addEventListener('click',function(){ bizSelectOutlet(this.dataset.outlet, this); });
+    sel.appendChild(btn);
+  });
+}
+
+window.bizSelectOutlet = function(outletName, btn){
+  _bizSelectedOutlet = outletName;
+  /* Update active button */
+  document.querySelectorAll('#biz-outlet-selector .biz-outlet-btn').forEach(function(b){b.classList.remove('biz-outlet-active');});
+  if(btn) btn.classList.add('biz-outlet-active');
+  /* Set property field */
+  var prop = document.getElementById('biz-m-property');
+  if(prop){
+    if(outletName==='consolidated'){
+      prop.value = localStorage.getItem('cs_property_name')||'';
+      prop.placeholder = 'Full operation — consolidated';
+    } else {
+      prop.value = outletName;
+    }
+  }
+  /* Try to set segment from outlet concept */
+  try{
+    var concepts = JSON.parse(localStorage.getItem('cs_concepts')||'[]');
+    var match = concepts.find(function(c){return c.name===outletName;});
+    if(match){
+      var seg = document.getElementById('biz-m-segment');
+      if(seg&&match.segment) seg.value=match.segment;
+      else if(seg&&match.cuisine){
+        /* Map cuisine to segment */
+        var cuisine = (match.cuisine||'').toLowerCase();
+        if(cuisine.indexOf('fine')>=0||cuisine.indexOf('michelin')>=0) seg.value='fine-dining';
+        else if(cuisine.indexOf('bar')>=0||cuisine.indexOf('cocktail')>=0) seg.value='bar-concept';
+        else if(seg.value==='') seg.value='hotel-casual';
+      }
+    }
+  }catch(e){}
+};
 
 window.bizFileSelected = function(e,zoneId){
   var f = e.target.files[0];
@@ -3748,6 +3816,7 @@ capexRenderPipeline();
 capexRenderChainPreview();
 capexUpdateNotifBadge();
 capexRenderNotifications();
+setTimeout(bizInitOutletSelector, 200);
 
 })();
 </script>
@@ -4448,7 +4517,7 @@ function capexAutoOutlet(){
 }
 window.capexOutletRefresh=capexAutoOutlet;
 var _origSP=window.showPage;
-window.showPage=function(id){ if(_origSP)_origSP(id); if(id==='capex'){setTimeout(capexAutoOutlet,80);setTimeout(capexRenderPipeline,100);capexUpdateNotifBadge();} };
+window.showPage=function(id){ if(_origSP)_origSP(id); if(id==='capex'){setTimeout(capexAutoOutlet,80);setTimeout(capexRenderPipeline,100);capexUpdateNotifBadge();} if(id==='pl') setTimeout(bizInitOutletSelector,100); };
 setTimeout(capexAutoOutlet,200);
 })();
 </script>
