@@ -1454,7 +1454,13 @@ h1, h2 {
   </div>
 
   <div id="rlv"><div class="rg" id="rg"></div></div>
-  <div style="display:none" id="rdv"><div style="margin-bottom:.85rem"><button class="btn-g" onclick="closeDetail()">Back</button></div><div id="dc"></div></div>
+  <div style="display:none" id="rdv">
+    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem;padding-bottom:.8rem;border-bottom:1px solid var(--sand)">
+      <button class="btn-g" onclick="closeDetail()">← Back to Recipes</button>
+      <button class="btn-g" onclick="closeDetail()" style="margin-left:auto;font-size:1.2rem;padding:.2rem .6rem;line-height:1">&times;</button>
+    </div>
+    <div id="dc"></div>
+  </div>
 </div>
 
 <!-- Outlet Settings Modal -->
@@ -5311,9 +5317,10 @@ setTimeout(capexAutoOutlet,200);
     <div class="fg"><label class="fl">Section / Outlet</label><select class="fi" id="r-section-sel" onchange="updateRecipeModalCats()">
       <option value="production">⚙ Main Production</option>
       <option value="pastry">🥐 Pastry &amp; Bakery</option>
+      <option value="fermentation">🧫 Fermentation</option>
     </select></div>
     <div class="fg"><label class="fl">Category</label><select class="fi" id="r-cat">
-      <option>Starter</option><option>Main</option><option>Fish</option><option>Dessert</option><option>Snack</option><option>Staff Meal</option><option>Production</option><option>Sauce</option><option>Ferment</option>
+      <option>Starter</option><option>Main</option><option>Fish</option><option>Dessert</option><option>Snack</option><option>Staff Meal</option><option>Production</option><option>Sauce</option><option>Fermentation</option><option>Pastry</option>
     </select></div>
     <div class="fg"><label class="fl">Portions</label><input class="fi" id="r-portions" type="number" value="4" min="1" oninput="calcUpdate()"></div>
   </div>
@@ -7242,6 +7249,9 @@ function buildOutletTabs() {
 }
 
 function switchRecipeSection(section, btn) {
+  // Always close detail view when switching tabs
+  var rlv = document.getElementById('rlv'); var rdv = document.getElementById('rdv');
+  if(rlv) rlv.style.display='block'; if(rdv) rdv.style.display='none';
   currentRecipeSection = section;
   document.querySelectorAll('#recipe-section-tabs .tab-btn').forEach(function(b){ b.classList.remove('active'); });
   if(btn) btn.classList.add('active');
@@ -7253,6 +7263,8 @@ function switchRecipeSection(section, btn) {
 }
 
 function setRecipeCatFilter(cat, btn) {
+  var rlv = document.getElementById('rlv'); var rdv = document.getElementById('rdv');
+  if(rlv) rlv.style.display='block'; if(rdv) rdv.style.display='none';
   currentRecipeCatFilter = cat;
   document.querySelectorAll('#recipe-cat-bar .fb').forEach(function(b){ b.classList.remove('active'); });
   if(btn) btn.classList.add('active');
@@ -7267,18 +7279,42 @@ function renderRecipes() {
 
   var indexed = recipes.map(function(r,i){ return {r:r,i:i}; });
 
-  // If a specific category filter is active, search ALL recipes across all sections
   if(catF !== 'all') {
-    indexed = indexed.filter(function(x){ return x.r.cat===catF; });
-  } else {
-    // No category filter — apply section filter
+    // Filter within current section first, then apply category
     if(section === 'production') {
       indexed = indexed.filter(function(x){
-        return x.r.section==='production' || (!x.r.section && !x.r.outlet && x.r.section!=='fermentation' && x.r.section!=='pastry' && x.r.cat!=='Fermentation' && x.r.cat!=='Pastry');
+        var r = x.r;
+        if(r.section==='fermentation' || r.section==='pastry' || r.section==='outlet') return false;
+        if(r.outlet && r.outlet.length) return false;
+        if(r.cat==='Fermentation' || r.cat==='Pastry') return false;
+        return r.cat === catF;
       });
     } else if(section === 'pastry') {
       indexed = indexed.filter(function(x){
-        return x.r.section==='pastry' || (!x.r.section && !x.r.outlet && x.r.cat==='Pastry');
+        return (x.r.section==='pastry' || x.r.cat==='Pastry') && x.r.cat === catF;
+      });
+    } else if(section === 'fermentation') {
+      indexed = indexed.filter(function(x){
+        return (x.r.section==='fermentation' || x.r.cat==='Fermentation') && x.r.cat === catF;
+      });
+    } else if(section.indexOf('outlet:')===0) {
+      var outletName2 = decodeURIComponent(section.slice(7));
+      indexed = indexed.filter(function(x){ return x.r.outlet===outletName2 && x.r.cat===catF; });
+    } else {
+      indexed = indexed.filter(function(x){ return x.r.cat===catF; });
+    }
+  } else {
+    if(section === 'production') {
+      indexed = indexed.filter(function(x){
+        var r = x.r;
+        if(r.section==='fermentation' || r.section==='pastry' || r.section==='outlet') return false;
+        if(r.outlet && r.outlet.length) return false;
+        if(r.cat==='Fermentation' || r.cat==='Pastry') return false;
+        return true;
+      });
+    } else if(section === 'pastry') {
+      indexed = indexed.filter(function(x){
+        return x.r.section==='pastry' || x.r.cat==='Pastry';
       });
     } else if(section === 'fermentation') {
       indexed = indexed.filter(function(x){
@@ -8439,39 +8475,23 @@ async function generateBriefRecipe() {
   }
 
   var systemPrompt = '';
-  try { systemPrompt = buildSystemPrompt({}); } catch(e) { systemPrompt = 'You are a Michelin-level culinary AI for Cultivate Studio.'; }
+  try { 
+    var _snap = {};
+    try { var _ao = getActiveOutlet(); if(_ao) _snap = _ao; } catch(e2) {}
+    systemPrompt = buildSystemPrompt(_snap); 
+  } catch(e) { 
+    systemPrompt = 'You are a Michelin-level culinary AI for Cultivate Studio. You help professional chefs structure dish briefs into complete recipe cards.'; 
+  }
 
-  var userPrompt = 'You are structuring a chef\'s dish brief into a complete recipe card for the Cultivate Studio app.\n\n'
+  var userPrompt = 'Structure this chef dish brief into a complete recipe card.\n\n'
     + 'OUTLET: ' + outlet + '\n'
     + 'CATEGORY: ' + category + '\n'
     + 'PORTIONS: ' + portions + '\n'
     + (dishName ? 'DISH NAME: ' + dishName + '\n' : '')
-    + '\nCHEF\'S BRIEF:\n' + brief
-    + '\n\nReturn ONLY valid JSON in this exact format — no markdown, no backticks, no explanation:\n'
-    + '{\n'
-    + '  "name": "Full dish name",\n'
-    + '  "cat": "' + category + '",\n'
-    + '  "portions": ' + portions + ',\n'
-    + '  "tag": "technique tags e.g. Fire / Fermentation / R&D",\n'
-    + '  "dietary": "VG or GF or VE or empty string",\n'
-    + '  "allergens": "space-separated allergens e.g. Dairy Eggs Nuts",\n'
-    + '  "method": "Full step-by-step method. Use \\n for line breaks. Write as a professional recipe — specific, precise, actionable. Include timing, temperatures, visual/sensory cues. If multiple components, use section headers like — COMPONENT NAME —",\n'
-    + '  "notes": "Chef notes: flavour architecture using Patterson Four Rules/Seven Dials, koji/fermentation connections if relevant, fire technique reasoning, service window, pairing suggestions",\n'
-    + '  "wasteNotes": "Zero waste applications for every trim, peel, marinade, and by-product",\n'
-    + '  "sellPrice": 0,\n'
-    + '  "nutrition": {"kcal": 0, "prot": 0, "carbs": 0, "fat": 0, "fibre": 0},\n'
-    + '  "ingredients": [\n'
-    + '    {"name": "Ingredient name", "qty": 100, "unit": "g", "cost": 0, "waste": 5, "wasteDest": "Stock or Compost or empty"}\n'
-    + '  ]\n'
-    + '}\n\n'
-    + 'Rules:\n'
-    + '- Include ALL ingredients mentioned in the brief with realistic quantities for ' + portions + ' portions\n'
-    + '- Units: g, kg, ml, l, pc, tsp, tbsp, bunch, sprig\n'
-    + '- Waste % = realistic trim/prep loss percentage (0–80)\n'
-    + '- Method must be complete and professional — no shortcuts\n'
-    + '- Chef notes must reference the Four Rules of Flavor and Seven Dials where relevant\n'
-    + '- If fermentation ingredients are used, explain the enzymatic logic in the notes\n'
-    + '- wasteNotes must be specific — name each by-product and its application';
+    + '\nCHEF BRIEF:\n' + brief
+    + '\n\nReturn ONLY valid JSON, no markdown, no backticks:\n'
+    + '{"name":"","cat":"' + category + '","portions":' + portions + ',"tag":"","dietary":"","allergens":"","method":"","notes":"","wasteNotes":"","sellPrice":0,"nutrition":{"kcal":0,"prot":0,"carbs":0,"fat":0,"fibre":0},"ingredients":[{"name":"","qty":0,"unit":"g","cost":0,"waste":5,"wasteDest":""}]}'
+    + '\n\nRules: full professional method with timing and temperatures, all ingredients with realistic quantities for ' + portions + ' portions, chef notes using Four Rules of Flavor and Seven Dials, specific zero waste applications.';
 
   try {
     var resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -8485,8 +8505,15 @@ async function generateBriefRecipe() {
       })
     });
     var data = await resp.json();
+    if(data.error) { 
+      document.getElementById('brief-status').textContent = '⚠ API error: ' + (data.error.message || JSON.stringify(data.error));
+      btn.disabled = false; btn.textContent = 'Generate Recipe Card'; return;
+    }
     var raw = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
-    // Strip markdown fences if present
+    if(!raw) {
+      document.getElementById('brief-status').textContent = '⚠ Empty response from API. Check your API key and try again.';
+      btn.disabled = false; btn.textContent = 'Generate Recipe Card'; return;
+    }
     raw = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
     var recipe = JSON.parse(raw);
     _briefRecipeData = recipe;
@@ -8497,7 +8524,7 @@ async function generateBriefRecipe() {
     document.getElementById('brief-status').textContent = '✓ Recipe generated — review and save when ready.';
     document.getElementById('brief-save-row').style.display = 'flex';
   } catch(e) {
-    document.getElementById('brief-status').textContent = '⚠ Error generating recipe. Please try again.';
+    document.getElementById('brief-status').textContent = '⚠ Error: ' + e.message + '. Open browser console for details.';
     console.error('Brief interpreter error:', e);
   }
   btn.disabled = false;
@@ -8548,7 +8575,21 @@ function saveBriefRecipe() {
   try { localStorage.setItem('cultivate_recipes_v1', JSON.stringify(recipes)); } catch(e) {}
   document.getElementById('brief-status').textContent = '✓ Saved to Recipe Manager.';
   document.getElementById('brief-save-row').style.display = 'none';
-  setTimeout(function() { showPage('recipes'); }, 800);
+  // Navigate to the correct section
+  var sec = _briefRecipeData.section || 'production';
+  currentRecipeCatFilter = 'all';
+  currentRecipeSection = sec;
+  setTimeout(function() { 
+    showPage('recipes'); 
+    // Activate correct tab
+    var tabId = 'rs-tab-btn-' + sec;
+    var tabBtn = document.getElementById(tabId);
+    if(tabBtn) {
+      document.querySelectorAll('#recipe-section-tabs .tab-btn').forEach(function(b){b.classList.remove('active');});
+      tabBtn.classList.add('active');
+    }
+    renderRecipes();
+  }, 500);
 }
 
 async function refineBriefRecipe() {
@@ -8893,8 +8934,40 @@ function saveRecipe() {
   if(!sp&&c>0){var fc=parseFloat(document.getElementById('cfc').value)||28; sp=Math.round(c/(fc/100));}
   var nut={kcal:parseFloat(document.getElementById('n-kcal').value)||0,prot:parseFloat(document.getElementById('n-prot').value)||0,carbs:parseFloat(document.getElementById('n-carbs').value)||0,fat:parseFloat(document.getElementById('n-fat').value)||0,fibre:parseFloat(document.getElementById('n-fibre').value)||0};
   var wasteDest={s:parseFloat(document.getElementById('wd-s').value)||0,st:parseFloat(document.getElementById('wd-st').value)||0,f:parseFloat(document.getElementById('wd-f').value)||0,c:parseFloat(document.getElementById('wd-c').value)||0,b:parseFloat(document.getElementById('wd-b').value)||0};
-  var _secSel=document.getElementById('r-section-sel'); var _sec='production'; var _outlet=''; if(_secSel){ if(_secSel.value==='pastry') _sec='pastry'; else if(_secSel.value.indexOf('outlet:')===0){ _outlet=decodeURIComponent(_secSel.value.slice(7)); _sec='outlet'; } else _sec='production'; } recipes.push({name:name,section:_sec,outlet:_outlet,cat:document.getElementById('r-cat').value,portions:parseInt(document.getElementById('r-portions').value)||4,tag:document.getElementById('r-tag').value,dietary:document.getElementById('r-dietary').value,allergens:document.getElementById('r-allergens').value,method:document.getElementById('r-method').value,notes:document.getElementById('r-notes').value,photo:recPhotoData,sellPrice:sp,wasteNotes:document.getElementById('w-notes').value,wasteDest:wasteDest,nutrition:(nut.kcal||nut.prot)?nut:null,ingredients:ings});
-  closeModal(); renderRecipes();
+  var _secSel=document.getElementById('r-section-sel'); 
+  var _sec='production'; var _outlet=''; 
+  if(_secSel){ 
+    if(_secSel.value==='pastry') _sec='pastry'; 
+    else if(_secSel.value==='fermentation') _sec='fermentation';
+    else if(_secSel.value.indexOf('outlet:')===0){ _outlet=decodeURIComponent(_secSel.value.slice(7)); _sec='outlet'; } 
+    else _sec='production'; 
+  }
+  // Also auto-detect from category if section not explicitly set
+  var _cat = document.getElementById('r-cat').value;
+  if(_sec==='production' && _cat==='Fermentation') _sec='fermentation';
+  if(_sec==='production' && _cat==='Pastry') _sec='pastry';
+  recipes.push({name:name,section:_sec,outlet:_outlet,cat:_cat,portions:parseInt(document.getElementById('r-portions').value)||4,tag:document.getElementById('r-tag').value,dietary:document.getElementById('r-dietary').value,allergens:document.getElementById('r-allergens').value,method:document.getElementById('r-method').value,notes:document.getElementById('r-notes').value,photo:recPhotoData,sellPrice:sp,wasteNotes:document.getElementById('w-notes').value,wasteDest:wasteDest,nutrition:(nut.kcal||nut.prot)?nut:null,ingredients:ings});
+  closeModal(); 
+  currentRecipeCatFilter = 'all';
+  // Switch to the correct section tab after save
+  if(_sec === 'fermentation') {
+    currentRecipeSection = 'fermentation';
+    var fBtn = document.getElementById('rs-tab-btn-fermentation');
+    if(fBtn) { document.querySelectorAll('#recipe-section-tabs .tab-btn').forEach(function(b){b.classList.remove('active');}); fBtn.classList.add('active'); }
+  } else if(_sec === 'pastry') {
+    currentRecipeSection = 'pastry';
+    var pBtn = document.getElementById('rs-tab-btn-pastry');
+    if(pBtn) { document.querySelectorAll('#recipe-section-tabs .tab-btn').forEach(function(b){b.classList.remove('active');}); pBtn.classList.add('active'); }
+  } else {
+    currentRecipeSection = 'production';
+    var prBtn = document.getElementById('rs-tab-btn-production');
+    if(prBtn) { document.querySelectorAll('#recipe-section-tabs .tab-btn').forEach(function(b){b.classList.remove('active');}); prBtn.classList.add('active'); }
+  }
+  // Reset cat filter buttons
+  document.querySelectorAll('#recipe-cat-bar .fb').forEach(function(b){b.classList.remove('active');});
+  var allBtn = document.querySelector('#recipe-cat-bar .fb');
+  if(allBtn) allBtn.classList.add('active');
+  renderRecipes();
 }
 
 function buildMoSel() {
