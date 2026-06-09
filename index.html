@@ -287,6 +287,8 @@ nav{
 .si:hover svg{opacity:1;transform:scale(1.15);transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
 
 .si svg{width:16px;height:16px;flex-shrink:0;opacity:0.75;transition:all .18s cubic-bezier(.34,1.56,.64,1)}
+.si-sub{padding-left:1.8rem !important;font-size:.82rem !important;opacity:.78;margin-bottom:.05rem}
+.si-sub:hover{opacity:1}
 .ss{margin-bottom:1.1rem}
 .main{flex:1;overflow-y:auto;background:transparent}
 
@@ -1255,26 +1257,47 @@ h1, h2 {
 
 <div class="app" style="display:none">
 <aside class="sidebar">
+
+  <!-- INTELLIGENCE -->
   <div class="ss"><span class="sl">Intelligence</span>
     <div class="si" onclick="showPage('ai')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 2 5 5 5 8.5c0 2.5 1.4 4.7 3.5 5.9V16h7v-1.6C17.6 13.2 19 11 19 8.5 19 5 16 2 12 2z"/><path d="M9 16v1a3 3 0 0 0 6 0v-1"/><path d="M9.5 9h.01M14.5 9h.01M10 12c.6.6 3.4.6 4 0"/></svg>Cultivate AI</div>
     <div class="si" onclick="showPage('season')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c0 0-8-4-8-11a8 8 0 0 1 16 0c0 7-8 11-8 11z"/><path d="M12 22V10"/><path d="M12 14l-3-2.5M12 17.5l3-2.5"/></svg>Seasonality</div>
     <div class="si" onclick="showPage('menu')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><circle cx="8" cy="9" r=".8" fill="currentColor" stroke="none"/><path d="M11 9h5"/><circle cx="8" cy="13" r=".8" fill="currentColor" stroke="none"/><path d="M11 13h5"/><circle cx="8" cy="17" r=".8" fill="currentColor" stroke="none"/><path d="M11 17h3"/></svg>Menu Builder</div>
-    <div class="si" onclick="showPage('intel')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 4.5v9L12 21l-7.5-4.5v-9z"/><path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9"/></svg>Chef Intelligence &amp; Flavor Matrix</div>
+    <div class="si" onclick="showPage('intel')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 4.5v9L12 21l-7.5-4.5v-9z"/><path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9"/></svg>Chef Intelligence &amp; Flavour Matrix</div>
   </div>
+
+  <!-- KITCHEN -->
+  <div class="ss"><span class="sl">Kitchen</span>
+    <div class="si" onclick="toggleKitchenMenu(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19h12v-2H6v2z"/><path d="M8 17V13"/><path d="M12 17V13"/><path d="M16 17V13"/><path d="M8 13c0 0-2.5-1-2.5-4a6.5 6.5 0 0 1 13 0C18.5 12 16 13 16 13H8z"/></svg>
+      Recipe Manager
+      <svg id="kitchen-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:auto;width:12px;height:12px;transition:transform .2s"><path d="M6 9l6 6 6-6"/></svg>
+    </div>
+    <div id="kitchen-submenu" style="display:none;overflow:hidden">
+      <div class="si si-sub" onclick="showPage('recipes');setTimeout(function(){switchRecipeSection('production',document.getElementById('rs-tab-btn-production'));},80)">⚙ Production</div>
+      <div class="si si-sub" onclick="showPage('recipes');setTimeout(function(){switchRecipeSection('pastry',document.getElementById('rs-tab-btn-pastry'));},80)">🥐 Pastry &amp; Bakery</div>
+      <div class="si si-sub" onclick="showPage('recipes');setTimeout(function(){switchRecipeSection('fermentation',document.getElementById('rs-tab-btn-fermentation'));},80)">🧫 Fermentation</div>
+      <div class="si si-sub" onclick="showPage('recipes');setTimeout(function(){openNewRecipe();},80)">🔍 Recipe Generator</div>
+      <div class="si si-sub" onclick="showPage('brief')">📝 Brief Interpreter</div>
+    </div>
+  </div>
+
+  <!-- BUSINESS -->
   <div class="ss"><span class="sl">Business</span>
-    <div class="si" onclick="showPage('pl')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><rect x="4" y="13" width="3" height="7" rx="1"/><rect x="10.5" y="9" width="3" height="11" rx="1"/><rect x="17" y="5" width="3" height="15" rx="1"/><path d="M5.5 13l6-7 6 4"/></svg>Business</div>
+    <div class="si" onclick="showPage('pl')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><rect x="4" y="13" width="3" height="7" rx="1"/><rect x="10.5" y="9" width="3" height="11" rx="1"/><rect x="17" y="5" width="3" height="15" rx="1"/><path d="M5.5 13l6-7 6 4"/></svg>Business &amp; P&amp;L</div>
     <div class="si" onclick="showPage('strategy')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M16.5 7.5l-3.2 6.3-6.3 3.2 3.2-6.3z"/><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"/></svg>Strategy</div>
   </div>
-  <div class="ss"><span class="sl">Kitchen</span>
-    <div class="si" onclick="showPage('recipes')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19h12v-2H6v2z"/><path d="M8 17V13"/><path d="M12 17V13"/><path d="M16 17V13"/><path d="M8 13c0 0-2.5-1-2.5-4a6.5 6.5 0 0 1 13 0C18.5 12 16 13 16 13H8z"/></svg>Recipe Manager</div>
-    <div class="si" onclick="showPage('recipes');setTimeout(function(){openNewRecipe();},80);" style="color:var(--terracotta);font-size:.88rem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>New Recipe (AI)</div>
-  </div>
+
+  <!-- COMING SOON -->
   <div class="ss"><span class="sl">Coming Soon</span>
     <div class="si" style="opacity:.38;cursor:default"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><path d="M3 20v-1.5A4.5 4.5 0 0 1 9 14h0a4.5 4.5 0 0 1 4.5 4.5V20"/><circle cx="17" cy="8" r="2.5"/><path d="M21 20v-1a3.5 3.5 0 0 0-3.5-3.5"/></svg>Community</div>
   </div>
+
+  <!-- ADMIN -->
   <div class="ss" style="margin-top:auto;padding-top:.8rem;border-top:1px solid rgba(255,255,255,.1)">
     <div id="admin-sidebar-btn" class="si" onclick="toggleAdminGate()" style="font-size:.82rem;letter-spacing:.08em"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3.5v5c0 4.5-3.4 8.7-8 10-4.6-1.3-8-5.5-8-10v-5z"/><circle cx="12" cy="11" r="2"/><path d="M12 13v3"/></svg>Admin Access</div>
   </div>
+
 </aside>
 <main class="main" id="main-content">
 
@@ -1518,6 +1541,79 @@ h1, h2 {
       </div>
       <div id="pantry-seasonal-result" style="margin-top:.5rem;font-size:.83rem;color:var(--moss)"></div>
     </div>
+  </div>
+</div>
+
+<!-- RECIPE BRIEF INTERPRETER PAGE -->
+<div class="page" id="page-brief" style="display:none">
+  <div class="ph">
+    <div>
+      <div class="pt">📝 Recipe Brief Interpreter</div>
+      <div class="ps">Describe your dish concept — the AI structures it into a full recipe card</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;align-items:start">
+
+    <!-- LEFT: Input -->
+    <div style="background:var(--surface);border:1px solid var(--border-card);border-radius:var(--r);padding:1.4rem">
+      <div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--smoke);margin-bottom:.8rem">Your Dish Brief</div>
+
+      <div class="fg" style="margin-bottom:.8rem">
+        <label class="fl">Outlet / Context</label>
+        <select class="fi" id="brief-outlet-select">
+          <option value="">Central / General</option>
+        </select>
+      </div>
+
+      <div class="fg" style="margin-bottom:.8rem">
+        <label class="fl">Dish Name <span style="opacity:.5;font-weight:400">(optional — AI will suggest if left blank)</span></label>
+        <input class="fi" id="brief-dish-name" placeholder="e.g. Three Mushrooms — Fire, Ferment, Forest">
+      </div>
+
+      <div class="fg" style="margin-bottom:.8rem">
+        <label class="fl">Portions</label>
+        <input class="fi" id="brief-portions" type="number" placeholder="4" value="4" style="max-width:100px">
+      </div>
+
+      <div class="fg" style="margin-bottom:.8rem">
+        <label class="fl">Category</label>
+        <select class="fi" id="brief-category">
+          <option value="Starter">Starter</option>
+          <option value="Main" selected>Main</option>
+          <option value="Dessert">Dessert</option>
+          <option value="Fermentation">Fermentation</option>
+          <option value="Pastry">Pastry</option>
+          <option value="Snack">Snack / Amuse</option>
+          <option value="Staff Meal">Staff Meal</option>
+        </select>
+      </div>
+
+      <div class="fg" style="margin-bottom:1rem">
+        <label class="fl">Your Brief <span style="opacity:.5;font-weight:400">— describe the dish in your own words. Techniques, ingredients, ferments, fire methods, timing, plating — as much or as little as you have.</span></label>
+        <textarea class="fi" id="brief-input" rows="12" placeholder="e.g. Porcini marinated in brown butter and wild garlic oil, seasoned with leek garum for 30 minutes then cooked yakitori-style over charcoal. Wood ear soaked in shio koji water amplified with nut paste, brushed with pumpkin tamari and cooked over live fire. Lion's mane marinated 6–12h in mead wine with lovage, thyme, rosemary, fresh garlic and pine seeds, then seared in cast iron with cultured butter and finished with pine seeds garum. Served with egg yolk brown butter lemon emulsion. Flavour Matrix score 87%."></textarea>
+      </div>
+
+      <div style="display:flex;gap:.6rem">
+        <button class="btn-p" id="brief-generate-btn" onclick="generateBriefRecipe()" style="flex:1">Generate Recipe Card</button>
+        <button class="btn-g" onclick="clearBriefForm()">Clear</button>
+      </div>
+
+      <div id="brief-status" style="margin-top:.7rem;font-size:.84rem;color:var(--moss);min-height:1.2rem"></div>
+    </div>
+
+    <!-- RIGHT: Output -->
+    <div id="brief-output-panel" style="background:var(--surface);border:1px solid var(--border-card);border-radius:var(--r);padding:1.4rem;min-height:400px">
+      <div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--smoke);margin-bottom:.8rem">Generated Recipe</div>
+      <div id="brief-output-content" style="color:var(--t3);font-size:.9rem;font-style:italic">
+        Your recipe card will appear here. Describe your dish on the left and tap Generate.
+      </div>
+      <div id="brief-save-row" style="display:none;margin-top:1rem;display:none;gap:.6rem">
+        <button class="btn-p" id="brief-save-btn" onclick="saveBriefRecipe()" style="flex:1">✓ Save to Recipe Manager</button>
+        <button class="btn-g" onclick="refineBriefRecipe()">Refine</button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -5345,6 +5441,34 @@ var recipes = [
   {name:"Lemongrass Cured King Prawns",cat:"Starter",portions:4,tag:"Thai Modern",dietary:"GF",allergens:"Crustaceans",method:"Cure in lemongrass, lime zest, sea salt, sugar for 4h. Rinse, dry. Serve with coconut nam jim.",notes:"Serve at 6C.",photo:null,sellPrice:1077,wasteNotes:"Shells to bisque",nutrition:{kcal:185,prot:24,carbs:4,fat:7,fibre:0.5},wasteDest:{s:20,st:50,f:0,c:30,b:0},ingredients:[{name:"King Prawns",qty:320,unit:"g",cost:280,waste:15,wasteDest:"Stock"},{name:"Lemongrass",qty:3,unit:"stalks",cost:15,waste:30,wasteDest:"Stock"},{name:"Lime",qty:2,unit:"pc",cost:10,waste:10,wasteDest:"Compost"},{name:"Coconut Milk",qty:150,unit:"ml",cost:25,waste:0,wasteDest:""}]},
   {name:"Charred Cauliflower Curry Leaf Butter",cat:"Main",portions:4,tag:"Zero Waste",dietary:"Veg",allergens:"Dairy",method:"Halve cauliflower, brush ghee, char at 280C. Finish with curry leaf brown butter and tamarind glaze.",notes:"Every part used.",photo:null,sellPrice:830,wasteNotes:"Leaves to stock",nutrition:{kcal:310,prot:8,carbs:18,fat:22,fibre:5},wasteDest:{s:30,st:30,f:10,c:30,b:0},ingredients:[{name:"Cauliflower",qty:2,unit:"heads",cost:120,waste:20,wasteDest:"Staff"},{name:"Ghee",qty:80,unit:"g",cost:45,waste:5,wasteDest:"Compost"},{name:"Curry Leaves",qty:1,unit:"bunch",cost:20,waste:10,wasteDest:"Oil"},{name:"Tamarind",qty:50,unit:"g",cost:18,waste:0,wasteDest:""}]},
   {name:"Coconut Pandan Tart",cat:"Dessert",portions:8,tag:"Thai Pastry",dietary:"Veg",allergens:"Gluten Dairy Eggs",method:"Shortcrust shell, coconut pandan custard set with agar. Garnish toasted coconut.",notes:"Bake blind, cool before filling.",photo:null,sellPrice:507,wasteNotes:"Pandan pulp to compost",nutrition:{kcal:380,prot:5,carbs:42,fat:21,fibre:2},wasteDest:{s:20,st:0,f:0,c:60,b:20},ingredients:[{name:"Coconut Cream",qty:400,unit:"ml",cost:65,waste:5,wasteDest:"Compost"},{name:"Pandan",qty:8,unit:"leaves",cost:12,waste:50,wasteDest:"Compost"},{name:"Eggs",qty:4,unit:"pc",cost:20,waste:2,wasteDest:"Compost"},{name:"Butter",qty:120,unit:"g",cost:55,waste:3,wasteDest:"Compost"}]},
+
+  {name:"Three Mushrooms — Fire, Ferment, Forest",cat:"Main",section:"production",portions:4,tag:"Fire / Fermentation / R&D",dietary:"VG",allergens:"Dairy Eggs Nuts",
+  method:"— PORCINI —\n1. Clean porcini thoroughly with a dry brush — never wash. Slice into 2cm planks for even charcoal contact.\n2. Prepare marinade: warm brown butter until noisette (hazelnut aroma, golden solids), combine with wild garlic oil and leek garum. Whisk briefly. Season carefully — the garum is saline, taste before adding any additional salt.\n3. Submerge porcini in marinade for 30 minutes at room temperature. Turn once at 15 minutes. The brown butter will penetrate the porcini's porous structure, amplifying its earthy fat-soluble compounds.\n4. Cook yakitori-style over live charcoal: skewer on binchōtan-grade charcoal, high heat, 2–3 minutes per side. The goal is deep caramelisation on the exterior with a just-yielding, moisture-retaining interior. Baste with remaining marinade during cooking.\n5. Rest 2 minutes before plating. Finish with a few drops of wild garlic oil.\n\n— WOOD EAR MUSHROOMS —\n1. Rehydrate dried wood ear in cold water 20 minutes if using dried. Drain and pat dry. If fresh, clean and trim woody stems.\n2. Prepare shio koji water: dilute shio koji 1:3 with cold water, whisk smooth. Amplify with nut paste (walnut or pine — your choice): blend 1 tbsp nut paste into shio koji water until fully incorporated. The fat in the nuts carries the koji umami deep into the wood ear's dense, chewy structure.\n3. Soak wood ear in shio koji-nut water for minimum 30 minutes, up to 2 hours. The longer the soak, the more umami penetration.\n4. Drain, pat dry. Brush generously with pumpkin tamari — this adds a sweet-earthy lacquer with deep umami layering.\n5. Cook over live fire on a grill grate, high heat. Wood ear requires direct flame contact — 2 minutes per side until edges are lightly charred and the tamari has caramelised into a sticky glaze. Do not overcrowd.\n6. Finish with a final brush of pumpkin tamari immediately off the fire.\n\n— LION'S MANE —\n1. Trim lion's mane into thick steaks (3–4cm). Do not break apart the comb structure — you want maximum surface for the crust.\n2. Prepare herb marinade: mead wine as base, add finely chopped lovage, fresh thyme leaves, rosemary (strip from stems, chop fine), crushed fresh garlic, crushed pine seeds. Season lightly. The mead adds floral sweetness and mild acidity; the lovage provides deep herbal celery-anise complexity; the pine seeds add fat and resinous depth.\n3. Submerge lion's mane steaks fully. Marinate 6–12 hours refrigerated. Turn at halfway. Do not over-marinate beyond 12 hours — acid will start breaking down texture.\n4. Remove from marinade, pat dry thoroughly. Excess moisture will steam rather than sear.\n5. Heat cast iron pan until smoking. Add cultured butter — it will foam immediately. Place lion's mane steaks down, press gently for full contact. Sear 3–4 minutes undisturbed until deep golden crust forms. Baste continuously with the foaming cultured butter.\n6. Brush with pine seeds garum. Transfer pan to oven at 200°C for 4–6 minutes to cook through while maintaining crust integrity. The lion's mane should yield gently when pressed — not firm, not collapsing.\n7. Rest 2 minutes. Finish with final brush of pine seeds garum.\n\n— EGG YOLK EMULSION —\n1. Separate egg yolks carefully. Keep yolks whole for service or blend for emulsion.\n2. For the emulsion: whisk egg yolks with a few drops of water over a bain-marie until ribbon stage. Slowly stream in warm brown butter as for a sabayon, whisking continuously. The emulsion should be thick, glossy, and coat the back of a spoon.\n3. Finish with fresh lemon juice — start with a few drops, taste. The acid lifts the fat and brightens the entire emulsion. Season with fine salt.\n4. Keep warm over bain-marie until service. Do not allow to exceed 65°C.\n\n— PLATING —\nPlace porcini as the anchor. Wood ear alongside with its lacquered char visible. Lion's mane steak leaning or flat with crust facing up. Pool egg yolk emulsion beneath or alongside — it should connect all three elements. A few drops of wild garlic oil to finish. The dish should read: fire, depth, forest.",
+  notes:"Marco Turatti original. Flavour Matrix score: 87%. Three mushrooms, three distinct fire techniques, three fermentation inputs (leek garum, shio koji, pumpkin tamari, pine seeds garum) converging on one plate unified by the egg yolk brown butter emulsion.\n\nFLAVOUR ARCHITECTURE (Patterson framework): Porcini is the heavy foreground — brown butter + charcoal = maximum Maillard depth. Leek garum buries the sharpness and adds umami without announcing itself. Wood ear is the textural counterpoint — chewy, lacquered, aggressive char against the soft porcini. The nut paste in the shio koji soak is the unifying bridge between all three mushrooms (fat-umami thread running through the dish). Lion's mane is the light element that needs grounding — the mead marinade and pine seeds provide that base, the cultured butter and cast iron crust create the Maillard lift. Egg yolk emulsion is the Seven Dials anchor: salt, fat, acid (lemon), and umami (brown butter) in one sauce.\n\nKOJI CONNECTIONS: Shio koji soak = proteases working on wood ear structure for 30–120 minutes. Pumpkin tamari = amino sauce from pumpkin seed protein + koji fermentation. Pine seeds garum = lipase and protease activity on the high-fat pine seed protein. Leek garum = amino sauce from leek protein + koji. Four distinct fermented seasonings, none dominating, all burying.\n\nFIRE NOTES: Three fire methods — yakitori charcoal (porcini), direct live fire grill (wood ear), cast iron + oven (lion's mane). Each chosen for structural reasons: charcoal penetration for porous porcini, direct flame for dense wood ear requiring forced caramelisation, cast iron crust for delicate lion's mane that would fall apart on a grill grate.\n\nSERVICE WINDOW: 8 minutes from fire to plate. Pre-marinate all mushrooms before service. Emulsion held warm. Yakitori and live fire simultaneous, cast iron last (4 min total). Tight but executable with mise en place.",
+  photo:null,sellPrice:0,wasteNotes:"Porcini marinade → reserve as base for mushroom nage or reduce to sauce. Wood ear soaking liquid → strain and use as umami stock. Lion's mane marinade → reduce and use as herb oil base. Mushroom trimmings → dehydrate and grind to umami powder.",
+  nutrition:{kcal:380,prot:14,carbs:18,fat:28,fibre:6},
+  wasteDest:{s:0,st:40,f:20,c:30,b:10},
+  ingredients:[
+    {name:"Porcini Mushrooms (fresh)",qty:400,unit:"g",cost:1200,waste:8,wasteDest:"Nage"},
+    {name:"Brown Butter (noisette)",qty:60,unit:"g",cost:80,waste:2,wasteDest:""},
+    {name:"Wild Garlic Oil",qty:30,unit:"ml",cost:60,waste:0,wasteDest:""},
+    {name:"Leek Garum",qty:20,unit:"g",cost:40,waste:0,wasteDest:""},
+    {name:"Wood Ear Mushrooms (fresh or rehydrated)",qty:300,unit:"g",cost:180,waste:15,wasteDest:"Stock"},
+    {name:"Shio Koji",qty:80,unit:"g",cost:40,waste:0,wasteDest:""},
+    {name:"Nut Paste (walnut or pine)",qty:30,unit:"g",cost:55,waste:0,wasteDest:""},
+    {name:"Pumpkin Tamari",qty:40,unit:"ml",cost:80,waste:0,wasteDest:""},
+    {name:"Lion's Mane Mushroom",qty:400,unit:"g",cost:800,waste:10,wasteDest:"Stock"},
+    {name:"Mead Wine",qty:200,unit:"ml",cost:120,waste:0,wasteDest:"Reduce to sauce"},
+    {name:"Lovage (fresh)",qty:15,unit:"g",cost:20,waste:20,wasteDest:"Compost"},
+    {name:"Fresh Thyme",qty:10,unit:"g",cost:15,waste:30,wasteDest:"Compost"},
+    {name:"Fresh Rosemary",qty:8,unit:"g",cost:12,waste:40,wasteDest:"Oil infusion"},
+    {name:"Fresh Garlic",qty:20,unit:"g",cost:10,waste:10,wasteDest:""},
+    {name:"Pine Seeds",qty:40,unit:"g",cost:90,waste:0,wasteDest:""},
+    {name:"Cultured Butter",qty:60,unit:"g",cost:95,waste:2,wasteDest:""},
+    {name:"Pine Seeds Garum",qty:20,unit:"ml",cost:50,waste:0,wasteDest:""},
+    {name:"Egg Yolks",qty:4,unit:"pc",cost:20,waste:0,wasteDest:""},
+    {name:"Lemon",qty:1,unit:"pc",cost:8,waste:80,wasteDest:"Zest for oil / compost"}
+  ]},
   {name:"Mussel Garum — IC Phuket",cat:"Fermentation",section:"fermentation",portions:1,tag:"Koji Fermentation",dietary:"GF",allergens:"Molluscs Fish Gluten",method:"1. Clean mussels thoroughly, discard any open shells. Steam briefly just until shells open — do not overcook. Remove meat from shells. Reserve shells for stock.\n2. Weigh steamed mussel meat. Toast barley koji lightly in a dry pan until fragrant — this activates the enzymes.\n3. In a sterilised container combine: mussel meat, barley koji, dry-roasted coconut, kombu (wiped clean), fine sea salt. Mix thoroughly until salt is fully distributed.\n4. Add white wine. Mix again. The mixture should be wet but not soupy — adjust with a small amount of water only if too dry to compress.\n5. Pack tightly into sterilised glass jars or a vacuum bag, pressing out all air pockets. The mixture must be fully submerged under its own liquid. Top with a thin layer of salt as a protective seal.\n6. Seal and label with date and contents. Ferment at 60°C for 3–4 months (accelerated method) OR at room temperature for 9–12 months (traditional method).\n7. At the 3-month mark begin tasting weekly. The garum is ready when it delivers clean, deep umami with a marine-sweet backbone — no off notes, no excessive sharpness.\n8. When ready: blend thoroughly, pass through a fine chinois, then through cheesecloth. Press solids firmly to extract all liquid.\n9. Yield approximately 2kg finished garum. Bottle, label, refrigerate. Use within 6 months. Freeze portions for long-term storage.",notes:"Marco Turatti original — IC Phuket 2024. The roasted coconut addition is a deliberate SE Asian adaptation. Coconut fat captures and carries the marine volatile compounds, adding a sweet-fat depth absent in classical garum. This bridges the marine and aromatic dimensions uniquely. Kombu adds a second layer of glutamate synergy alongside the mussel IMP — multiplied umami effect. Use as a seasoning agent at 5–10g per portion. It should be undetectable as a discrete ingredient — present only as depth. Applications: nage for shellfish, base for mussel bisque, seasoning for pasta al mare, umami layer in any SE Asian broth, finishing drizzle on raw scallop. Fermentation note: the barley koji substrate was chosen over rice koji for its higher protease activity — faster breakdown of the dense mussel protein structure. At 3 months the garum will be lighter and marine-bright. At 6+ months it deepens toward a more complex, rounded profile. Both are valid — adjust to the application.",photo:null,sellPrice:0,wasteNotes:"Mussel shells → stock or dry for calcium powder. Strained solids → dehydrate and grind into umami seasoning powder. Zero waste.",nutrition:{kcal:45,prot:6,carbs:2,fat:1,fibre:0},wasteDest:{s:0,st:60,f:0,c:30,b:10},ingredients:[{name:"Local Phuket Mussels (fresh, live)",qty:10000,unit:"g",cost:800,waste:60,wasteDest:"Stock"},{name:"Barley Koji",qty:200,unit:"g",cost:180,waste:0,wasteDest:""},{name:"Kombu",qty:60,unit:"g",cost:120,waste:10,wasteDest:"Dashi"},{name:"Roasted Coconut (dry, unsweetened)",qty:100,unit:"g",cost:40,waste:0,wasteDest:""},{name:"Fine Sea Salt",qty:230,unit:"g",cost:15,waste:0,wasteDest:""},{name:"Dry White Wine",qty:1000,unit:"ml",cost:220,waste:0,wasteDest:""}]}
 ];
 
@@ -6829,6 +6953,7 @@ function showPage(id) {
   if (id==='dashboard') { try{renderDashboard();}catch(e){console.error('dash:',e);} try{updateDashboardGreeting();}catch(e){} }
   if (id==='property') { try{renderPropertyPage();}catch(e){console.error('property:',e);} }
   if (id==='pantry') { try{renderPantryPage();}catch(e){console.error('pantry:',e);} }
+  if (id==='brief') { try{initBriefPage();}catch(e){console.error('brief:',e);} }
   if (id==='supplier-admin') renderAdminQueue();
   // Auto-populate Business modules from P&L data if available
   if(id==='strategy'||id==='engineering'||id==='benchmarks'||id==='pricing') {
@@ -7142,24 +7267,28 @@ function renderRecipes() {
 
   var indexed = recipes.map(function(r,i){ return {r:r,i:i}; });
 
-  if(section === 'production') {
-    indexed = indexed.filter(function(x){
-      return x.r.section==='production' || (!x.r.section && !x.r.outlet && x.r.section!=='fermentation' && x.r.section!=='pastry' && x.r.cat!=='Fermentation' && x.r.cat!=='Pastry');
-    });
-  } else if(section === 'pastry') {
-    indexed = indexed.filter(function(x){
-      return x.r.section==='pastry' || (!x.r.section && !x.r.outlet && x.r.cat==='Pastry');
-    });
-  } else if(section === 'fermentation') {
-    indexed = indexed.filter(function(x){
-      return x.r.section==='fermentation' || x.r.cat==='Fermentation';
-    });
-  } else if(section.indexOf('outlet:')===0) {
-    var outletName = decodeURIComponent(section.slice(7));
-    indexed = indexed.filter(function(x){ return x.r.outlet===outletName; });
+  // If a specific category filter is active, search ALL recipes across all sections
+  if(catF !== 'all') {
+    indexed = indexed.filter(function(x){ return x.r.cat===catF; });
+  } else {
+    // No category filter — apply section filter
+    if(section === 'production') {
+      indexed = indexed.filter(function(x){
+        return x.r.section==='production' || (!x.r.section && !x.r.outlet && x.r.section!=='fermentation' && x.r.section!=='pastry' && x.r.cat!=='Fermentation' && x.r.cat!=='Pastry');
+      });
+    } else if(section === 'pastry') {
+      indexed = indexed.filter(function(x){
+        return x.r.section==='pastry' || (!x.r.section && !x.r.outlet && x.r.cat==='Pastry');
+      });
+    } else if(section === 'fermentation') {
+      indexed = indexed.filter(function(x){
+        return x.r.section==='fermentation' || x.r.cat==='Fermentation';
+      });
+    } else if(section.indexOf('outlet:')===0) {
+      var outletName = decodeURIComponent(section.slice(7));
+      indexed = indexed.filter(function(x){ return x.r.outlet===outletName; });
+    }
   }
-
-  if(catF !== 'all') indexed = indexed.filter(function(x){ return x.r.cat===catF; });
 
   if(!indexed.length) {
     g.innerHTML = '<div class="empty"><div style="font-size:1.2rem;margin-bottom:.4rem">📋</div>'
@@ -8244,6 +8373,193 @@ function downloadRecipePDF(i) {
   html+='<div class="footer"><span>Cultivate Studio</span><span>'+new Date().toLocaleDateString()+'</span></div></body></html>';
   openPDF(html);
 }
+
+function toggleKitchenMenu(el) {
+  var menu = document.getElementById('kitchen-submenu');
+  var arrow = document.getElementById('kitchen-arrow');
+  if (!menu) return;
+  var open = menu.style.display !== 'none';
+  menu.style.display = open ? 'none' : 'block';
+  if (arrow) arrow.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+// ── RECIPE BRIEF INTERPRETER ─────────────────────────────────────
+
+var _briefRecipeData = null;
+
+function initBriefPage() {
+  // Populate outlet selector
+  var sel = document.getElementById('brief-outlet-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Central / General</option>';
+  try {
+    var profiles = getOutletProfiles();
+    profiles.forEach(function(p) {
+      var opt = document.createElement('option');
+      opt.value = p.name;
+      opt.textContent = p.name;
+      sel.appendChild(opt);
+    });
+    // Pre-select active outlet if in outlet shell
+    var ao = getActiveOutlet();
+    if (ao && ao.name) sel.value = ao.name;
+  } catch(e) {}
+}
+
+function clearBriefForm() {
+  document.getElementById('brief-dish-name').value = '';
+  document.getElementById('brief-input').value = '';
+  document.getElementById('brief-portions').value = '4';
+  document.getElementById('brief-output-content').innerHTML = '<span style="color:var(--t3);font-style:italic">Your recipe card will appear here. Describe your dish on the left and tap Generate.</span>';
+  document.getElementById('brief-save-row').style.display = 'none';
+  document.getElementById('brief-status').textContent = '';
+  _briefRecipeData = null;
+}
+
+async function generateBriefRecipe() {
+  var brief = (document.getElementById('brief-input').value || '').trim();
+  if (!brief) { document.getElementById('brief-status').textContent = 'Please enter a dish brief first.'; return; }
+
+  var dishName = (document.getElementById('brief-dish-name').value || '').trim();
+  var portions = parseInt(document.getElementById('brief-portions').value) || 4;
+  var category = document.getElementById('brief-category').value || 'Main';
+  var outlet = document.getElementById('brief-outlet-select').value || 'Central';
+
+  var btn = document.getElementById('brief-generate-btn');
+  btn.disabled = true;
+  btn.textContent = 'Generating...';
+  document.getElementById('brief-status').textContent = '⏳ Building your recipe card...';
+  document.getElementById('brief-save-row').style.display = 'none';
+
+  var apiKey = '';
+  try { apiKey = localStorage.getItem('cultivate_api_key') || ''; } catch(e) {}
+  if (!apiKey) {
+    document.getElementById('brief-status').textContent = 'API key not found. Please set it in your profile.';
+    btn.disabled = false; btn.textContent = 'Generate Recipe Card'; return;
+  }
+
+  var systemPrompt = '';
+  try { systemPrompt = buildSystemPrompt({}); } catch(e) { systemPrompt = 'You are a Michelin-level culinary AI for Cultivate Studio.'; }
+
+  var userPrompt = 'You are structuring a chef\'s dish brief into a complete recipe card for the Cultivate Studio app.\n\n'
+    + 'OUTLET: ' + outlet + '\n'
+    + 'CATEGORY: ' + category + '\n'
+    + 'PORTIONS: ' + portions + '\n'
+    + (dishName ? 'DISH NAME: ' + dishName + '\n' : '')
+    + '\nCHEF\'S BRIEF:\n' + brief
+    + '\n\nReturn ONLY valid JSON in this exact format — no markdown, no backticks, no explanation:\n'
+    + '{\n'
+    + '  "name": "Full dish name",\n'
+    + '  "cat": "' + category + '",\n'
+    + '  "portions": ' + portions + ',\n'
+    + '  "tag": "technique tags e.g. Fire / Fermentation / R&D",\n'
+    + '  "dietary": "VG or GF or VE or empty string",\n'
+    + '  "allergens": "space-separated allergens e.g. Dairy Eggs Nuts",\n'
+    + '  "method": "Full step-by-step method. Use \\n for line breaks. Write as a professional recipe — specific, precise, actionable. Include timing, temperatures, visual/sensory cues. If multiple components, use section headers like — COMPONENT NAME —",\n'
+    + '  "notes": "Chef notes: flavour architecture using Patterson Four Rules/Seven Dials, koji/fermentation connections if relevant, fire technique reasoning, service window, pairing suggestions",\n'
+    + '  "wasteNotes": "Zero waste applications for every trim, peel, marinade, and by-product",\n'
+    + '  "sellPrice": 0,\n'
+    + '  "nutrition": {"kcal": 0, "prot": 0, "carbs": 0, "fat": 0, "fibre": 0},\n'
+    + '  "ingredients": [\n'
+    + '    {"name": "Ingredient name", "qty": 100, "unit": "g", "cost": 0, "waste": 5, "wasteDest": "Stock or Compost or empty"}\n'
+    + '  ]\n'
+    + '}\n\n'
+    + 'Rules:\n'
+    + '- Include ALL ingredients mentioned in the brief with realistic quantities for ' + portions + ' portions\n'
+    + '- Units: g, kg, ml, l, pc, tsp, tbsp, bunch, sprig\n'
+    + '- Waste % = realistic trim/prep loss percentage (0–80)\n'
+    + '- Method must be complete and professional — no shortcuts\n'
+    + '- Chef notes must reference the Four Rules of Flavor and Seven Dials where relevant\n'
+    + '- If fermentation ingredients are used, explain the enzymatic logic in the notes\n'
+    + '- wasteNotes must be specific — name each by-product and its application';
+
+  try {
+    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5',
+        max_tokens: 4000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }]
+      })
+    });
+    var data = await resp.json();
+    var raw = (data.content && data.content[0] && data.content[0].text) ? data.content[0].text : '';
+    // Strip markdown fences if present
+    raw = raw.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+    var recipe = JSON.parse(raw);
+    _briefRecipeData = recipe;
+    _briefRecipeData.outlet = outlet !== 'Central / General' ? outlet : undefined;
+    _briefRecipeData.section = category === 'Fermentation' ? 'fermentation' : category === 'Pastry' ? 'pastry' : 'production';
+    _briefRecipeData.photo = null;
+    renderBriefOutput(recipe);
+    document.getElementById('brief-status').textContent = '✓ Recipe generated — review and save when ready.';
+    document.getElementById('brief-save-row').style.display = 'flex';
+  } catch(e) {
+    document.getElementById('brief-status').textContent = '⚠ Error generating recipe. Please try again.';
+    console.error('Brief interpreter error:', e);
+  }
+  btn.disabled = false;
+  btn.textContent = 'Generate Recipe Card';
+}
+
+function renderBriefOutput(r) {
+  var html = '<div style="font-family:var(--fd);font-size:1.3rem;font-weight:300;margin-bottom:.3rem">' + escHtml(r.name || '') + '</div>';
+  html += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--smoke);margin-bottom:1rem">' + escHtml(r.cat||'') + ' · ' + (r.portions||4) + ' portions · ' + escHtml(r.tag||'') + '</div>';
+
+  // Ingredients
+  if (r.ingredients && r.ingredients.length) {
+    html += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--smoke);margin-bottom:.4rem">Ingredients</div>';
+    html += '<div style="background:var(--oat);border-radius:6px;padding:.8rem;margin-bottom:1rem">';
+    r.ingredients.forEach(function(ing) {
+      html += '<div style="display:flex;justify-content:space-between;padding:.2rem 0;font-size:.85rem;border-bottom:1px solid var(--sand)">'
+        + '<span>' + escHtml(ing.name||'') + '</span>'
+        + '<span style="color:var(--smoke)">' + (ing.qty||'') + ' ' + escHtml(ing.unit||'') + '</span>'
+        + '</div>';
+    });
+    html += '</div>';
+  }
+
+  // Method
+  if (r.method) {
+    html += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--smoke);margin-bottom:.4rem">Method</div>';
+    html += '<div style="font-size:.85rem;line-height:1.6;white-space:pre-line;margin-bottom:1rem">' + escHtml(r.method) + '</div>';
+  }
+
+  // Notes
+  if (r.notes) {
+    html += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--smoke);margin-bottom:.4rem">Chef Notes</div>';
+    html += '<div style="font-size:.82rem;line-height:1.55;color:var(--t2);white-space:pre-line;margin-bottom:.8rem">' + escHtml(r.notes) + '</div>';
+  }
+
+  // Waste
+  if (r.wasteNotes) {
+    html += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--smoke);margin-bottom:.3rem">Zero Waste</div>';
+    html += '<div style="font-size:.82rem;color:var(--moss)">' + escHtml(r.wasteNotes) + '</div>';
+  }
+
+  document.getElementById('brief-output-content').innerHTML = html;
+}
+
+function saveBriefRecipe() {
+  if (!_briefRecipeData) return;
+  recipes.push(_briefRecipeData);
+  try { localStorage.setItem('cultivate_recipes_v1', JSON.stringify(recipes)); } catch(e) {}
+  document.getElementById('brief-status').textContent = '✓ Saved to Recipe Manager.';
+  document.getElementById('brief-save-row').style.display = 'none';
+  setTimeout(function() { showPage('recipes'); }, 800);
+}
+
+async function refineBriefRecipe() {
+  var current = document.getElementById('brief-input').value || '';
+  var refinement = prompt('What would you like to refine or change?');
+  if (!refinement) return;
+  document.getElementById('brief-input').value = current + '\n\nREFINEMENT: ' + refinement;
+  await generateBriefRecipe();
+}
+
+// ── END RECIPE BRIEF INTERPRETER ─────────────────────────────────
 
 function openNewRecipe() {
   if(!document.getElementById('page-recipes').classList.contains('active')) showPage('recipes');
