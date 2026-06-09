@@ -7144,7 +7144,7 @@ function renderRecipes() {
 
   if(section === 'production') {
     indexed = indexed.filter(function(x){
-      return x.r.section==='production' || (!x.r.section && !x.r.outlet && x.r.cat!=='Fermentation' && (x.r.cat==='Production'||x.r.cat==='Staff Meal'||!x.r.cat));
+      return x.r.section==='production' || (!x.r.section && !x.r.outlet && x.r.section!=='fermentation' && x.r.section!=='pastry' && x.r.cat!=='Fermentation' && x.r.cat!=='Pastry');
     });
   } else if(section === 'pastry') {
     indexed = indexed.filter(function(x){
