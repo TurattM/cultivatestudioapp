@@ -758,6 +758,8 @@ select.fi{cursor:pointer}
 .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-top:.75rem}
 .kpi-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.7rem;text-align:center}
 .kpi-label{font-size:.84rem;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem}
+.rnd-card{cursor:pointer;background:var(--oat);border:1px solid var(--sand);border-radius:8px;padding:1rem;transition:box-shadow .2s}
+.rnd-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
 
 /* ── MENU INTEL ──────────────────────────────────────────────*/
 .intel-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:1rem;box-shadow:var(--shadow-xs)}
@@ -13437,6 +13439,7 @@ function usePLDataInModule(moduleId) {
     <div style="display:flex;gap:.6rem;align-items:center">
       <button class="btn-p" onclick="showRndForm('ingredient')" style="font-size:.82rem">+ Ingredient Project</button>
       <button class="btn-p" onclick="showRndForm('recipe')" style="font-size:.82rem;background:var(--terracotta);border-color:var(--terracotta)">+ Recipe Project</button>
+      <button onclick="clearAllRndProjects()" style="font-size:.78rem;font-family:var(--fm);letter-spacing:.1em;text-transform:uppercase;color:var(--t4);background:none;border:1px solid var(--sand);border-radius:4px;padding:.4rem .8rem;cursor:pointer" title="Clear all R&D projects">Clear All</button>
     </div>
   </div>
 
@@ -17958,76 +17961,320 @@ function createRndProject(){
 window.createRndProject = createRndProject;
 
 function buildRndSystemPrompt(){
-  return `You are the Cultivate Studio R&D Intelligence Engine — built for Executive Chef Marco Turatti and his culinary research team at InterContinental Phuket Resort and Cultivate Studio consultancy.
-
-Your role is to develop rigorous, scientifically grounded, and creatively ambitious culinary development frameworks for ingredients and recipes. You draw on:
-
-EMBEDDED KNOWLEDGE BASE:
-- Fermentation science: garum, miso, koji, lacto-fermentation, vinegar, amino pastes, black garlic, tepache, kvass, fish sauce, shrubs
-- Fire and smoke: live fire roasting, charcoal types, Binchotan, smoke infusion, ash techniques, pit roasting, ember cooking
-- Japanese culinary science: dashi systems, umami layering, kaiseki structure, katsuobushi, kombu, mirin chemistry, sake in cooking
-- Italian culinary craft: pasta science, risotto technique, emulsification, aged cheese, cured meats, acidity balance
-- Flavour matrix intelligence: tension between sweet/acid/bitter/umami/fat, textural contrast, temperature play
-- SE Asian pantry: galangal, lemongrass, kaffir, makrut, pandan, betel leaf, torch ginger, banana blossom, fresh turmeric, long pepper
-- Pastry science: lamination, caramel chemistry, gelification, aeration, emulsification, fermented dairy, sourdough pastry
-- Sustainability: zero-waste, consume-to-conserve, invasive species, nose-to-tail, root-to-tip
-- Creative Frontier: the bridge between familiar and unknown — 4 bridges: cultural recontextualisation, technique transfer, ingredient substitution, format disruption
-
-RESEARCH APPROACH:
-- Apply deep technique science — temperatures, pH, Aw, enzyme activity, Maillard reaction, gelatinisation
-- Reference real chefs and restaurants doing pioneering work in the relevant area (Noma, Fäviken, Kjolle, Septime, Florilege, Den, Narisawa, Sühring, Bo.lan, Paste, Saawan, Nahm)
-- Draw connections across cuisines and techniques
-- Think in terms of what is possible, not just what is conventional
-- Always consider waste use, sustainability angle, and local sourcing opportunities
-- Respond in structured, professional culinary language — peer-to-peer, Executive Chef level
-
-OUTPUT FORMAT:
-Always respond in clean HTML using inline styles compatible with the app's CSS variables:
---oat, --sand, --smoke, --terracotta, --sage, --t, --t3, --t4, var(--fd) for Cormorant Garamond, var(--fm) for spaced caps font`;
+  return [
+    'You are the Cultivate Studio R&D Intelligence Engine — a culinary research system built for Executive Chef Marco Turatti and his R&D team at InterContinental Phuket Resort.',
+    '',
+    'IDENTITY: You are a researcher, not a chef. You think in hypotheses, controlled variables, failure modes, and iteration logic — not recipes.',
+    'The audience is technically literate. Never simplify. Peer-to-peer. Executive Chef level.',
+    '',
+    'RESEARCHER MINDSET:',
+    '- Every project begins with a hypothesis: what you expect to happen and the scientific basis for that expectation',
+    '- Define a control before any variation. Isolate one variable at a time. Never change two things simultaneously.',
+    '- Define success criteria before testing, not after',
+    '- Document failure as rigorously as success — a failed test is data',
+    '- Think in time: 24h, 48h, 72h, 1 week, 1 month',
+    '- Think in conditions: pH, temperature, salinity, humidity, Aw, oxygen exposure',
+    '',
+    'SCIENTIFIC FRAMEWORKS:',
+    '- Enzyme kinetics: Aspergillus proteases peak at 55-60C, deactivate above 70C. Amylases dominant above 35C.',
+    '- Water activity (Aw): ferments 0.93-0.97, cured products below 0.85. Controls microbial growth and texture.',
+    '- pH dynamics: LAB drive pH from 6.5 toward 3.5-4.0. pH below 4.5 + salt above 10% = safe against pathogens.',
+    '- Maillard reaction: onset 140C, accelerates above 150C. Requires low moisture + reducing sugars + free amino acids.',
+    '- Polarity principle: water extracts polar compounds (salt, acid, umami, sugar). Fat extracts nonpolar (volatile aromatics). Alcohol dissolves both.',
+    '- Osmotic pressure: every 1% salt shift matters. Non-iodized salt only.',
+    '- Gas exchange: CO2 = fermentation activity. Anaerobic = lacto. Aerobic = acetobacter.',
+    '',
+    'FERMENTATION SCIENCE:',
+    '- LAB (Lactic Acid Bacteria): sugar to lactic acid. Anaerobic, halo-tolerant. Target: lacto-ferments at 2% salt.',
+    '- AAB (Acetic Acid Bacteria): alcohol to acetic acid. Aerobic. Target: vinegars, kombucha.',
+    '- Koji (Aspergillus oryzae): proteases (protein to amino acids = umami) + amylases (starch to sugar = sweetness). Growth at 30C/86F.',
+    '- Garum protocol: 12% salt, 60C, 10-12 weeks. Skim fat weekly. A.sojae preferred for higher protease/umami.',
+    '- Koji ratios: Amazake 1:2:1 (koji:water:starch). Shio koji 1:1 + 5% salt. Amino paste short 1:1 + 5% salt. Amino paste long 1:2 + 13% salt.',
+    '- Salt table: lacto veg 2%, shio koji 5%, amino paste 5-13%, garum 12-13%, miso 12%, shoyu moromi 15-16%.',
+    '',
+    'FLAVOUR SCIENCE:',
+    '- Four Rules (Patterson): similar needs contrast; contrasting needs a bridge; heavy needs a lift; light needs grounding.',
+    '- Seven Dials: salt, sweet, sour, bitter, umami, fat, heat — refinement levers after construction.',
+    '- Locking: correct ratio of correct combination creates unified transcendent flavour.',
+    '- Burying: high-intensity ingredients (fish sauce, rosemary, cinnamon) support rather than dominate.',
+    '- Noma 10 Principles: polarity governs extraction; speed of cooling = flavour preservation; preservation = transformation; fat elongates, water punctuates.',
+    '- Ingredient characterisation: character, shape (foreground/background/bridge), texture, intensity, facets.',
+    '',
+    'REFERENCE CHEFS & RESTAURANTS:',
+    'Noma (fermentation, foraging, Nordic), Narisawa (satoyama cuisine, Japan), Suhring (modern German, Bangkok), Bo.lan (Thai fermentation), Paste (Thai heritage), Saawan (vegetable-forward Thai), Kjolle (Peruvian altitude ingredients), Florilege (Japan, ingredient science), Den (Tokyo, playful precision), Alicia Foundation (food science research, Spain).',
+    '',
+    'RESEARCH OUTPUT STRUCTURE — always produce these 10 sections:',
+    '1. Research Hypothesis',
+    '2. Scientific Opportunity Analysis',
+    '3. Control & Variable Map',
+    '4. Phased Testing Protocol (Phase 1: Baseline, Phase 2: Variables, Phase 3: Optimisation, Phase 4: Reproducibility)',
+    '5. Measurement Criteria (sensory + measurable benchmarks)',
+    '6. Failure Mode Analysis',
+    '7. Compound & Flavour Science',
+    '8. Iteration Decision Tree',
+    '9. Waste & By-product Research',
+    '10. Reference Literature & Pioneer Work',
+    '',
+    'FORMAT: Respond in clean HTML with inline styles. Use <strong> for section headers. Precise. No romanticisation. Exact measurements not approximations.'
+  ].join('\n');
 }
 
+
 function buildRndFrameworkPrompt(p){
-  var typeLabel = p.type === 'ingredient' ? 'INGREDIENT DEVELOPMENT PROJECT' : 'RECIPE DEVELOPMENT PROJECT';
-  return `${typeLabel}
+  var typeLabel = p.type === 'ingredient' ? 'INGREDIENT RESEARCH PROJECT' : 'RECIPE RESEARCH PROJECT';
+  return typeLabel + '\n\n' +
+    'PROJECT NAME: ' + p.name + '\n' +
+    'RESEARCH LEAD: ' + p.chef + '\n' +
+    'TYPE: ' + (p.type === 'ingredient' ? 'Single Ingredient — Compound & Technique Research' : 'Recipe Development — Multi-variable Culinary Research') + '\n' +
+    'TECHNIQUE DIRECTION: ' + (p.technique || 'Open — determine through literature and science') + '\n' +
+    'CUISINE CONTEXT: ' + (p.cuisine || 'Open') + '\n' +
+    'TARGET FORMAT: ' + (p.format || 'Open') + '\n\n' +
+    'RESEARCHER\'S BRIEF:\n' + p.idea + '\n\n' +
+    '---\n\n' +
+    'Generate a full research and development framework for this project. Structure it as a working research document using the following architecture:\n\n' +
 
-PROJECT NAME: ${p.name}
-LED BY: ${p.chef}
-TYPE: ${p.type === 'ingredient' ? 'Single Ingredient Development' : 'Full Recipe Development'}
-TECHNIQUE DIRECTION: ${p.technique || 'Open — AI to determine best approach'}
-CUISINE CONTEXT: ${p.cuisine || 'Open'}
-TARGET FORMAT: ${p.format || 'Open'}
+    '1. RESEARCH HYPOTHESIS\n' +
+    'State the central hypothesis in one sentence. What do you expect to happen, and what is the scientific basis for that expectation? Reference specific mechanisms (enzymatic, chemical, physical).\n\n' +
 
-CHEF'S CONCEPT:
-${p.idea}
+    '2. SCIENTIFIC OPPORTUNITY ANALYSIS\n' +
+    'What is the underlying science that makes this worth investigating? What compounds, reactions, or transformations are at play? What does existing literature (including embedded books) tell us about this territory? What remains unexplored or undocumented?\n\n' +
 
----
+    '3. CONTROL & VARIABLE MAP\n' +
+    'Define the control condition (baseline). List all independent variables to test. List all dependent variables to measure. List all fixed constants that must not change between tests. Include: temperature ranges, salt %, pH targets, time intervals, humidity, oxygen exposure, substrate ratios.\n\n' +
 
-Please develop a comprehensive R&D framework for this project. Structure your response as follows:
+    '4. TESTING PROTOCOL — PHASED\n' +
+    'Phase 1 — Baseline Establishment: exact parameters, expected sensory and measurable outcomes\n' +
+    'Phase 2 — Variable Introduction: one change per test, document what changes and why\n' +
+    'Phase 3 — Optimisation: narrowing toward the optimal condition based on Phase 2 data\n' +
+    'Phase 4 — Stability & Reproducibility: confirm the result holds across multiple runs\n' +
+    'For each phase: exact weights, temperatures, times, and measurement points.\n\n' +
 
-<div style="font-family:var(--fd);font-size:1.4rem;font-weight:300;color:var(--t);letter-spacing:.03em;margin-bottom:1.2rem">${p.name} — Development Framework</div>
+    '5. MEASUREMENT CRITERIA\n' +
+    'What does success look like at each phase? Define sensory benchmarks (aroma, texture, taste, colour) AND measurable benchmarks (pH, Aw, weight loss, yield %). What instruments or tools are needed?\n\n' +
 
-1. **OPPORTUNITY ANALYSIS** — What makes this ingredient/concept compelling? What gap or tension does it address? Reference any chefs or restaurants pioneering this direction.
+    '6. FAILURE MODE ANALYSIS\n' +
+    'What are the likely failure modes? For each: cause, early warning signs in the data, and corrective action. Include both microbial safety failures and quality failures.\n\n' +
 
-2. **TECHNIQUE ARCHITECTURE** — The primary and secondary techniques recommended. For each technique: the science behind it, key parameters (temperature, time, pH, ratios), expected transformations, and risk points.
+    '7. COMPOUND & FLAVOUR SCIENCE\n' +
+    'What specific compounds are being developed, preserved, or transformed? Reference known chemistry: Maillard products, glutamate development, volatile aromatic compounds, lactic acid curves, enzyme activity windows. Apply Patterson polarity principle and Noma extraction theory where relevant.\n\n' +
 
-3. **FLAVOUR DEVELOPMENT ROADMAP** — How the flavour profile should evolve across development phases. What to chase, what to avoid, sensory benchmarks.
+    '8. ITERATION DECISION TREE\n' +
+    'How should the researcher read results and decide what to adjust next? Provide a clear logic: if X then try Y, if Z then investigate W. This should allow the R&D team to continue developing without needing AI guidance at every step.\n\n' +
 
-4. **TESTING PROTOCOL** — A structured sequence of tests to run. Phase 1 (baseline), Phase 2 (technique application), Phase 3 (refinement). For each phase: specific tests, variables to control, what success looks like.
+    '9. WASTE & BY-PRODUCT RESEARCH\n' +
+    'What by-products does this process generate? What research potential do they hold? Apply zero-waste principle: every by-product is a research opportunity.\n\n' +
 
-5. **INGREDIENT INTERACTIONS** — If this is a recipe: key ingredient pairings, tension points, what supports and what fights the primary flavour. If single ingredient: how it behaves with different fats, acids, heat, and umami sources.
+    '10. REFERENCE LITERATURE & PIONEER WORK\n' +
+    'Who has worked in this territory? What have they documented? What remains unpublished or undocumented that this project could contribute to? Use web search to find the most current relevant work.\n\n' +
 
-6. **WASTE & SUSTAINABILITY** — How to use the full ingredient. Any trimmings, by-products, or fermentation substrates.
+    'Use web search to find the latest peer-reviewed research, documented chef experiments, and scientific papers relevant to this specific investigation. Cite sources.';
+}
 
-7. **PLATING DIRECTION** (if recipe) — Texture contrast targets, temperature play, visual language, portion logic.
 
-8. **REFERENCE POINTS** — Real dishes, chefs, or restaurants working in this space. What has been done, what remains unexplored.
+function getCultivateBookKnowledge(){
+  return `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CULINARY KNOWLEDGE LAYER — BOOK LEARNING (June 2026)
+Source: "The Art of Flavor" (Patterson & Aftel) + "Koji Alchemy" (Umansky & Shih)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Use the web search tool to find the most current culinary research, chef techniques, and restaurant references relevant to this project.`;
+THE ART OF FLAVOR — CORE FRAMEWORKS:
+
+FOUR RULES OF FLAVOR (apply when advising on dish construction or menu development):
+1. Similar ingredients need a contrasting flavor — comfort combinations become bland without counterpoint. Acid, bitterness, or sharp aromatics rescue monotony.
+2. Contrasting ingredients need a unifying flavor — disparate elements need a bridge: a shared aromatic, fat, or acid that links them.
+3. Heavy flavors need a lifting note — rich, dense, fatty preparations need brightness to prevent collapse. Acid (lemon, vinegar, citrus zest) is the classic lifter.
+4. Light flavors need to be grounded — delicate ingredients need a base: fat, umami, earthy spice. Without grounding, they disappear.
+
+FLAVOR COMPASS — Aromatic families:
+• SPICES: Sweet (anise, nutmeg, allspice — warmth/richness), Sharp (pepper — elevates), Fresh (ginger, lemongrass — retain brightness), Earthy (saffron, cumin — anchor/deepen)
+• HERBS: Sweet herbs (chervil, dill, parsley — brightness, best fresh), Savory herbs (thyme, rosemary — require heat to mellow)
+• CITRUS: Brightness, bridging agent, cuts richness, alters perception of both spices and herbs
+• FLOWERS: Smooth sharp tastes, floral depth as undertone or foreground
+
+LOCKING AND BURYING:
+• Locking — right ingredients in right proportions create transcendent unified flavor. Proportion is critical: locking = correct ratio of correct combination.
+• Burying — deliberately managing high-intensity ingredients so they support rather than dominate. Strong elements (fish sauce, rosemary, cinnamon, chili) should remain mildly present as background seasoning, never foreground. Intentional burying is never total.
+
+SEVEN DIALS — Refinement levers (apply after construction):
+Salt: draws out flavor, amplifies sweetness and acidity | Sweet: bridges and balances, use judiciously | Sour: brightens, energizes, cuts richness | Bitter: complexity, use sparingly | Umami: savory depth, amplifies without overwhelming | Fat: mouthfeel carrier, flavor amplifier | Heat/spice: complexity, energy, cuts richness
+
+INGREDIENT CHARACTERIZATION SYSTEM:
+• Character — dominant personality (bright, earthy, floral, sharp, rich)
+• Shape — how it sits in a dish (foreground, background, bridge)
+• Texture — physical presence (crunchy, silky, grainy, yielding)
+• Intensity — how powerful, can it dominate or does it need support?
+• Facets — nuances within it (a lemon has sour, floral, bitter, and bright facets)
+
+COOKING SPECTRUM: Raw (maximum integrity, variable) → Soft-cooking (sweating/boiling/steaming, preserves innate qualities) → Hard-cooking (sautéing/roasting/grilling, Maillard creates new compounds)
+
+PHILOSOPHICAL CORE (Patterson): Flavor is composable. Every choice constrains subsequent choices. Too much harmony breeds boredom — counterpoint is required. Balance is relative to ingredient character. Mastery of rules leads to freedom from rules.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+KOJI ALCHEMY — OPERATIONAL KNOWLEDGE:
+
+WHAT KOJI DOES: Aspergillus oryzae produces two enzyme families:
+• Proteases → break proteins into amino acids → UMAMI
+• Amylases → convert starches to simple sugars → SWEETNESS + fermentation fuel
+Temperature controls which dominates: 95–105°F (35–40°C) = amylase dominant (sweetness); below 95°F (35°C) = protease dominant (umami)
+
+KOJI TERMINOLOGY:
+• Shio Koji — koji + water + 5% salt, ready 1 week. Quick umami marinade.
+• Amazake — koji + cooked starch + water. Sweet, no salt — chef controls sodium.
+• Amino Paste — koji + protein + salt, fermented to paste. Short-term (2wks–3mo, 5% salt); Long-term (6–12mo, 13% salt).
+• Amino Sauce — koji + protein + higher water, fermented to liquid. 12 months, 13% salt.
+• Kojizuke — koji-based pickling medium for vegetables.
+• Autolysis — enzymatic self-breakdown for flavor enhancement.
+
+QUICK RATIOS (per unit of koji):
+Amazake: 1 koji : 2 water : 1 starch | Shio Koji: 1 koji : 1 water : 5% salt | Amino Paste short: 1 koji : 1 protein : 5% salt | Amino Paste long: 1 koji : 2 protein : 13% salt | Amino Sauce: 1 koji : 2 water : 1 protein : 13% salt
+
+KOJI APPLICATIONS IN THE KITCHEN:
+• Meat aging — koji proteases externally replicate enzymatic aging. Near 100% yield vs 15–30% loss in traditional dry-aging. Leave koji crust on during cooking for superior Maillard browning.
+• Dairy — koji enzymes applied to dairy achieve aged cheese flavor in 2 months vs 10+ months traditional. Amazake-cultured cream resists curdling.
+• Vegetables — kojizuke enhances pickling by developing sugars and umami. Use sparingly — too much koji softens texture. Root veg: 3–5 days; tender veg: hours only.
+• Sweet applications — long-grain rice koji at 95°F reaches peak sweetness at 48 hours. Flavor profile similar to ripe pear. Use in custards, caramel, cultured butter, fruit transformation.
+• Amino sauces from food waste — fish scraps, meat bones, vegetable peels, bread crusts all viable substrates. Zero-waste principle: no such thing as a by-product, only another product.
+• Vegetable charcuterie — salt cure + koji inoculation on beets, carrots, squash, mushrooms creates meat-like texture and concentrated umami.
+
+GROWING KOJI — four critical conditions:
+1. Microbially clean slate — cook/steam substrate before inoculation
+2. Temperature management — 86–95°F for growth, mix regularly to dissipate heat
+3. Humidity — damp not wet
+4. Accessible starch with structure — polished grains, break post-cooking for nutrient access
+
+KOJI PHILOSOPHY (Umansky): Koji is not a flavor — it is a transformation system. What koji produces depends entirely on the substrate. Waste is a conceptual error. Every fermentation by-product is another product. Koji connects terroir to fermentation identity — a miso made in Southern Thailand using local proteins and koji will have a flavor no paste made elsewhere can replicate.
+
+SYNTHESIS — HOW BOTH BOOKS CONNECT TO CULTIVATE STUDIO:
+• Patterson's Four Rules + Koji's enzymatic logic = complete flavor architecture system
+• Umami Seven Dial → amino paste/sauce as the umami source tool
+• Burying high-intensity flavors → shio koji as a buried umami layer in marinades
+• Light flavors need grounding → amazake or amino paste as the ground for delicate ingredients
+• Locking = right proportions → koji ratios govern flavor locking in fermented products
+• Fermentation as flavor technique (Patterson) → koji fermentation as the complete fermentation system (Umansky)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NOMA GUIDE TO BUILDING FLAVOUR — CORE KNOWLEDGE
+Source: René Redzepi & The Noma Test Kitchen (Full Original Book, 779pp)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FLAVOUR SCIENCE FOUNDATION:
+Flavour = taste + aroma, intrinsically linked. Five tastes (salt/sweet/sour/bitter/umami) operate in the mouth via taste receptors. Aroma operates via ~400 olfactory receptors, retronasal — molecules travel up through the nasal cavity when chewing. The olfactory bulb processes up to 10,000 distinct aromas. Five tastes alone ≠ flavour. Flavour = taste × aroma.
+
+THE POLARITY PRINCIPLE (Noma's foundational extraction theory):
+"Like dissolves like." Every extraction decision flows from molecular polarity:
+• POLAR (water-loving): salt, acid, umami, sugar, miso, soy, vinegar → extract with water-based liquids
+• NONPOLAR (fat-loving): volatile aroma compounds — toasted nuts, fresh herbs, rose, pine, wood bark → extract with oil, butter, cream
+• Alcohol and vinegar dissolve BOTH polar and nonpolar molecules — most versatile extractants
+• Fat doesn't just add richness — it unlocks flavours water cannot reach. Fat holds scent, stretches aroma in time, makes it linger.
+• Steep seaweed in water → umami (polar). Infuse seaweed in oil → aromatic oceanic complexity (nonpolar). Same ingredient, different dimension.
+
+NOMA MOTHER FLAVOURS — identity ingredient system (persistent across 20+ years):
+• BLACK CURRANT (whole plant): unripe berries → salt-packed tangy capers; ripe berry → pickles/reductions; young wood/branches → Black Currant Wood Oil (Noma's "olive oil" — green, herbaceous, fruity, pine resin, floral); shoots/buds → pickled for winter
+• ROSE (beach rose, Rosa rugosa): quick-grilled over open fire → beyond natural aroma; infused into vinegar; ground into salt; blended into oil (finishing oil — potent)
+• PINE (Douglas fir, Noble fir): young cones → "Pine Cone Olives" (pickled); shoots → fresh/pickled for terpene; bark → smoking medium; Douglas Fir Oil via vacuum steam infusion
+• ELDERFLOWER: peak season only — Elderflower Vinegar, Elderflower Oil, Elderflower Syrup (used as savoury seasoning element)
+• KELP/SEAWEED: raw in water → glutamate-rich dashi; roasted then water → deeper Maillard-inflected umami; in oil → aromatic oceanic extraction; crystallized after reduction → Noma Umami Salt (signature finishing salt)
+
+NOMA SALT PHILOSOPHY:
+Salt shapes, not just seasons. "When the right salt meets the right dish, 1+1=3."
+• BLENDED SALTS: ground with flavouring ingredients — Pine Salt, Elderflower Salt, Yuzu Salt, Ant Salt, Rose Petal Salt
+• REDUCED SALTS: flavoured liquid (dashi, broth, juice) reduced to crystallization in dehydrator — Noble Fir Salt, Noma Umami Salt, Noma Roasted Umami Salt, Saffron Kelp Salt
+• NOMA UMAMI SALT: built on kelp (naturally glutamate-rich). Roasted version = richness + umami for meat/veg. Sweet version = lifts chocolate and fruit. "Ordinary salt enhances — Noma salt finishes."
+• Timing is everything: fish/meat benefits from early salting; broths/sauces need salt only at finish.
+
+NOMA PICKLING & PRESERVATION SYSTEM:
+Preservation = flavour transformation, not just shelf life. Time in vinegar creates depth, tension, memory impossible to achieve with fresh only.
+• COLD PICKLING: vinegar only, no heat. For soft/fragrant items (flowers, delicate herbs). Pure, bracing.
+• HOT PICKLING: 3 parts vinegar : 2 parts water (or dashi) : 1 part sugar. Complex with flowers, herbs, spices, dried mushrooms.
+• Blending into vinegar: vibrant but risks oxidation — make right before service or keep on ice
+• Key outcome: pickled item + flavoured vinegar as bonus product (for dressings, ceviche, finishing)
+
+NOMA OIL & FAT SYSTEM:
+• VACUUM STEAM INFUSION: 60°C/140°F, 100% fan, minimum 4 hours to overnight — gentle, non-oxidative
+• HERB OIL BLENDING: max speed 7 minutes, immediate ice bath — preserves colour and volatile aromas
+• BLACK CURRANT WOOD OIL: 1kg young branches + 2kg neutral oil, vacuum 60°C 4h+, overnight infuse, strain over ice
+• BROWN BUTTER EMULSION (Noma hollandaise): 300g brown butter + 4 soft-boiled whole eggs + 100g water + 80g lemon juice — uses whole egg not just yolk
+• FUDGE SYSTEM (proprietary): butter + water reduction + infused oil = flavour carrier with body and elongated finish. Black Currant Wood Fudge: 35g butter + 20g Peaso Reduction + 15g BC Wood Oil + 10g Cucumber Reduction
+
+NOMA BROTH ARCHITECTURE:
+• ROASTED KELP DASHI: 23g roasted kelp + 1kg filtered water — base for umami salts, sauces, broth finishing
+• SELF-CLARIFYING SEAFOOD BROTH: blend raw shellfish + water → vacuum seal → steam 90°C → protein coagulates into raft → press through cloth = crystal-clear intensely flavoured consommé. No outside proteins — shellfish protein does all clarification work.
+• PINE DASHI: pine shoots infused in kelp dashi base — forest/terpene character in broth
+• FREEZE-THAW JUICING: freeze ingredient in vacuum bag, thaw at room temp → cellulase enzymes activate, break cell walls → flavourful slightly viscous juice. Best for rhubarb, quince, potato.
+
+NOMA'S 10 PRINCIPLES OF FLAVOUR BUILDING:
+1. POLARITY governs all extraction — fat for aroma compounds, water for taste compounds
+2. SPEED OF COOLING = flavour preservation — all infused oils and herb extracts hit ice immediately
+3. PRESERVATION = TRANSFORMATION — vinegar/salt/fat/sugar changes flavour character fundamentally, not just extends it
+4. DESIGNED SALTS = FLAVOUR ARCHITECTURE — salt is not neutral; the right salt finishes a dish
+5. DRYING TRANSFORMS — reveals qualities hidden when fresh; dried = different flavour register, not lesser
+6. FERMENTATION AS INVISIBLE SEASONING — garum/amino sauce/shio koji used as invisible depth layer, not identifiable ferment flavour
+7. FAT ELONGATES, WATER PUNCTUATES — use fat where flavour should linger; use acid/water where it should hit bright and exit
+8. BROTH AS PRECISION INSTRUMENT — each Noma broth is a named, specific product with defined flavour purpose
+9. WHOLE-INGREDIENT UTILIZATION — every part of source plant deployed: black currant (unripe berry, ripe berry, shoot, bud, branch), rose (petal, hip, stem), pine (shoot, needle, cone, bark)
+10. THE DEEP LARDER (Gastronomique) — most complex finishing elements live in the background: ant honey, candied tree sap, mushroom garum, Dashi RDX — these are the things that make a dish irreducible
+
+NOMA DRYING PHILOSOPHY:
+"Drying transforms. It shifts how flavour presents itself. It softens some edges, deepens others, and reveals qualities you don't get when ingredients are fresh." Dried ingredients act as connective tissue — linking dish elements into something cohesive. Pumpkin Bushi = pumpkin dried bushi-style → deep, smoky, elegant umami multiplier.
+
+NOMA SPICE MIX SYSTEM (Nordic, not classical trade-route spices):
+Danish Curry Powder, Marigold Spice Mix, Mustard Seed Spice Mix, Mushroom Spice Mix, Roseroot Spice Mix, Berry Spice Mix, Gooseberry Pumpkin Spice Mix, Woodruff & Japanese Quince Za'atar — all built from foraged/regional Nordic ingredients
+
+CROSS-REFERENCE WITH EXISTING BRAIN KNOWLEDGE:
+• Koji enzyme mechanisms + Noma polarity principle = complete extraction decision tree: enzymatic breakdown for taste compounds (water-polar) + fat extraction for aromatic compounds (nonpolar)
+• Marco's Mussel Garum (existing brain) + Noma Self-Clarifying Broth system = complementary: garum as invisible seasoning, self-clarified broth as clean flavour base
+• Patterson's Four Rules (existing brain) + Noma's fat/water duality = operational execution framework: Rule 3 (heavy needs lift) → always acid-based (water/polar); Rule 4 (light needs grounding) → always fat-based (oil/butter/nonpolar)
+• Koji temperature logic (existing brain) matches Noma’s 60°C infusion protocol — both protect volatile compounds from heat degradation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NOMA GUIDE TO FERMENTATION — COMPLETE SCIENCE LAYER
+Source: René Redzepi & David Zilber (Full Original Book, 450pp)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FERMENTATION SCIENCE FOUNDATION:
+Fermentation = transformation by microorganisms via enzymes. Starch and protein molecules too large for taste receptors become amino acids + simple sugars = more obviously delicious. Koji rice has sweetness plain rice lacks. Raw beef fermented into garum has savoriness that speaks on a primitive level.
+
+THREE MICROBIAL PLAYERS:
+• LAB (Lactic Acid Bacteria) — on skins of all fruits/vegetables. Convert sugar → lactic acid → sourness. Anaerobic, halo-tolerant. Used for: all lacto-ferments.
+• AAB (Acetic Acid Bacteria) — convert alcohol → acetic acid. Aerobic (need oxygen). Used for: vinegar, kombucha.
+• Aspergillus oryzae (koji) — proteases (proteins → amino acids → UMAMI) + amylases (starches → sugars → SWEETNESS). Growth: 30°C/86°F. Still enzyme-active at 60°C.
+• Aspergillus sojae — higher protease than A. oryzae → more glutamate → more umami. Preferred for garum and shoyu.
+
+SAFETY: pH below 4.5 + salt above 10% = safe against virtually all pathogens. 1% shift in salt = difference between great ferment and dangerous one. Always non-iodized salt. Water activity: salt binds water molecules → microbes cannot grow.
+
+SALT TABLE (baker’s % = % of main ingredient weight):
+Lacto veg: 2% | Shio Koji: ~5% | Amino paste short: 5% | Garum: 12-13% | Miso: ~12% | Shoyu moromi: 15-16%
+
+TEMPERATURE TABLE:
+Koji growth: 30°C/86°F, 44-48hrs | Lacto: room temp | Garum + black garlic: 60°C/140°F (enzymatic max + Maillard) | DIY: rice cooker/slow cooker keep-warm ≈ 60°C
+
+LACTO SYSTEM: 2% salt, vacuum bag, room temp. Brine: 40g salt/kg water. Fermented berry juice = body + effervescence + saltiness + sweetness + acidity simultaneously. Use as vinaigrette base or dressing for raw seafood.
+
+KOMBUCHA: SCOBY = yeast + AAB cooperative. Yeast → alcohol; AAB → acetic acid. Noma uses as sauce base, vinaigrettes, acid substitute in cold dishes. Harvest at correct sweetness-acid balance.
+
+VINEGAR: Two-stage. Quick method: aquarium air pump + bubbling stone + previous batch as AAB starter, 10-14 days. Spirit vinegars: dilute spirits to 5-7% ABV → AAB convert → vinegar retains spirit character. Target: 5-6% acidity.
+
+KOJI NOMA EXTENSIONS (beyond Koji Alchemy already in brain):
+Pearl Barley Koji = Noma standard (more complex than white rice). Lacto Koji Water: Pearl Barley Koji + water + 5% salt, vacuum bag, room temp 5-6 days → sweet-sour-savory liquid used everywhere. Koji Cure (Shio Koji): 400g koji + 400g water + 60g salt, 1 week → marinade that seasons/tenderizes/infuses simultaneously, deepens for weeks in fridge. Roasted Koji Mole: roast koji at 160°C until deep brown → blend with cream+milk → strain → hot chocolate-like sauce with umami complexity. Koji Stock: 500g dried koji + water, simmer 10 min, strain → versatile umami base.
+
+MISO/PEASO SUBSTRATE SUBSTITUTION: Any protein can become miso. Yellow peas → Peaso (Okasan miso equivalent). Rye → Ryeso (Hatcho miso equivalent). Dried corn nixtamalized → Maizo. Defatted hazelnut pulp → Hazelnut miso. Principle: every region makes miso from locally abundant protein. Peaso Water (yellow pea cooking liquid) = concentrated umami reduction base used throughout Noma kitchen.
+
+SHOYU: Koji grown directly on legume+wheat → moromi brine 15-16% salinity → 6-12+ months. A. sojae preferred: higher protease → richer umami. Yellow Pea Shoyu = Noma version. Coffee Shoyu reduced to glaze → lacquer for fish.`;
 }
 
 function callRndAPI(sys, userMsg, cb){
   var key = localStorage.getItem('cultivate_api_key') || '';
   if(!key){ cb('No API key configured', null); return; }
+
+  var knowledgeContext = 'CULTIVATE STUDIO — FULL CULINARY KNOWLEDGE BASE\n\nApply all of the following to your research framework:\n\n' + getCultivateBookKnowledge();
+
+  var messages = [
+    {role:'user', content: knowledgeContext},
+    {role:'assistant', content: 'Understood. I have absorbed the full Cultivate Studio culinary knowledge base — Art of Flavor, Koji Alchemy, Noma Building Flavour, and Noma Fermentation. I will apply all frameworks, ratios, science, and principles to this research project.'},
+    {role:'user', content: userMsg}
+  ];
+
   fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{
@@ -18040,36 +18287,111 @@ function callRndAPI(sys, userMsg, cb){
       model:'claude-sonnet-4-5',
       max_tokens: 4000,
       system: sys,
-      tools:[{"type":"web_search_20250305","name":"web_search"}],
-      messages:[{role:'user', content: userMsg}]
+      messages: messages
     })
   }).then(function(r){
-    if(!r.ok) return r.json().then(function(e){ throw new Error(JSON.stringify(e)); });
+    if(!r.ok) return r.json().then(function(e){ throw new Error(e.error && e.error.message ? e.error.message : JSON.stringify(e)); });
     return r.json();
   }).then(function(d){
     var txt = (d.content||[]).filter(function(c){ return c.type==='text'; }).map(function(c){ return c.text||''; }).join('');
-    if(!txt) throw new Error('Empty response');
+    if(!txt){
+      console.error('[RND API] Empty. stop_reason:', d.stop_reason, 'content:', JSON.stringify(d.content||[]).substring(0,300));
+      cb('Empty response — stop_reason: ' + d.stop_reason, null);
+      return;
+    }
     cb(null, txt);
-  }).catch(function(e){ cb(e.message||String(e), null); });
+  }).catch(function(e){
+    console.error('[RND API] Error:', e);
+    cb(e.message||String(e), null);
+  });
 }
 
+
 function addRndSession(id){
-  var note = document.getElementById('rnd-session-note-'+id);
-  if(!note || !note.value.trim()){ alert('Add your testing notes first.'); return; }
+  var noteEl = document.getElementById('rnd-session-note-'+id);
+  var statusEl = document.getElementById('rnd-session-status-'+id);
+  if(!noteEl || !noteEl.value.trim()){ alert('Add your testing notes first.'); return; }
+
   var projects = getRndProjects();
   var p = projects.find(function(x){ return x.id===id; });
   if(!p) return;
-  p.sessions.push({
+
+  var sessionNote = noteEl.value.trim();
+  var newStatus = statusEl ? statusEl.value : p.status;
+  var sessionNum = p.sessions.length + 1;
+
+  // Save session immediately
+  var session = {
     date: new Date().toISOString(),
-    note: note.value.trim(),
-    status: document.getElementById('rnd-session-status-'+id) ? document.getElementById('rnd-session-status-'+id).value : p.status
-  });
-  p.status = document.getElementById('rnd-session-status-'+id) ? document.getElementById('rnd-session-status-'+id).value : p.status;
+    note: sessionNote,
+    status: newStatus,
+    sessionNum: sessionNum,
+    aiAnalysis: null
+  };
+  p.sessions.push(session);
+  p.status = newStatus;
   saveRndProjects(projects);
-  note.value = '';
+  noteEl.value = '';
+
+  // Re-render immediately so chef sees the note saved
   openRndProject(id);
+
+  // Now run AI analysis on the new session
+  var analysisEl = document.getElementById('rnd-session-analysis-' + (sessionNum - 1));
+  if(analysisEl){
+    analysisEl.innerHTML = '<div style="color:var(--t4);font-size:.82rem;font-style:italic">AI is analysing your notes...</div>';
+  }
+
+  runRndSessionAnalysis(id, sessionNum - 1);
 }
 window.addRndSession = addRndSession;
+
+function runRndSessionAnalysis(projectId, sessionIndex){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===projectId; });
+  if(!p) return;
+
+  var session = p.sessions[sessionIndex];
+  if(!session) return;
+
+  // Build context: original framework + all previous sessions + new notes
+  var sessionHistory = '';
+  p.sessions.forEach(function(s, i){
+    sessionHistory += '\nSESSION ' + (i+1) + ' — ' + new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + ' — Stage: ' + s.status + '\n';
+    sessionHistory += 'Notes: ' + s.note + '\n';
+    if(s.aiAnalysis) sessionHistory += 'Previous AI Analysis: ' + s.aiAnalysis.replace(/<[^>]*>/g,'') + '\n';
+  });
+
+  var analysisPrompt = 'RESEARCH PROJECT: ' + p.name + '\n' +
+    'TYPE: ' + p.type + '\n' +
+    'ORIGINAL CONCEPT: ' + p.idea + '\n\n' +
+    'ORIGINAL FRAMEWORK SUMMARY:\n' + (p.framework || '').replace(/<[^>]*>/g,'').substring(0, 2000) + '\n\n' +
+    'FULL SESSION HISTORY:\n' + sessionHistory + '\n\n' +
+    'You are the R&D researcher reviewing Session ' + (sessionIndex+1) + ' notes above. ' +
+    'Analyse the results as a researcher would — read the data, identify what it tells you, what it confirms or contradicts from the framework hypothesis, what variables may be at play, and define precisely what should happen in the next session. ' +
+    'Structure your response as:\n' +
+    '1. DATA READING — what the session notes tell us scientifically\n' +
+    '2. HYPOTHESIS STATUS — confirmed / partially confirmed / contradicted / inconclusive, and why\n' +
+    '3. VARIABLES IDENTIFIED — what factors appear to be influencing the result\n' +
+    '4. NEXT SESSION PROTOCOL — exactly what to test next, with parameters (temp, time, ratio, pH target, etc.)\n' +
+    '5. WATCH POINTS — what to observe and measure in the next session\n\n' +
+    'Be precise. No speculation without data basis. If the notes are insufficient to draw conclusions, say so and specify what data is missing.';
+
+  callRndAPI(buildRndSystemPrompt(), analysisPrompt, function(err, txt){
+    var projects2 = getRndProjects();
+    var p2 = projects2.find(function(x){ return x.id===projectId; });
+    if(!p2) return;
+
+    if(!err && txt){
+      p2.sessions[sessionIndex].aiAnalysis = txt;
+      saveRndProjects(projects2);
+    }
+
+    // Re-render to show the analysis — small delay to ensure save completed
+    setTimeout(function(){ openRndProject(projectId); }, 100);
+  });
+}
+window.runRndSessionAnalysis = runRndSessionAnalysis;
 
 function approveRndProject(id){
   var projects = getRndProjects();
@@ -18138,6 +18460,16 @@ function injectRndToRecipes(p){
   } catch(e){}
 }
 
+function clearAllRndProjects(){
+  if(!confirm('Clear ALL R&D projects? This will permanently delete every project, framework, and testing log. This cannot be undone.')) return;
+  localStorage.removeItem(RND_KEY);
+  document.getElementById('rnd-detail').style.display = 'none';
+  document.getElementById('rnd-form').style.display = 'none';
+  renderRndList();
+  showToast('R&D Lab cleared');
+}
+window.clearAllRndProjects = clearAllRndProjects;
+
 function deleteRndProject(id){
   if(!confirm('Delete this R&D project? This cannot be undone.')) return;
   var projects = getRndProjects().filter(function(p){ return p.id !== id; });
@@ -18173,7 +18505,7 @@ function renderRndList(){
     html += '<div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin:.5rem 0 .6rem">'+pair[1]+'</div>';
     html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem">';
     list.forEach(function(p){
-      html += '<div onclick="openRndProject(''+p.id+'')" style="cursor:pointer;background:var(--oat);border:1px solid var(--sand);border-left:3px solid '+statusColor(p.status)+';border-radius:8px;padding:1rem;transition:box-shadow .2s" onmouseenter="this.style.boxShadow='0 4px 12px rgba(0,0,0,.08)'" onmouseleave="this.style.boxShadow='none'">';
+      html += '<div onclick="openRndProject(\''+p.id+'\')\" class="rnd-card">';
       html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.4rem">';
       html += '<div style="font-family:var(--fd);font-size:1.05rem;font-weight:400;color:var(--t)">'+escHtml(p.name)+'</div>';
       html += '<div style="font-family:var(--fm);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:white;background:'+statusColor(p.status)+';padding:.15rem .45rem;border-radius:3px;white-space:nowrap">'+p.type+'</div>';
@@ -18202,12 +18534,45 @@ function openRndProject(id){
 
   var sessionsHtml = '';
   if(p.sessions.length){
-    sessionsHtml = '<div style="margin-bottom:1.2rem">';
-    sessionsHtml += '<div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.8rem">Testing Log</div>';
-    p.sessions.slice().reverse().forEach(function(s, i){
-      sessionsHtml += '<div style="border-left:2px solid var(--sand);padding:.6rem 1rem;margin-bottom:.6rem">';
-      sessionsHtml += '<div style="font-size:.75rem;color:var(--t4);margin-bottom:.25rem">'+new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+'  ·  '+statusLabel(s.status)+'</div>';
-      sessionsHtml += '<div style="font-size:.88rem;color:var(--t);line-height:1.6;white-space:pre-wrap">'+escHtml(s.note)+'</div>';
+    sessionsHtml = '<div style="margin-bottom:1.4rem">';
+    sessionsHtml += '<div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:1rem">Research Log — ' + p.sessions.length + ' Session' + (p.sessions.length!==1?'s':'') + '</div>';
+
+    // Show sessions in chronological order (oldest first = natural research progression)
+    p.sessions.forEach(function(s, i){
+      var stageColor = statusColor(s.status);
+      var dateStr = new Date(s.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+      var timeStr = new Date(s.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+      sessionsHtml += '<div style="margin-bottom:1.4rem;border:1px solid var(--sand);border-left:3px solid '+stageColor+';border-radius:6px;overflow:hidden">';
+
+      // Session header
+      sessionsHtml += '<div style="background:var(--oat);padding:.6rem 1rem;display:flex;justify-content:space-between;align-items:center">';
+      sessionsHtml += '<div style="display:flex;align-items:center;gap:.8rem">';
+      sessionsHtml += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:white;background:'+stageColor+';padding:.2rem .55rem;border-radius:3px">Session ' + (i+1) + '</div>';
+      sessionsHtml += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:'+stageColor+'">'+statusLabel(s.status)+'</div>';
+      sessionsHtml += '</div>';
+      sessionsHtml += '<div style="font-size:.75rem;color:var(--t4)">' + dateStr + ' · ' + timeStr + '</div>';
+      sessionsHtml += '</div>';
+
+      // Chef notes
+      sessionsHtml += '<div style="padding:.8rem 1rem;border-bottom:1px solid var(--sand)">';
+      sessionsHtml += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--terracotta);margin-bottom:.4rem">Research Notes</div>';
+      sessionsHtml += '<div style="font-size:.87rem;color:var(--t);line-height:1.7;white-space:pre-wrap">'+escHtml(s.note)+'</div>';
+      sessionsHtml += '</div>';
+
+      // AI analysis
+      sessionsHtml += '<div style="padding:.8rem 1rem" id="rnd-session-analysis-'+i+'">';
+      if(s.aiAnalysis){
+        sessionsHtml += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sage);margin-bottom:.5rem">R&D Analysis</div>';
+        sessionsHtml += '<div style="font-size:.85rem;color:var(--t);line-height:1.7">'+s.aiAnalysis+'</div>';
+      } else {
+        sessionsHtml += '<div style="display:flex;align-items:center;gap:.8rem">';
+        sessionsHtml += '<div style="color:var(--t4);font-size:.82rem;font-style:italic">No analysis yet</div>';
+        sessionsHtml += '<button onclick="runRndSessionAnalysis(\''+p.id+'\','+i+')" style="font-size:.75rem;font-family:var(--fm);letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--sand);border-radius:3px;padding:.25rem .6rem;cursor:pointer;color:var(--t3)">Re-analyse</button>';
+        sessionsHtml += '</div>';
+      }
+      sessionsHtml += '</div>';
+
       sessionsHtml += '</div>';
     });
     sessionsHtml += '</div>';
@@ -18218,10 +18583,10 @@ function openRndProject(id){
     if(p.type==='recipe'){
       approvalHtml = '<div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">';
       approvalHtml += '<select id="rnd-allocate-select-'+p.id+'" class="fi" style="max-width:220px">'+outletOptions+'</select>';
-      approvalHtml += '<button class="btn-p" onclick="approveRndProject(''+p.id+'')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Recipes</button>';
+      approvalHtml += '<button class="btn-p" onclick="approveRndProject(\''+p.id+'\')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Recipes</button>';
       approvalHtml += '</div>';
     } else {
-      approvalHtml = '<button class="btn-p" onclick="approveRndProject(''+p.id+'')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Seasonality</button>';
+      approvalHtml = '<button class="btn-p" onclick="approveRndProject(\''+p.id+'\')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Seasonality</button>';
     }
   } else {
     approvalHtml = '<div style="color:#5a7a5a;font-size:.88rem">✅ Approved — sent to '+(p.type==='ingredient'?'Seasonality':'Recipe Manager ('+p.allocation+')')+'</div>';
@@ -18265,16 +18630,16 @@ function openRndProject(id){
     '<option value="testing">Testing</option>' +
     '<option value="concept">Back to Concept</option>' +
     '</select>' +
-    '<textarea class="fi" id="rnd-session-note-'+p.id+'" rows="4" placeholder="Document today's test — what you tried, temperatures, ratios, results, what worked, what failed, next steps..."></textarea>' +
+    '<textarea class="fi" id="rnd-session-note-'+p.id+'" rows="4" placeholder="Document today\'s test — what you tried, temperatures, ratios, results, what worked, what failed, next steps..."></textarea>' +
     '<div style="display:flex;gap:.6rem;margin-top:.6rem">' +
-    '<button class="btn-p" onclick="addRndSession(''+p.id+'')">Save Session Notes</button>' +
+    '<button class="btn-p" onclick="addRndSession(\''+p.id+'\')">Save Session Notes</button>' +
     '</div>' +
     '</div>' +
 
     // Approval
     '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem;padding-top:1rem;border-top:1px solid var(--sand)">' +
     approvalHtml +
-    '<button onclick="deleteRndProject(''+p.id+'')" style="font-size:.8rem;color:var(--t4);background:none;border:none;cursor:pointer;padding:.3rem">Delete project</button>' +
+    '<button onclick="deleteRndProject(\''+p.id+'\')" style="font-size:.8rem;color:var(--t4);background:none;border:none;cursor:pointer;padding:.3rem">Delete project</button>' +
     '</div>' +
 
     '</div>';
