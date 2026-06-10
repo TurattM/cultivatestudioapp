@@ -1341,7 +1341,7 @@ h1, h2 {
       <button class="sug" onclick="useSug(this)">How do I build a fermentation program using Nordic fermentation techniques?</button>
       <button class="sug" onclick="useSug(this)">What food cost should a luxury hotel target?</button>
     </div>
-    <div class="cin-wrap"><textarea class="cin" id="chat-in" rows="1" placeholder="Ask Cultivate AI anything..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea><button class="csend" id="send-btn" onclick="sendMsg()">Send</button></div>
+    <div class="cin-wrap"><textarea class="cin" id="chat-in" rows="1" placeholder="Ask Cultivate AI anything..." onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea><button class="csend" id="send-btn" onclick="sendMsg()">Send</button><button class="btn-g" onclick="clearCultivateChat()" style="font-size:.8rem;padding:.45rem .75rem;white-space:nowrap" title="New conversation">New</button></div>
   </div>
 </div>
 
@@ -6998,6 +6998,27 @@ function apiCall(sys, msg, maxTok, cb) {
     cb(null, txt);
   }).catch(function(e){ cb(e.message||e, null); });
 }
+
+function callAPIWithHistory(sys, history, maxTok, cb) {
+  if(!ANTHROPIC_KEY){ cb('No API key set',null); return; }
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':ANTHROPIC_KEY,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body:JSON.stringify({model:'claude-sonnet-4-5', max_tokens:maxTok||1000, system:sys, messages:history})
+  }).then(function(r){
+    if(!r.ok){ return r.json().then(function(e){ throw new Error(JSON.stringify(e)); }); }
+    return r.json();
+  }).then(function(d){
+    var txt = d.content ? d.content.map(function(c){ return c.text||''; }).join('') : '';
+    if(!txt) throw new Error('Empty response from API');
+    cb(null, txt);
+  }).catch(function(e){ cb(e.message||e, null); });
+}
 // Menu-specific API call with JSON prefill to force raw JSON output
 function apiCallJSON(sys, msg, maxTok, cb) {
   if(!ANTHROPIC_KEY){showKeyModal(function(){ apiCallJSON(sys,msg,maxTok,cb); }); return;}
@@ -7206,6 +7227,7 @@ function setActiveOutlet(name) {
   } catch(e) {}
   try { renderActiveOutletBadge(); } catch(e) {}
   try { populateOutletSelector(); } catch(e) {}
+  try { var mfrOut=document.getElementById('mfr-output'); if(mfrOut){mfrOut.style.display='none';mfrOut.innerHTML='';} window._lastMenuReport=null; } catch(e) {}
 }
 function getActiveOutletContext() {
   try {
@@ -10377,8 +10399,16 @@ function download12PDF() {
 }
 
 function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault(); sendMsg();}}
+function clearCultivateChat(){
+  var cm=document.getElementById('chat-msgs');
+  if(cm) cm.innerHTML='<div class="msg ai"><div class="mav">CA</div><div><div class="mname">Cultivate AI</div><div class="mbub">Welcome, Chef. Ask me anything about your kitchen, menu, business, or craft.</div></div></div>';
+  _cultivateAIChatHistory=[];
+  document.getElementById('sugs').style.display='flex';
+}
 function autoResize(el){el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,105)+'px';}
 function useSug(btn){document.getElementById('chat-in').value=btn.textContent; document.getElementById('sugs').style.display='none'; sendMsg();}
+
+var _cultivateAIChatHistory = [];
 
 function sendMsg() {
   var inp=document.getElementById('chat-in'); var msg=inp.value.trim(); if(!msg) return;
@@ -10389,14 +10419,17 @@ function sendMsg() {
   var tid='t'+Date.now();
   cm.insertAdjacentHTML('beforeend','<div class="msg ai" id="'+tid+'"><div class="mav">CA</div><div><div class="mname">Cultivate AI</div><div class="mbub"><div class="typing"><span></span><span></span><span></span></div></div></div></div>');
   cm.scrollTop=cm.scrollHeight;
-  callAPI('You are Cultivate AI, intelligence assistant of Cultivate Studio by Executive Chef Marco Turatti, Phuket Thailand. Expert in culinary technique, fermentation, fire cooking, menu development, food costing, F&B financial analysis, hotel benchmarking, business strategy, SE Asian seasonality, foraging, honey varieties, sustainability, Food Made Good, Michelin Green Star. Seven intelligence layers: ingredient-led terroir, technique and science, fermentation, cultural identity, sustainability, luxury hotel F&B, and PASTRY. Pastry intelligence covers: French classical (precision, lamination, caramel chemistry, texture architecture), Italian pastry (ingredient-led, restrained sweetness, ricotta/mascarpone, sfoglia, frolla, gelato logic, regional identity), Nordic pastry (fermented dairy, sourdough in pastry, cultured butter, cardamom and warming spice as structural flavour, sea buckthorn/lingonberry/cloudberry, restraint in sweetness as savory-bridge), Modern plated desserts (temperature contrast, textural layering, acid-fat balance, pre-dessert as palate reset), and Pastry-Savory bridge (how dessert thinking can inform savory and vice versa). When any pastry, dessert, bakery, or sweet question arises, engage at chef-to-pastry-chef peer level. Peer-to-peer, warm, practical.',msg,1000,function(err,txt){
+  _cultivateAIChatHistory.push({role:'user', content:msg});
+  if(_cultivateAIChatHistory.length > 20) _cultivateAIChatHistory = _cultivateAIChatHistory.slice(-20);
+  var _caiSys = 'You are Cultivate AI, intelligence assistant of Cultivate Studio by Executive Chef Marco Turatti, Phuket Thailand. Expert in culinary technique, fermentation, fire cooking, menu development, food costing, F&B financial analysis, hotel benchmarking, business strategy, SE Asian seasonality, foraging, honey varieties, sustainability, Food Made Good, Michelin Green Star. Seven intelligence layers: ingredient-led terroir, technique and science, fermentation, cultural identity, sustainability, luxury hotel F&B, and PASTRY. Pastry intelligence covers: French classical (precision, lamination, caramel chemistry, texture architecture), Italian pastry (ingredient-led, restrained sweetness, ricotta/mascarpone, sfoglia, frolla, gelato logic, regional identity), Nordic pastry (fermented dairy, sourdough in pastry, cultured butter, cardamom and warming spice as structural flavour, sea buckthorn/lingonberry/cloudberry, restraint in sweetness as savory-bridge), Modern plated desserts (temperature contrast, textural layering, acid-fat balance, pre-dessert as palate reset), and Pastry-Savory bridge (how dessert thinking can inform savory and vice versa). When any pastry, dessert, bakery, or sweet question arises, engage at chef-to-pastry-chef peer level. Peer-to-peer, warm, practical.';
+  callAPIWithHistory(_caiSys, _cultivateAIChatHistory, 1000, function(err,txt){
     var el=document.getElementById(tid);
     if(el) el.querySelector('.mbub').innerHTML=(err?'<span style="color:#b03030">Error: '+err+'</span>':txt.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>'));
+    if(!err && txt) _cultivateAIChatHistory.push({role:'assistant', content:txt});
+    if(_cultivateAIChatHistory.length > 20) _cultivateAIChatHistory = _cultivateAIChatHistory.slice(-20);
     cm.scrollTop=cm.scrollHeight; btn.disabled=false; inp.focus();
   });
-}
-
-buildMoSel();
+}l();
 renderRecipes();
 renderSeason();
 renderIntelMatrix();
@@ -14552,16 +14585,17 @@ function renderMenuReport(d, menuName, menuType) {
   // Store for download
   window._lastMenuReport = {html: html, name: menuName, type: menuType, data: d};
 
-  // Append Concept Integrity Score section if outlet is active
+  // Append Concept Integrity Score section — always visible
   var _cisOutlet = getActiveOutlet();
+  html += '<div style="margin-top:1.4rem;padding:1rem;background:var(--oat);border:1px solid var(--sand);border-left:3px solid #6b3a7d">'
+    +'<div style="font-family:var(--fm);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:#6b3a7d;margin-bottom:.3rem">Concept Integrity Score</div>';
   if (_cisOutlet) {
-    html += '<div style="margin-top:1.4rem;padding:1rem;background:var(--oat);border:1px solid var(--sand);border-left:3px solid #6b3a7d">'
-      +'<div style="font-family:var(--fm);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:#6b3a7d;margin-bottom:.3rem">Concept Integrity Score</div>'
-      +'<div style="font-size:.86rem;color:var(--smoke);line-height:1.5;margin-bottom:.6rem">Does this menu deliver what <strong>'+escHtml(_cisOutlet.name)+'</strong> says it is? Score against the concept brief, cuisine identity, format, and pillars.</div>'
-      +'<button class="btn-p" onclick="runConceptIntegrityScore()" style="font-size:.85rem;background:#6b3a7d;border-color:#6b3a7d">Run Concept Integrity Score</button>'
-      +'<div id="cis-output" style="margin-top:.8rem"></div>'
-      +'</div>';
+    html += '<div style="font-size:.86rem;color:var(--smoke);line-height:1.5;margin-bottom:.6rem">Does this menu deliver what <strong>'+escHtml(_cisOutlet.name)+'</strong> says it is? Score against the concept brief, cuisine identity, format, and pillars.</div>'
+      +'<button class=\'btn-p\' onclick=\'runConceptIntegrityScore()\' style=\'font-size:.85rem;background:#6b3a7d;border-color:#6b3a7d\'>Run Concept Integrity Score</button>';
+  } else {
+    html += '<div style="font-size:.86rem;color:var(--smoke);line-height:1.5">Select an active outlet from the top bar to score this menu against a specific concept brief.</div>';
   }
+  html += '<div id="cis-output" style="margin-top:.8rem"></div></div>';
   output.innerHTML = html;
   output.style.display = 'block';
   output.scrollIntoView({behavior:'smooth', block:'start'});
