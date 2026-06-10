@@ -10429,7 +10429,8 @@ function sendMsg() {
     if(_cultivateAIChatHistory.length > 20) _cultivateAIChatHistory = _cultivateAIChatHistory.slice(-20);
     cm.scrollTop=cm.scrollHeight; btn.disabled=false; inp.focus();
   });
-}l();
+}
+buildMoSel();
 renderRecipes();
 renderSeason();
 renderIntelMatrix();
