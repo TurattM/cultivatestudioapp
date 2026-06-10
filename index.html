@@ -1192,7 +1192,7 @@ h1, h2 {
       <div class="ng-drop" id="ngd-studio">
         <button onclick="showPage('concepts');closeNavGroups()">Concepts</button>
         <button onclick="showPage('sustainability');closeNavGroups()">Sustainability</button>
-        <button onclick="showPage('rnd');closeNavGroups()" style="color:var(--terracotta)">R&amp;D — Coming Soon</button>
+        <button onclick="showPage('rnd');closeNavGroups()">R&amp;D Lab</button>
         <button onclick="showPage('lab');closeNavGroups()" style="color:var(--terracotta)">Lab — Coming Soon</button>
       </div>
     </div>
@@ -13432,123 +13432,85 @@ function usePLDataInModule(moduleId) {
      Admin/Builder only — not visible to clients or guests
      ══════════════════════════════════════════════════════════ -->
 <div class="page" id="page-rnd" style="display:none">
-  <div class="ph"><div><div class="pt">R&amp;D</div><div class="ps">Research &amp; Development — Coming Soon</div></div><div style="background:#C2744A;color:white;font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;padding:.25rem .7rem">Coming Soon</div></div>
-  <div style="position:relative;background:#0a0a0a;border-radius:8px;overflow:hidden;margin-bottom:1.5rem;max-width:900px;margin-left:auto;margin-right:auto">
-    <!-- Cinematic animated hero: fire, smoke, steak -->
-    <svg id="rnd-hero" viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;max-height:420px">
-      <defs>
-        <radialGradient id="grillGlow" cx="50%" cy="70%" r="50%">
-          <stop offset="0%" stop-color="#ff6a00" stop-opacity="0.5"/>
-          <stop offset="100%" stop-color="#0a0a0a" stop-opacity="0"/>
-        </radialGradient>
-        <filter id="blur1"><feGaussianBlur stdDeviation="3"/></filter>
-        <filter id="blur2"><feGaussianBlur stdDeviation="6"/></filter>
-        <filter id="blur3"><feGaussianBlur stdDeviation="12"/></filter>
-        <!-- Smoke turbulence -->
-        <filter id="smoke-filter" x="-50%" y="-50%" width="200%" height="200%">
-          <feTurbulence type="turbulence" baseFrequency="0.015 0.04" numOctaves="4" seed="2" result="noise">
-            <animate attributeName="baseFrequency" values="0.015 0.04;0.018 0.045;0.015 0.04" dur="4s" repeatCount="indefinite"/>
-          </feTurbulence>
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G"/>
-        </filter>
-      </defs>
-      <!-- Dark background -->
-      <rect width="900" height="480" fill="#080808"/>
-      <!-- Grill glow -->
-      <ellipse cx="450" cy="360" rx="300" ry="80" fill="url(#grillGlow)">
-        <animate attributeName="rx" values="300;320;300" dur="2s" repeatCount="indefinite"/>
-        <animate attributeName="stop-opacity" values="0.5;0.65;0.5" dur="2s" repeatCount="indefinite"/>
-      </ellipse>
-      <!-- Grill surface -->
-      <rect x="160" y="320" width="580" height="80" rx="6" fill="#1a1008"/>
-      <!-- Grill bars -->
-      <g stroke="#3a2a10" stroke-width="6" stroke-linecap="round">
-        <line x1="200" y1="322" x2="200" y2="398"/><line x1="240" y1="322" x2="240" y2="398"/>
-        <line x1="280" y1="322" x2="280" y2="398"/><line x1="320" y1="322" x2="320" y2="398"/>
-        <line x1="360" y1="322" x2="360" y2="398"/><line x1="400" y1="322" x2="400" y2="398"/>
-        <line x1="440" y1="322" x2="440" y2="398"/><line x1="480" y1="322" x2="480" y2="398"/>
-        <line x1="520" y1="322" x2="520" y2="398"/><line x1="560" y1="322" x2="560" y2="398"/>
-        <line x1="600" y1="322" x2="600" y2="398"/><line x1="640" y1="322" x2="640" y2="398"/>
-        <line x1="680" y1="322" x2="680" y2="398"/>
-      </g>
-      <!-- Grill char marks on steak -->
-      <rect x="250" y="290" width="400" height="85" rx="10" fill="#5a2a08"/>
-      <g stroke="#1a0a00" stroke-width="14" stroke-linecap="round" opacity="0.6">
-        <line x1="280" y1="288" x2="320" y2="376"/><line x1="360" y1="288" x2="400" y2="376"/>
-        <line x1="440" y1="288" x2="480" y2="376"/><line x1="520" y1="288" x2="560" y2="376"/>
-      </g>
-      <!-- Steak top face -->
-      <ellipse cx="450" cy="290" rx="195" ry="35" fill="#7a3a10"/>
-      <ellipse cx="450" cy="290" rx="190" ry="30" fill="#8B4513"/>
-      <!-- Sear crust texture -->
-      <ellipse cx="450" cy="290" rx="175" ry="22" fill="none" stroke="#5a2a08" stroke-width="3" opacity="0.4"/>
-      <!-- Fat marbling -->
-      <path d="M350 285 Q380 278 410 288 Q440 295 470 283 Q500 272 520 290" fill="none" stroke="#f5deb3" stroke-width="3" opacity="0.35"/>
-      <path d="M380 295 Q400 302 430 295 Q460 288 490 300" fill="none" stroke="#f5e6c8" stroke-width="2" opacity="0.25"/>
-      <!-- Ember glow between grill bars -->
-      <g filter="url(#blur1)">
-        <rect x="165" y="355" width="30" height="40" rx="3" fill="#ff4500" opacity="0.6">
-          <animate attributeName="opacity" values="0.6;0.9;0.5;0.8;0.6" dur="1.5s" repeatCount="indefinite"/>
-        </rect>
-        <rect x="245" y="355" width="30" height="40" rx="3" fill="#ff6a00" opacity="0.7">
-          <animate attributeName="opacity" values="0.7;0.4;0.9;0.6;0.7" dur="1.8s" repeatCount="indefinite"/>
-        </rect>
-        <rect x="365" y="355" width="30" height="40" rx="3" fill="#ff4500" opacity="0.5">
-          <animate attributeName="opacity" values="0.5;0.8;0.6;0.9;0.5" dur="2.1s" repeatCount="indefinite"/>
-        </rect>
-        <rect x="525" y="355" width="30" height="40" rx="3" fill="#ff6a00" opacity="0.8">
-          <animate attributeName="opacity" values="0.8;0.5;0.7;0.4;0.8" dur="1.6s" repeatCount="indefinite"/>
-        </rect>
-        <rect x="645" y="355" width="30" height="40" rx="3" fill="#ff4500" opacity="0.6">
-          <animate attributeName="opacity" values="0.6;0.9;0.4;0.7;0.6" dur="2.3s" repeatCount="indefinite"/>
-        </rect>
-      </g>
-      <!-- SMOKE COLUMNS — multiple rising wisps -->
-      <g filter="url(#smoke-filter)" opacity="0.55">
-        <!-- Wisp 1 -->
-        <path d="M320 288 Q315 250 325 210 Q335 170 320 130 Q308 95 320 60 Q330 30 320 5" fill="none" stroke="rgba(200,200,200,0.7)" stroke-width="22" stroke-linecap="round">
-          <animate attributeName="d" values="M320 288 Q315 250 325 210 Q335 170 320 130 Q308 95 320 60 Q330 30 320 5;M320 288 Q328 248 315 208 Q302 168 318 128 Q332 92 315 58 Q300 28 318 5;M320 288 Q315 250 325 210 Q335 170 320 130 Q308 95 320 60 Q330 30 320 5" dur="3s" repeatCount="indefinite"/>
-        </path>
-        <!-- Wisp 2 -->
-        <path d="M450 285 Q460 245 445 200 Q430 158 448 118 Q462 82 445 45 Q432 18 448 0" fill="none" stroke="rgba(180,180,180,0.65)" stroke-width="28" stroke-linecap="round">
-          <animate attributeName="d" values="M450 285 Q460 245 445 200 Q430 158 448 118 Q462 82 445 45 Q432 18 448 0;M450 285 Q438 243 452 199 Q465 155 449 115 Q435 80 450 44 Q462 17 450 0;M450 285 Q460 245 445 200 Q430 158 448 118 Q462 82 445 45 Q432 18 448 0" dur="3.5s" repeatCount="indefinite"/>
-        </path>
-        <!-- Wisp 3 -->
-        <path d="M580 288 Q572 248 585 205 Q596 163 580 125 Q566 90 582 55 Q594 25 580 0" fill="none" stroke="rgba(210,210,210,0.6)" stroke-width="20" stroke-linecap="round">
-          <animate attributeName="d" values="M580 288 Q572 248 585 205 Q596 163 580 125 Q566 90 582 55 Q594 25 580 0;M580 288 Q590 246 576 203 Q562 161 579 123 Q593 88 577 53 Q563 23 579 0;M580 288 Q572 248 585 205 Q596 163 580 125 Q566 90 582 55 Q594 25 580 0" dur="4s" repeatCount="indefinite"/>
-        </path>
-      </g>
-      <!-- Liquid pour (biker pouring) — simplified arc stream -->
-      <g opacity="0.85">
-        <!-- Pour stream from upper right -->
-        <path d="M720 80 Q680 140 620 200 Q580 240 560 270 Q545 288 530 292" fill="none" stroke="#ffd700" stroke-width="4" stroke-linecap="round" opacity="0.9">
-          <animate attributeName="stroke-dasharray" values="0,300;300,0" dur="1.2s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.9;0.6;0.9" dur="1.2s" repeatCount="indefinite"/>
-        </path>
-        <!-- Drips sizzling on steak -->
-        <circle cx="530" cy="292" r="3" fill="#ffd700" opacity="0.8">
-          <animate attributeName="r" values="3;6;2;5;3" dur="0.8s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.8;0.4;0.9;0.5;0.8" dur="0.8s" repeatCount="indefinite"/>
-        </circle>
-        <!-- Sizzle flash -->
-        <circle cx="530" cy="292" r="12" fill="#ff6a00" opacity="0.5" filter="url(#blur1)">
-          <animate attributeName="r" values="12;20;8;16;12" dur="0.8s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.5;0.2;0.7;0.3;0.5" dur="0.8s" repeatCount="indefinite"/>
-        </circle>
-      </g>
-      <!-- TEXT OVERLAY -->
-      <rect x="0" y="0" width="900" height="480" fill="rgba(0,0,0,0.25)"/>
-      <text x="450" y="155" text-anchor="middle" font-family="Georgia,serif" font-size="52" font-weight="300" letter-spacing="8" fill="white" opacity="0.9">R&amp;D</text>
-      <text x="450" y="190" text-anchor="middle" font-family="monospace" font-size="13" letter-spacing="4" fill="rgba(255,255,255,0.5)" text-transform="uppercase">RESEARCH &amp; DEVELOPMENT</text>
-      <!-- Coming soon badge -->
-      <rect x="350" y="210" width="200" height="32" rx="2" fill="none" stroke="rgba(194,116,74,0.8)" stroke-width="1.5"/>
-      <text x="450" y="231" text-anchor="middle" font-family="monospace" font-size="11" letter-spacing="3" fill="#C2744A">COMING SOON</text>
-    </svg>
+  <div class="ph">
+    <div><div class="pt">R&amp;D Lab</div><div class="ps">Culinary Research &amp; Development — Ingredient &amp; Recipe Development</div></div>
+    <div style="display:flex;gap:.6rem;align-items:center">
+      <button class="btn-p" onclick="showRndForm('ingredient')" style="font-size:.82rem">+ Ingredient Project</button>
+      <button class="btn-p" onclick="showRndForm('recipe')" style="font-size:.82rem;background:var(--terracotta);border-color:var(--terracotta)">+ Recipe Project</button>
+    </div>
   </div>
-  <div style="max-width:600px;margin:0 auto;text-align:center;padding:1rem">
-    <div style="font-family:var(--fd);font-size:1.5rem;font-weight:300;margin-bottom:.7rem;color:var(--t1)">Research &amp; Development</div>
-    <div style="font-size:1rem;color:var(--smoke);line-height:1.8">The R&amp;D lab is where concepts are born — fermentation experiments, fire research, ingredient extraction, and flavour science testing. This section is under development and will be available in the next release.</div>
+
+  <!-- PROJECT LIST -->
+  <div id="rnd-list" style="margin-bottom:2rem"></div>
+
+  <!-- NEW PROJECT FORM -->
+  <div id="rnd-form" style="display:none;background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:1.5rem;margin-bottom:2rem;max-width:860px">
+    <div style="font-family:var(--fm);font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;color:var(--terracotta);margin-bottom:1rem" id="rnd-form-title">New R&amp;D Project</div>
+    <input type="hidden" id="rnd-type" value="ingredient">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div>
+        <label class="fl">Project Name</label>
+        <input class="fi" id="rnd-name" placeholder="e.g. Fermented Green Mango, Burnt Leek Garum">
+      </div>
+      <div>
+        <label class="fl">Led by</label>
+        <input class="fi" id="rnd-chef" placeholder="Chef name or team">
+      </div>
+    </div>
+
+    <div style="margin-bottom:1rem">
+      <label class="fl">Idea &amp; Vision <span style="font-weight:400;opacity:.6">— describe what you have in mind, the ingredient, the feeling, the dish direction</span></label>
+      <textarea class="fi" id="rnd-idea" rows="4" placeholder="Describe the ingredient or dish concept. Include what excites you about it, what technique you're thinking about, any reference flavours or dishes, and what problem or opportunity you're solving..."></textarea>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem" id="rnd-meta-fields">
+      <div>
+        <label class="fl">Primary Technique Direction</label>
+        <select class="fi" id="rnd-technique">
+          <option value="">— let AI decide —</option>
+          <option>Fermentation</option>
+          <option>Curing &amp; Brining</option>
+          <option>Fire &amp; Smoke</option>
+          <option>Dehydration</option>
+          <option>Koji &amp; Mould</option>
+          <option>Extraction &amp; Infusion</option>
+          <option>Emulsification</option>
+          <option>Gelification</option>
+          <option>Distillation</option>
+          <option>Raw &amp; Ceviche</option>
+          <option>Pressure &amp; Vacuum</option>
+          <option>Live Fire Roasting</option>
+          <option>Open to AI</option>
+        </select>
+      </div>
+      <div id="rnd-cuisine-wrap">
+        <label class="fl">Cuisine Context</label>
+        <input class="fi" id="rnd-cuisine" placeholder="e.g. Modern Thai, Japanese">
+      </div>
+      <div>
+        <label class="fl">Target Format</label>
+        <select class="fi" id="rnd-format">
+          <option value="">Open</option>
+          <option>Fine Dining</option>
+          <option>Casual Elevated</option>
+          <option>Bar Snack</option>
+          <option>Pastry / Dessert</option>
+          <option>Ferment / Condiment</option>
+          <option>Base Preparation</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:.8rem;flex-wrap:wrap">
+      <button class="btn-p" onclick="createRndProject()" id="rnd-submit-btn">Generate Development Framework</button>
+      <button class="btn-g" onclick="document.getElementById('rnd-form').style.display='none'">Cancel</button>
+    </div>
   </div>
+
+  <!-- PROJECT DETAIL VIEW -->
+  <div id="rnd-detail" style="display:none;max-width:960px"></div>
+
 </div>
 
 <div class="page" id="page-lab" style="display:none">
@@ -17915,5 +17877,427 @@ console.log('[Cultivate Agent v2] Initialized. Outlets:', state.outlets.length, 
   el.addEventListener('touchend',function(){tDragging=false;});
 })();
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CULTIVATE STUDIO — R&D LAB MODULE
+     localStorage key: cultivate_rnd_projects_v1
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+(function(){
+
+var RND_KEY = 'cultivate_rnd_projects_v1';
+
+function getRndProjects(){ try{ return JSON.parse(localStorage.getItem(RND_KEY)||'[]'); }catch(e){ return []; } }
+function saveRndProjects(p){ try{ localStorage.setItem(RND_KEY, JSON.stringify(p)); }catch(e){} }
+
+function showRndForm(type){
+  var f = document.getElementById('rnd-form');
+  f.style.display = 'block';
+  document.getElementById('rnd-type').value = type;
+  document.getElementById('rnd-form-title').textContent = type === 'ingredient' ? 'New Ingredient R&D Project' : 'New Recipe R&D Project';
+  document.getElementById('rnd-name').value = '';
+  document.getElementById('rnd-chef').value = '';
+  document.getElementById('rnd-idea').value = '';
+  document.getElementById('rnd-technique').value = '';
+  document.getElementById('rnd-cuisine').value = '';
+  document.getElementById('rnd-format').value = '';
+  document.getElementById('rnd-detail').style.display = 'none';
+  f.scrollIntoView({behavior:'smooth'});
+}
+window.showRndForm = showRndForm;
+
+function createRndProject(){
+  var type    = document.getElementById('rnd-type').value;
+  var name    = document.getElementById('rnd-name').value.trim();
+  var chef    = document.getElementById('rnd-chef').value.trim();
+  var idea    = document.getElementById('rnd-idea').value.trim();
+  var tech    = document.getElementById('rnd-technique').value;
+  var cuisine = document.getElementById('rnd-cuisine').value.trim();
+  var format  = document.getElementById('rnd-format').value;
+
+  if(!name || !idea){ alert('Please enter a project name and describe your idea.'); return; }
+
+  var btn = document.getElementById('rnd-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'AI is developing framework...';
+
+  var project = {
+    id: 'rnd_' + Date.now(),
+    type: type,
+    name: name,
+    chef: chef || 'R&D Team',
+    idea: idea,
+    technique: tech,
+    cuisine: cuisine,
+    format: format,
+    status: 'concept',
+    created: new Date().toISOString(),
+    framework: null,
+    sessions: [],
+    approved: false,
+    allocation: null
+  };
+
+  var systemPrompt = buildRndSystemPrompt();
+  var userPrompt = buildRndFrameworkPrompt(project);
+
+  callRndAPI(systemPrompt, userPrompt, function(err, result){
+    btn.disabled = false;
+    btn.textContent = 'Generate Development Framework';
+    if(err){ alert('AI error: ' + err); return; }
+    project.framework = result;
+    project.status = 'in_development';
+    var projects = getRndProjects();
+    projects.unshift(project);
+    saveRndProjects(projects);
+    document.getElementById('rnd-form').style.display = 'none';
+    renderRndList();
+    openRndProject(project.id);
+  });
+}
+window.createRndProject = createRndProject;
+
+function buildRndSystemPrompt(){
+  return `You are the Cultivate Studio R&D Intelligence Engine — built for Executive Chef Marco Turatti and his culinary research team at InterContinental Phuket Resort and Cultivate Studio consultancy.
+
+Your role is to develop rigorous, scientifically grounded, and creatively ambitious culinary development frameworks for ingredients and recipes. You draw on:
+
+EMBEDDED KNOWLEDGE BASE:
+- Fermentation science: garum, miso, koji, lacto-fermentation, vinegar, amino pastes, black garlic, tepache, kvass, fish sauce, shrubs
+- Fire and smoke: live fire roasting, charcoal types, Binchotan, smoke infusion, ash techniques, pit roasting, ember cooking
+- Japanese culinary science: dashi systems, umami layering, kaiseki structure, katsuobushi, kombu, mirin chemistry, sake in cooking
+- Italian culinary craft: pasta science, risotto technique, emulsification, aged cheese, cured meats, acidity balance
+- Flavour matrix intelligence: tension between sweet/acid/bitter/umami/fat, textural contrast, temperature play
+- SE Asian pantry: galangal, lemongrass, kaffir, makrut, pandan, betel leaf, torch ginger, banana blossom, fresh turmeric, long pepper
+- Pastry science: lamination, caramel chemistry, gelification, aeration, emulsification, fermented dairy, sourdough pastry
+- Sustainability: zero-waste, consume-to-conserve, invasive species, nose-to-tail, root-to-tip
+- Creative Frontier: the bridge between familiar and unknown — 4 bridges: cultural recontextualisation, technique transfer, ingredient substitution, format disruption
+
+RESEARCH APPROACH:
+- Apply deep technique science — temperatures, pH, Aw, enzyme activity, Maillard reaction, gelatinisation
+- Reference real chefs and restaurants doing pioneering work in the relevant area (Noma, Fäviken, Kjolle, Septime, Florilege, Den, Narisawa, Sühring, Bo.lan, Paste, Saawan, Nahm)
+- Draw connections across cuisines and techniques
+- Think in terms of what is possible, not just what is conventional
+- Always consider waste use, sustainability angle, and local sourcing opportunities
+- Respond in structured, professional culinary language — peer-to-peer, Executive Chef level
+
+OUTPUT FORMAT:
+Always respond in clean HTML using inline styles compatible with the app's CSS variables:
+--oat, --sand, --smoke, --terracotta, --sage, --t, --t3, --t4, var(--fd) for Cormorant Garamond, var(--fm) for spaced caps font`;
+}
+
+function buildRndFrameworkPrompt(p){
+  var typeLabel = p.type === 'ingredient' ? 'INGREDIENT DEVELOPMENT PROJECT' : 'RECIPE DEVELOPMENT PROJECT';
+  return `${typeLabel}
+
+PROJECT NAME: ${p.name}
+LED BY: ${p.chef}
+TYPE: ${p.type === 'ingredient' ? 'Single Ingredient Development' : 'Full Recipe Development'}
+TECHNIQUE DIRECTION: ${p.technique || 'Open — AI to determine best approach'}
+CUISINE CONTEXT: ${p.cuisine || 'Open'}
+TARGET FORMAT: ${p.format || 'Open'}
+
+CHEF'S CONCEPT:
+${p.idea}
+
+---
+
+Please develop a comprehensive R&D framework for this project. Structure your response as follows:
+
+<div style="font-family:var(--fd);font-size:1.4rem;font-weight:300;color:var(--t);letter-spacing:.03em;margin-bottom:1.2rem">${p.name} — Development Framework</div>
+
+1. **OPPORTUNITY ANALYSIS** — What makes this ingredient/concept compelling? What gap or tension does it address? Reference any chefs or restaurants pioneering this direction.
+
+2. **TECHNIQUE ARCHITECTURE** — The primary and secondary techniques recommended. For each technique: the science behind it, key parameters (temperature, time, pH, ratios), expected transformations, and risk points.
+
+3. **FLAVOUR DEVELOPMENT ROADMAP** — How the flavour profile should evolve across development phases. What to chase, what to avoid, sensory benchmarks.
+
+4. **TESTING PROTOCOL** — A structured sequence of tests to run. Phase 1 (baseline), Phase 2 (technique application), Phase 3 (refinement). For each phase: specific tests, variables to control, what success looks like.
+
+5. **INGREDIENT INTERACTIONS** — If this is a recipe: key ingredient pairings, tension points, what supports and what fights the primary flavour. If single ingredient: how it behaves with different fats, acids, heat, and umami sources.
+
+6. **WASTE & SUSTAINABILITY** — How to use the full ingredient. Any trimmings, by-products, or fermentation substrates.
+
+7. **PLATING DIRECTION** (if recipe) — Texture contrast targets, temperature play, visual language, portion logic.
+
+8. **REFERENCE POINTS** — Real dishes, chefs, or restaurants working in this space. What has been done, what remains unexplored.
+
+Use the web search tool to find the most current culinary research, chef techniques, and restaurant references relevant to this project.`;
+}
+
+function callRndAPI(sys, userMsg, cb){
+  var key = localStorage.getItem('cultivate_api_key') || '';
+  if(!key){ cb('No API key configured', null); return; }
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({
+      model:'claude-sonnet-4-5',
+      max_tokens: 4000,
+      system: sys,
+      tools:[{"type":"web_search_20250305","name":"web_search"}],
+      messages:[{role:'user', content: userMsg}]
+    })
+  }).then(function(r){
+    if(!r.ok) return r.json().then(function(e){ throw new Error(JSON.stringify(e)); });
+    return r.json();
+  }).then(function(d){
+    var txt = (d.content||[]).filter(function(c){ return c.type==='text'; }).map(function(c){ return c.text||''; }).join('');
+    if(!txt) throw new Error('Empty response');
+    cb(null, txt);
+  }).catch(function(e){ cb(e.message||String(e), null); });
+}
+
+function addRndSession(id){
+  var note = document.getElementById('rnd-session-note-'+id);
+  if(!note || !note.value.trim()){ alert('Add your testing notes first.'); return; }
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
+  if(!p) return;
+  p.sessions.push({
+    date: new Date().toISOString(),
+    note: note.value.trim(),
+    status: document.getElementById('rnd-session-status-'+id) ? document.getElementById('rnd-session-status-'+id).value : p.status
+  });
+  p.status = document.getElementById('rnd-session-status-'+id) ? document.getElementById('rnd-session-status-'+id).value : p.status;
+  saveRndProjects(projects);
+  note.value = '';
+  openRndProject(id);
+}
+window.addRndSession = addRndSession;
+
+function approveRndProject(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
+  if(!p) return;
+
+  if(p.type === 'ingredient'){
+    if(confirm('Mark "'+p.name+'" as approved and send to Seasonality as an R&D ingredient?')){
+      p.approved = true;
+      p.status = 'approved';
+      p.allocation = 'seasonality';
+      injectRndToSeasonality(p);
+      saveRndProjects(projects);
+      renderRndList();
+      openRndProject(id);
+      showToast(p.name + ' added to Seasonality as R&D ingredient');
+    }
+  } else {
+    var outlets = typeof getOutletProfiles === 'function' ? getOutletProfiles() : [];
+    var options = '<option value="central">Central (all outlets)</option>';
+    outlets.forEach(function(o){ options += '<option value="'+escHtml(o.name)+'">'+escHtml(o.name)+'</option>'; });
+    var sel = document.getElementById('rnd-allocate-select-'+id);
+    if(sel){
+      p.approved = true;
+      p.status = 'approved';
+      p.allocation = sel.value;
+      injectRndToRecipes(p);
+      saveRndProjects(projects);
+      renderRndList();
+      openRndProject(id);
+      showToast(p.name + ' approved and sent to Recipe Manager');
+    }
+  }
+}
+window.approveRndProject = approveRndProject;
+
+function injectRndToSeasonality(p){
+  try {
+    var contrib = JSON.parse(localStorage.getItem('cultivate_season_contrib_v1')||'[]');
+    contrib.push({
+      id: 'rnd_' + Date.now(),
+      name: p.name,
+      type: 'R&D Development',
+      peakMonths: [],
+      note: 'R&D Lab — ' + p.chef + '. ' + p.idea.substring(0,120) + '...',
+      source: 'rnd',
+      date: new Date().toISOString()
+    });
+    localStorage.setItem('cultivate_season_contrib_v1', JSON.stringify(contrib));
+  } catch(e){}
+}
+
+function injectRndToRecipes(p){
+  try {
+    var recipes = JSON.parse(localStorage.getItem('cultivate_recipes_v1')||'[]');
+    recipes.push({
+      id: 'rnd_' + Date.now(),
+      name: p.name,
+      outlet: p.allocation || 'central',
+      type: 'R&D',
+      description: p.idea.substring(0,200),
+      source: 'rnd',
+      date: new Date().toISOString()
+    });
+    localStorage.setItem('cultivate_recipes_v1', JSON.stringify(recipes));
+  } catch(e){}
+}
+
+function deleteRndProject(id){
+  if(!confirm('Delete this R&D project? This cannot be undone.')) return;
+  var projects = getRndProjects().filter(function(p){ return p.id !== id; });
+  saveRndProjects(projects);
+  document.getElementById('rnd-detail').style.display = 'none';
+  renderRndList();
+}
+window.deleteRndProject = deleteRndProject;
+
+function statusLabel(s){
+  var map = {concept:'🔵 Concept', in_development:'🟡 In Development', testing:'🟠 Testing', approved:'✅ Approved'};
+  return map[s] || s;
+}
+function statusColor(s){
+  var map = {concept:'#4a90d9', in_development:'#d4a017', testing:'#C2744A', approved:'#5a7a5a'};
+  return map[s] || 'var(--smoke)';
+}
+
+function renderRndList(){
+  var el = document.getElementById('rnd-list');
+  if(!el) return;
+  var projects = getRndProjects();
+  if(!projects.length){
+    el.innerHTML = '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:2.5rem;text-align:center;color:var(--t4)"><div style="font-family:var(--fd);font-size:1.6rem;font-weight:300;margin-bottom:.5rem">No R&D Projects Yet</div><div style="font-size:.9rem">Start a new ingredient or recipe development project above.</div></div>';
+    return;
+  }
+  var grouped = {concept:[], in_development:[], testing:[], approved:[]};
+  projects.forEach(function(p){ (grouped[p.status] || grouped.concept).push(p); });
+  var html = '';
+  [['in_development','Active Projects'],['testing','In Testing'],['concept','Concepts'],['approved','Approved']].forEach(function(pair){
+    var list = grouped[pair[0]];
+    if(!list.length) return;
+    html += '<div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin:.5rem 0 .6rem">'+pair[1]+'</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem">';
+    list.forEach(function(p){
+      html += '<div onclick="openRndProject(''+p.id+'')" style="cursor:pointer;background:var(--oat);border:1px solid var(--sand);border-left:3px solid '+statusColor(p.status)+';border-radius:8px;padding:1rem;transition:box-shadow .2s" onmouseenter="this.style.boxShadow='0 4px 12px rgba(0,0,0,.08)'" onmouseleave="this.style.boxShadow='none'">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.4rem">';
+      html += '<div style="font-family:var(--fd);font-size:1.05rem;font-weight:400;color:var(--t)">'+escHtml(p.name)+'</div>';
+      html += '<div style="font-family:var(--fm);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:white;background:'+statusColor(p.status)+';padding:.15rem .45rem;border-radius:3px;white-space:nowrap">'+p.type+'</div>';
+      html += '</div>';
+      html += '<div style="font-size:.82rem;color:var(--t3);margin-bottom:.5rem">'+escHtml(p.chef)+' · '+(p.sessions.length)+' test session'+(p.sessions.length!==1?'s':'')+'</div>';
+      html += '<div style="font-size:.8rem;color:var(--t4);line-height:1.5">'+escHtml(p.idea.substring(0,100))+(p.idea.length>100?'...':'')+'</div>';
+      html += '<div style="margin-top:.6rem;font-size:.75rem;color:'+statusColor(p.status)+'">'+statusLabel(p.status)+'</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function openRndProject(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
+  if(!p) return;
+  var det = document.getElementById('rnd-detail');
+  det.style.display = 'block';
+  det.scrollIntoView({behavior:'smooth'});
+
+  var outlets = typeof getOutletProfiles === 'function' ? getOutletProfiles() : [];
+  var outletOptions = '<option value="central">Central (all outlets)</option>';
+  outlets.forEach(function(o){ outletOptions += '<option value="'+escHtml(o.name)+'">'+escHtml(o.name)+'</option>'; });
+
+  var sessionsHtml = '';
+  if(p.sessions.length){
+    sessionsHtml = '<div style="margin-bottom:1.2rem">';
+    sessionsHtml += '<div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.8rem">Testing Log</div>';
+    p.sessions.slice().reverse().forEach(function(s, i){
+      sessionsHtml += '<div style="border-left:2px solid var(--sand);padding:.6rem 1rem;margin-bottom:.6rem">';
+      sessionsHtml += '<div style="font-size:.75rem;color:var(--t4);margin-bottom:.25rem">'+new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})+'  ·  '+statusLabel(s.status)+'</div>';
+      sessionsHtml += '<div style="font-size:.88rem;color:var(--t);line-height:1.6;white-space:pre-wrap">'+escHtml(s.note)+'</div>';
+      sessionsHtml += '</div>';
+    });
+    sessionsHtml += '</div>';
+  }
+
+  var approvalHtml = '';
+  if(!p.approved){
+    if(p.type==='recipe'){
+      approvalHtml = '<div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">';
+      approvalHtml += '<select id="rnd-allocate-select-'+p.id+'" class="fi" style="max-width:220px">'+outletOptions+'</select>';
+      approvalHtml += '<button class="btn-p" onclick="approveRndProject(''+p.id+'')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Recipes</button>';
+      approvalHtml += '</div>';
+    } else {
+      approvalHtml = '<button class="btn-p" onclick="approveRndProject(''+p.id+'')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Seasonality</button>';
+    }
+  } else {
+    approvalHtml = '<div style="color:#5a7a5a;font-size:.88rem">✅ Approved — sent to '+(p.type==='ingredient'?'Seasonality':'Recipe Manager ('+p.allocation+')')+'</div>';
+  }
+
+  det.innerHTML =
+    '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:1.5rem">' +
+
+    // Header
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem">' +
+    '<div>' +
+    '<div style="font-family:var(--fd);font-size:1.8rem;font-weight:300;color:var(--t);letter-spacing:.03em">'+escHtml(p.name)+'</div>' +
+    '<div style="font-size:.83rem;color:var(--t3);margin-top:.25rem">'+escHtml(p.chef)+' · Started '+new Date(p.created).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">' +
+    '<span style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;background:'+statusColor(p.status)+';color:white;padding:.2rem .6rem;border-radius:3px">'+statusLabel(p.status)+'</span>' +
+    '<span style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;background:var(--sage);color:white;padding:.2rem .6rem;border-radius:3px">'+p.type+'</span>' +
+    '</div>' +
+    '</div>' +
+
+    // Concept
+    '<div style="background:white;border:1px solid var(--sand);border-radius:6px;padding:1rem;margin-bottom:1.2rem">' +
+    '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--terracotta);margin-bottom:.4rem">Original Concept</div>' +
+    '<div style="font-size:.9rem;color:var(--t);line-height:1.7;white-space:pre-wrap">'+escHtml(p.idea)+'</div>' +
+    '</div>' +
+
+    // AI Framework
+    '<div style="margin-bottom:1.4rem">' +
+    '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:.8rem">AI Development Framework</div>' +
+    '<div style="font-size:.88rem;color:var(--t);line-height:1.7">'+(p.framework || '<span style="color:var(--t4)">Generating...</span>')+'</div>' +
+    '</div>' +
+
+    // Sessions log
+    sessionsHtml +
+
+    // Add session
+    '<div style="background:white;border:1px solid var(--sand);border-radius:6px;padding:1rem;margin-bottom:1.2rem">' +
+    '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:.6rem">Add Test Session Notes</div>' +
+    '<select id="rnd-session-status-'+p.id+'" class="fi" style="margin-bottom:.6rem;max-width:220px">' +
+    '<option value="in_development">In Development</option>' +
+    '<option value="testing">Testing</option>' +
+    '<option value="concept">Back to Concept</option>' +
+    '</select>' +
+    '<textarea class="fi" id="rnd-session-note-'+p.id+'" rows="4" placeholder="Document today's test — what you tried, temperatures, ratios, results, what worked, what failed, next steps..."></textarea>' +
+    '<div style="display:flex;gap:.6rem;margin-top:.6rem">' +
+    '<button class="btn-p" onclick="addRndSession(''+p.id+'')">Save Session Notes</button>' +
+    '</div>' +
+    '</div>' +
+
+    // Approval
+    '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem;padding-top:1rem;border-top:1px solid var(--sand)">' +
+    approvalHtml +
+    '<button onclick="deleteRndProject(''+p.id+'')" style="font-size:.8rem;color:var(--t4);background:none;border:none;cursor:pointer;padding:.3rem">Delete project</button>' +
+    '</div>' +
+
+    '</div>';
+}
+window.openRndProject = openRndProject;
+
+// Init
+document.addEventListener('DOMContentLoaded', function(){
+  renderRndList();
+});
+
+// Re-render when page becomes visible
+var _origShowPage = window.showPage;
+if(typeof _origShowPage === 'function'){
+  window.showPage = function(id){
+    _origShowPage(id);
+    if(id==='rnd') renderRndList();
+  };
+}
+
+})();
+</script>
+
+
 </body>
 </html>
