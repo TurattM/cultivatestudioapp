@@ -5242,6 +5242,9 @@ setTimeout(capexAutoOutlet,200);
   </div>
 </div>
 
+</main>
+</div>
+
 <!-- INGREDIENT PANEL -->
 <div id="ipo" style="position:fixed;inset:0;background:rgba(90,82,72,.45);z-index:300;display:none" onclick="closeIP()"></div>
 <div id="ip" style="position:fixed;top:0;right:-460px;width:440px;max-width:94vw;height:100vh;background:var(--oat);border-left:1px solid var(--sand);z-index:301;overflow-y:auto;transition:right .3s ease;display:flex;flex-direction:column">
@@ -6926,15 +6929,7 @@ function showPage(id) {
   var ti = {dashboard:0,ai:1,recipes:2,season:3,menu:4,intel:5,pl:6,strategy:7,engineering:8,pricing:9,trends:10,benchmarks:11,suppliers:12,'supplier-submit':13,'supplier-admin':14,fourhands:15,concepts:16,sustainability:17,profile:18,analytics:19,localheroes:20,community:21,'flavour-admin':22,rnd:23,lab:24};
   if (tabs[ti[id]]) tabs[ti[id]].classList.add('active');
   var p = document.getElementById('page-'+id);
-  if (p) {
-    p.style.display='block';
-    // Force scroll reset before animation
-    var _mc = document.getElementById('main-content');
-    if(_mc){ _mc.scrollTop = 0; _mc.scrollTo(0,0); }
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    setTimeout(function(){ p.classList.add('active'); }, 10);
-  }
+  if (p) { p.style.display='block'; setTimeout(function(){ p.classList.add('active'); },10); }
   if (id==='ai') { document.getElementById('chat-wrap').style.display='flex'; setTimeout(function(){ var m=document.getElementById('chat-msgs'); m.scrollTop=m.scrollHeight; },50); }
   if (id==='recipes') renderRecipes();
   if (id==='season') {
@@ -7309,18 +7304,23 @@ function renderRecipes() {
   var indexed = recipes.map(function(r,i){ return {r:r,i:i}; });
 
   if(catF !== 'all') {
+    // Filter within current section first, then apply category
     if(section === 'production') {
       indexed = indexed.filter(function(x){
         var r = x.r;
-        if(r.section==='fermentation'||r.section==='pastry'||r.section==='outlet') return false;
+        if(r.section==='fermentation' || r.section==='pastry' || r.section==='outlet') return false;
         if(r.outlet && r.outlet.length) return false;
-        if(r.cat==='Fermentation'||r.cat==='Pastry') return false;
+        if(r.cat==='Fermentation' || r.cat==='Pastry') return false;
         return r.cat === catF;
       });
     } else if(section === 'pastry') {
-      indexed = indexed.filter(function(x){ return (x.r.section==='pastry'||x.r.cat==='Pastry') && x.r.cat===catF; });
+      indexed = indexed.filter(function(x){
+        return (x.r.section==='pastry' || x.r.cat==='Pastry') && x.r.cat === catF;
+      });
     } else if(section === 'fermentation') {
-      indexed = indexed.filter(function(x){ return (x.r.section==='fermentation'||x.r.cat==='Fermentation') && x.r.cat===catF; });
+      indexed = indexed.filter(function(x){
+        return (x.r.section==='fermentation' || x.r.cat==='Fermentation') && x.r.cat === catF;
+      });
     } else if(section.indexOf('outlet:')===0) {
       var outletName2 = decodeURIComponent(section.slice(7));
       indexed = indexed.filter(function(x){ return x.r.outlet===outletName2 && x.r.cat===catF; });
@@ -7331,112 +7331,49 @@ function renderRecipes() {
     if(section === 'production') {
       indexed = indexed.filter(function(x){
         var r = x.r;
-        if(r.section==='fermentation'||r.section==='pastry'||r.section==='outlet') return false;
+        if(r.section==='fermentation' || r.section==='pastry' || r.section==='outlet') return false;
         if(r.outlet && r.outlet.length) return false;
-        if(r.cat==='Fermentation'||r.cat==='Pastry') return false;
+        if(r.cat==='Fermentation' || r.cat==='Pastry') return false;
         return true;
       });
     } else if(section === 'pastry') {
-      indexed = indexed.filter(function(x){ return x.r.section==='pastry'||x.r.cat==='Pastry'; });
+      indexed = indexed.filter(function(x){
+        return x.r.section==='pastry' || x.r.cat==='Pastry';
+      });
     } else if(section === 'fermentation') {
-      indexed = indexed.filter(function(x){ return x.r.section==='fermentation'||x.r.cat==='Fermentation'; });
+      indexed = indexed.filter(function(x){
+        return x.r.section==='fermentation' || x.r.cat==='Fermentation';
+      });
     } else if(section.indexOf('outlet:')===0) {
       var outletName = decodeURIComponent(section.slice(7));
       indexed = indexed.filter(function(x){ return x.r.outlet===outletName; });
     }
   }
 
-  // Clear grid with DOM (not innerHTML)
-  while(g.firstChild) g.removeChild(g.firstChild);
-
   if(!indexed.length) {
-    var empty = document.createElement('div');
-    empty.className = 'empty';
-    var emptyIcon = document.createElement('div');
-    emptyIcon.style.cssText = 'font-size:1.2rem;margin-bottom:.4rem';
-    emptyIcon.textContent = '📋';
-    empty.appendChild(emptyIcon);
-    var emptyTitle = document.createElement('div');
-    emptyTitle.style.cssText = 'font-family:var(--fm);font-size:.98rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.3rem';
-    emptyTitle.textContent = 'No recipes here yet';
-    empty.appendChild(emptyTitle);
-    var emptySub = document.createElement('div');
-    emptySub.style.cssText = 'font-size:.95rem;color:var(--smoke)';
-    emptySub.textContent = 'Add a recipe and assign it to this section.';
-    empty.appendChild(emptySub);
-    var emptyBtn = document.createElement('button');
-    emptyBtn.className = 'btn-p';
-    emptyBtn.style.marginTop = '.8rem';
-    emptyBtn.textContent = '+ Add Recipe';
-    emptyBtn.addEventListener('click', openNewRecipe);
-    empty.appendChild(emptyBtn);
-    g.appendChild(empty);
+    g.innerHTML = '<div class="empty"><div style="font-size:1.2rem;margin-bottom:.4rem">📋</div>'
+      +'<div style="font-family:var(--fm);font-size:.98rem;letter-spacing:.15em;text-transform:uppercase;margin-bottom:.3rem">No recipes here yet</div>'
+      +'<div style="font-size:.95rem;color:var(--smoke)">Add a recipe and assign it to this section.</div>'
+      +'<button class="btn-p" onclick="openNewRecipe()" style="margin-top:.8rem">+ Add Recipe</button></div>';
     return;
   }
 
+  var html='';
   indexed.forEach(function(x){
     var r=x.r; var i=x.i; var c=totalCost(r); var sp=r.sellPrice||0;
-
-    var card = document.createElement('div');
-    card.className = 'rc';
-    (function(idx){ card.addEventListener('click', function(){ openDetail(idx); }); })(i);
-
-    // Photo
-    if(r.photo){
-      var img = document.createElement('img');
-      img.className = 'rc-img';
-      img.src = r.photo;
-      card.appendChild(img);
-    } else {
-      var ph = document.createElement('div');
-      ph.className = 'rc-ph';
-      ph.textContent = 'No photo';
-      card.appendChild(ph);
-    }
-
-    // Body
-    var body = document.createElement('div');
-    body.className = 'rc-body';
-
-    // Tag line
-    var tagLine = document.createElement('div');
-    tagLine.className = 'rc-tag';
-    tagLine.textContent = r.cat + (r.tag?' · '+r.tag:'');
-    body.appendChild(tagLine);
-
-    // Section badge + R&D badge
-    var badgeColor = r.section==='production'?'#3a7a9c': r.section==='pastry'?'var(--terracotta)':'var(--moss)';
-    var badgeText = r.section==='production'?'Production': r.section==='pastry'?'Pastry': (r.outlet||'');
-    if(badgeText){
-      var badge = document.createElement('span');
-      badge.style.cssText = 'font-family:var(--fm);font-size:.9rem;text-transform:uppercase;color:'+badgeColor;
-      badge.textContent = badgeText;
-      body.appendChild(badge);
-    }
-    if(r.tag==='R&D' || r.rndSource){
-      var rndBadge = document.createElement('span');
-      rndBadge.style.cssText = 'font-family:var(--fm);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;background:var(--terracotta);color:white;padding:.1rem .4rem;border-radius:3px;margin-left:.4rem';
-      rndBadge.textContent = 'R&D';
-      body.appendChild(rndBadge);
-    }
-
-    var name = document.createElement('div');
-    name.className = 'rc-name';
-    name.textContent = r.name;
-    body.appendChild(name);
-
-    var meta = document.createElement('div');
-    meta.className = 'rc-meta';
-    var costSpan = document.createElement('span'); costSpan.textContent = 'Cost '+c; meta.appendChild(costSpan);
-    var sellSpan = document.createElement('span'); sellSpan.textContent = 'Sell '+sp; meta.appendChild(sellSpan);
-    if(r.nutrition && r.nutrition.kcal){
-      var nutSpan = document.createElement('span'); nutSpan.textContent = r.nutrition.kcal+'kcal'; meta.appendChild(nutSpan);
-    }
-    body.appendChild(meta);
-    card.appendChild(body);
-    g.appendChild(card);
+    var img = r.photo ? '<img class="rc-img" src="'+r.photo+'">' : '<div class="rc-ph">No photo</div>';
+    var nut = r.nutrition ? '<span>'+r.nutrition.kcal+'kcal</span>' : '';
+    var badge = r.section==='production'
+      ? '<span style="font-family:var(--fm);font-size:.9rem;text-transform:uppercase;color:#3a7a9c">Production</span>'
+      : r.section==='pastry'
+      ? '<span style="font-family:var(--fm);font-size:.9rem;text-transform:uppercase;color:var(--terracotta)">Pastry</span>'
+      : (r.outlet ? '<span style="font-family:var(--fm);font-size:.9rem;text-transform:uppercase;color:var(--moss)">'+r.outlet+'</span>' : '');
+    html += '<div class="rc" onclick="openDetail('+i+')">'+img
+      +'<div class="rc-body"><div class="rc-tag">'+r.cat+(r.tag?' · '+r.tag:'')+'</div>'+badge
+      +'<div class="rc-name">'+r.name+'</div>'
+      +'<div class="rc-meta"><span>Cost '+c+'</span><span>Sell '+sp+'</span>'+nut+'</div></div></div>';
   });
-
+  g.innerHTML = html;
   var _sr=document.getElementById('stat-r'); if(_sr) _sr.textContent=recipes.length;
 }
 
@@ -8177,154 +8114,43 @@ function saveOutlets() {
 }
 
 function openDetail(i) {
-  var r=recipes[i]; if(!r) return;
-  var c=totalCost(r); var sp=r.sellPrice||0; var gm=sp>0?((sp-c)/sp*100).toFixed(1):0;
-  document.getElementById('rlv').style.display='none';
-  document.getElementById('rdv').style.display='block';
-
-  var dc = document.getElementById('dc');
-  while(dc.firstChild) dc.removeChild(dc.firstChild);
-
-  // Photo
-  if(r.photo){
-    var heroImg = document.createElement('img');
-    heroImg.className = 'detail-hero';
-    heroImg.src = r.photo;
-    dc.appendChild(heroImg);
+  var r=recipes[i]; var c=totalCost(r); var sp=r.sellPrice||0; var gm=sp>0?((sp-c)/sp*100).toFixed(1):0;
+  document.getElementById('rlv').style.display='none'; document.getElementById('rdv').style.display='block';
+  var nut=r.nutrition; var nutH='';
+  if (nut&&(nut.kcal||nut.prot)) {
+    nutH='<div class="nutr-grid"><div class="nutr-card"><div class="nutr-label">Kcal</div><div class="nutr-val">'+nut.kcal+'</div><div class="nutr-unit">per portion</div></div><div class="nutr-card"><div class="nutr-label">Protein</div><div class="nutr-val">'+nut.prot+'</div><div class="nutr-unit">g</div></div><div class="nutr-card"><div class="nutr-label">Carbs</div><div class="nutr-val">'+nut.carbs+'</div><div class="nutr-unit">g</div></div><div class="nutr-card"><div class="nutr-label">Fat</div><div class="nutr-val">'+nut.fat+'</div><div class="nutr-unit">g</div></div><div class="nutr-card"><div class="nutr-label">Fibre</div><div class="nutr-val">'+nut.fibre+'</div><div class="nutr-unit">g</div></div></div>';
   }
-
-  // Header
-  var hdrWrap = document.createElement('div');
-  hdrWrap.style.marginBottom = '1.1rem';
-  var titleEl = document.createElement('div');
-  titleEl.style.cssText = 'font-family:var(--fd);font-size:1.9rem;font-weight:300;letter-spacing:.05em';
-  titleEl.textContent = r.name;
-  hdrWrap.appendChild(titleEl);
-  var tagsRow = document.createElement('div');
-  tagsRow.style.cssText = 'display:flex;gap:.38rem;flex-wrap:wrap;margin:.45rem 0';
-  function addTag(text, style){
-    var t = document.createElement('span'); t.className='dtag';
-    if(style) t.style.cssText = style;
-    t.textContent = text; tagsRow.appendChild(t);
-  }
-  addTag(r.cat);
-  if(r.tag) addTag(r.tag);
-  addTag(r.portions+' portions');
-  if(r.allergens) addTag(r.allergens, 'border-color:var(--terra-lt);color:var(--terra-lt)');
-  if(r.rndSource || r.tag==='R&D') addTag('R&D', 'background:var(--terracotta);color:white;border-color:var(--terracotta)');
-  hdrWrap.appendChild(tagsRow);
-  dc.appendChild(hdrWrap);
-
-  // Nutrition
-  var nut = r.nutrition;
-  if(nut && (nut.kcal || nut.prot)){
-    var nutGrid = document.createElement('div');
-    nutGrid.className = 'nutr-grid';
-    [['Kcal',nut.kcal,'per portion'],['Protein',nut.prot,'g'],['Carbs',nut.carbs,'g'],['Fat',nut.fat,'g'],['Fibre',nut.fibre,'g']].forEach(function(d){
-      var nc = document.createElement('div'); nc.className='nutr-card';
-      var nl = document.createElement('div'); nl.className='nutr-label'; nl.textContent=d[0]; nc.appendChild(nl);
-      var nv = document.createElement('div'); nv.className='nutr-val'; nv.textContent=d[1]||0; nc.appendChild(nv);
-      var nu = document.createElement('div'); nu.className='nutr-unit'; nu.textContent=d[2]; nc.appendChild(nu);
-      nutGrid.appendChild(nc);
-    });
-    dc.appendChild(nutGrid);
-  }
-
-  // Scale bar
-  var scaleBar = document.createElement('div');
-  scaleBar.style.cssText = 'background:var(--parchment);border:1px solid var(--sand);padding:.7rem .95rem;margin-bottom:1.1rem;display:flex;align-items:center;gap:.85rem;flex-wrap:wrap';
-  var scaleLabel = document.createElement('span');
-  scaleLabel.style.cssText = 'font-family:var(--fm);font-size:.84rem;letter-spacing:.15em;text-transform:uppercase;color:var(--smoke)';
-  scaleLabel.textContent = 'Scale:';
-  scaleBar.appendChild(scaleLabel);
-  var scaleInput = document.createElement('input');
-  scaleInput.type='number'; scaleInput.value=r.portions; scaleInput.min='1';
-  scaleInput.style.cssText = 'width:62px;border:1px solid var(--sand);background:var(--oat);padding:.38rem .55rem;font-family:var(--fd);font-size:.95rem;text-align:center;color:var(--ash);outline:none';
-  (function(idx){ scaleInput.addEventListener('change', function(){ scaleDetail(idx, this.value); }); })(i);
-  scaleBar.appendChild(scaleInput);
-  var scaleNote = document.createElement('span');
-  scaleNote.id='sn'; scaleNote.style.cssText='font-family:var(--fm);font-size:.86rem;color:var(--smoke)'; scaleNote.textContent='Base';
-  scaleBar.appendChild(scaleNote);
-  dc.appendChild(scaleBar);
-
-  // Two-column layout
-  var cols = document.createElement('div');
-  cols.style.cssText = 'display:grid;grid-template-columns:1fr 1.5fr;gap:1.6rem';
-
-  // Left: ingredients + cost
-  var leftCol = document.createElement('div');
-  var ingHdr = document.createElement('div'); ingHdr.className='sec-t'; ingHdr.textContent='Ingredients'; leftCol.appendChild(ingHdr);
-  var ingList = document.createElement('ul'); ingList.className='il'; ingList.id='sil';
-  if(r.ingredients) r.ingredients.forEach(function(g2){
-    var li = document.createElement('li');
-    li.textContent = g2.name;
-    var qs = document.createElement('span'); qs.textContent = g2.qty+' '+g2.unit; li.appendChild(qs);
-    ingList.appendChild(li);
-  });
-  leftCol.appendChild(ingList);
-
-  var costCard = document.createElement('div'); costCard.className='cost-card';
-  var costHdr = document.createElement('div'); costHdr.className='sec-t'; costHdr.style.marginBottom='.55rem'; costHdr.textContent='Cost'; costCard.appendChild(costHdr);
-  if(r.ingredients) r.ingredients.forEach(function(g2){
-    var row = document.createElement('div'); row.className='cr';
-    row.textContent = g2.name;
-    var cs = document.createElement('span'); cs.textContent=g2.cost; row.appendChild(cs);
-    costCard.appendChild(row);
-  });
-  var totRow = document.createElement('div'); totRow.className='ct'; totRow.textContent='Total';
-  var totSpan = document.createElement('span'); totSpan.textContent=c; totRow.appendChild(totSpan); costCard.appendChild(totRow);
-  var sellRow = document.createElement('div'); sellRow.className='cr'; sellRow.style.cssText='font-family:var(--fm);font-size:.86rem'; sellRow.textContent='Sell Price';
-  var sellSpan = document.createElement('span'); sellSpan.textContent=sp; sellRow.appendChild(sellSpan); costCard.appendChild(sellRow);
-  var gmRow = document.createElement('div'); gmRow.className='cr'; gmRow.style.cssText='font-family:var(--fm);font-size:.86rem;color:var(--moss)'; gmRow.textContent='Gross Margin';
-  var gmSpan = document.createElement('span'); gmSpan.textContent=gm+'%'; gmRow.appendChild(gmSpan); costCard.appendChild(gmRow);
-  leftCol.appendChild(costCard);
-  cols.appendChild(leftCol);
-
-  // Right: method + notes
-  var rightCol = document.createElement('div');
-  var methHdr = document.createElement('div'); methHdr.className='sec-t'; methHdr.textContent='Method'; rightCol.appendChild(methHdr);
-  var stepsList = document.createElement('ol'); stepsList.className='steps';
-  if(r.method){ r.method.split('.').forEach(function(pt){ if(pt.trim()){ var li=document.createElement('li'); li.textContent=pt.trim()+'.'; stepsList.appendChild(li); } }); }
-  rightCol.appendChild(stepsList);
-  if(r.notes){
-    var notesWrap = document.createElement('div'); notesWrap.style.marginTop='1.1rem';
-    var notesHdr = document.createElement('div'); notesHdr.className='sec-t'; notesHdr.textContent='Chef Notes'; notesWrap.appendChild(notesHdr);
-    var notesPara = document.createElement('p'); notesPara.style.cssText='font-size:.98rem;line-height:1.7;color:var(--smoke);font-style:italic'; notesPara.textContent=r.notes; notesWrap.appendChild(notesPara);
-    rightCol.appendChild(notesWrap);
-  }
-  cols.appendChild(rightCol);
-  dc.appendChild(cols);
-
-  // Actions
-  var actions = document.createElement('div');
-  actions.style.cssText = 'display:flex;gap:.65rem;margin-top:1.6rem;padding-top:.85rem;border-top:1px solid var(--sand);flex-wrap:wrap';
-  var pdfBtn = document.createElement('button'); pdfBtn.className='btn-p'; pdfBtn.textContent='↓ PDF';
-  (function(idx){ pdfBtn.addEventListener('click', function(){ downloadRecipePDF(idx); }); })(i);
-  actions.appendChild(pdfBtn);
-  var expBtn = document.createElement('button'); expBtn.className='btn-g'; expBtn.textContent='↑ Export & Share';
-  (function(idx){ expBtn.addEventListener('click', function(){ exportRecipe(idx); }); })(i);
-  actions.appendChild(expBtn);
-  var delBtn = document.createElement('button'); delBtn.className='btn-g'; delBtn.textContent='Delete';
-  (function(idx){ delBtn.addEventListener('click', function(){ deleteRecipe(idx); }); })(i);
-  actions.appendChild(delBtn);
-  dc.appendChild(actions);
+  var ingH=''; if(r.ingredients) for(var j=0;j<r.ingredients.length;j++){var g2=r.ingredients[j]; ingH+='<li>'+g2.name+'<span>'+g2.qty+' '+g2.unit+'</span></li>';}
+  var cstH=''; if(r.ingredients) for(var j=0;j<r.ingredients.length;j++){var g2=r.ingredients[j]; cstH+='<div class="cr">'+g2.name+'<span>'+g2.cost+'</span></div>';}
+  var stH=''; if(r.method){var pts=r.method.split('.'); for(var j=0;j<pts.length;j++){if(pts[j].trim()) stH+='<li>'+pts[j].trim()+'.</li>';}}
+  document.getElementById('dc').innerHTML=(r.photo?'<img class="detail-hero" src="'+r.photo+'">'  :'')+
+    '<div style="margin-bottom:1.1rem"><div style="font-family:var(--fd);font-size:1.9rem;font-weight:300;letter-spacing:.05em">'+r.name+'</div>'+
+    '<div style="display:flex;gap:.38rem;flex-wrap:wrap;margin:.45rem 0"><span class="dtag">'+r.cat+'</span>'+(r.tag?'<span class="dtag">'+r.tag+'</span>':'')+
+    '<span class="dtag">'+r.portions+' portions</span>'+(r.allergens?'<span class="dtag" style="border-color:var(--terra-lt);color:var(--terra-lt)">'+r.allergens+'</span>':'')+
+    '</div></div>'+nutH+
+    '<div style="background:var(--parchment);border:1px solid var(--sand);padding:.7rem .95rem;margin-bottom:1.1rem;display:flex;align-items:center;gap:.85rem;flex-wrap:wrap">'+
+    '<span style="font-family:var(--fm);font-size:.84rem;letter-spacing:.15em;text-transform:uppercase;color:var(--smoke)">Scale:</span>'+
+    '<input style="width:62px;border:1px solid var(--sand);background:var(--oat);padding:.38rem .55rem;font-family:var(--fd);font-size:.95rem;text-align:center;color:var(--ash);outline:none" type="number" value="'+r.portions+'" min="1" onchange="scaleDetail('+i+',this.value)">'+
+    '<span style="font-family:var(--fm);font-size:.86rem;color:var(--smoke)" id="sn">Base</span></div>'+
+    '<div style="display:grid;grid-template-columns:1fr 1.5fr;gap:1.6rem">'+
+    '<div><div class="sec-t">Ingredients</div><ul class="il" id="sil">'+ingH+'</ul>'+
+    '<div class="cost-card"><div class="sec-t" style="margin-bottom:.55rem">Cost</div>'+cstH+
+    '<div class="ct">Total<span>'+c+'</span></div>'+
+    '<div class="cr" style="font-family:var(--fm);font-size:.86rem">Sell Price<span>'+sp+'</span></div>'+
+    '<div class="cr" style="font-family:var(--fm);font-size:.86rem;color:var(--moss)">Gross Margin<span>'+gm+'%</span></div></div></div>'+
+    '<div><div class="sec-t">Method</div><ol class="steps">'+stH+'</ol>'+(r.notes?'<div style="margin-top:1.1rem"><div class="sec-t">Chef Notes</div><p style="font-size:.98rem;line-height:1.7;color:var(--smoke);font-style:italic">'+r.notes+'</p></div>':'')+
+    '</div></div>'+
+    '<div style="display:flex;gap:.65rem;margin-top:1.6rem;padding-top:.85rem;border-top:1px solid var(--sand);flex-wrap:wrap">'+
+    '<button class="btn-p" onclick="downloadRecipePDF('+i+')">&#8595; PDF</button>'+
+    '<button class="btn-g" onclick="exportRecipe('+i+')">&#8679; Export &amp; Share</button>'+
+    '<button class="btn-g" onclick="deleteRecipe('+i+')">Delete</button></div>';
 }
 
 function scaleDetail(i,n) {
-  var r=recipes[i]; if(!r) return;
-  var ratio=n/r.portions;
-  var sil = document.getElementById('sil');
-  if(!sil) return;
-  while(sil.firstChild) sil.removeChild(sil.firstChild);
-  if(r.ingredients) r.ingredients.forEach(function(g){
-    var q=(g.qty*ratio).toFixed(1).replace(/\.0$/,'');
-    var li = document.createElement('li');
-    li.textContent = g.name;
-    var qs = document.createElement('span'); qs.textContent=q+' '+g.unit; li.appendChild(qs);
-    sil.appendChild(li);
-  });
-  var sn = document.getElementById('sn');
-  if(sn) sn.textContent = n==r.portions?'Base':'x'+parseFloat(ratio).toFixed(2);
+  var r=recipes[i]; var ratio=n/r.portions; var html='';
+  if(r.ingredients) for(var j=0;j<r.ingredients.length;j++){var g=r.ingredients[j]; var q=(g.qty*ratio).toFixed(1).replace(/\.0$/,''); html+='<li>'+g.name+'<span>'+q+' '+g.unit+'</span></li>';}
+  document.getElementById('sil').innerHTML=html;
+  document.getElementById('sn').textContent=n==r.portions?'Base':'x'+parseFloat(ratio).toFixed(2);
 }
 function closeDetail() { document.getElementById('rlv').style.display='block'; document.getElementById('rdv').style.display='none'; }
 function deleteRecipe(i) { if(confirm('Delete?')){ recipes.splice(i,1); closeDetail(); renderRecipes(); } }
@@ -13607,139 +13433,87 @@ function usePLDataInModule(moduleId) {
      FLAVOUR MATRIX ADMIN PAGE
      Admin/Builder only — not visible to clients or guests
      ══════════════════════════════════════════════════════════ -->
-<div class="page" id="page-rnd" style="display:none;padding-top:0">
-  <!-- ── LIST VIEW ── -->
-  <div id="rnd-list-view">
-    <div class="ph">
-      <div><div class="pt">R&amp;D Lab</div><div class="ps">Culinary Research &amp; Development — Ingredient &amp; Recipe Development</div></div>
-      <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
-        <button class="btn-p" id="rnd-new-ingredient-btn" style="font-size:.82rem">+ Ingredient Project</button>
-        <button class="btn-p" id="rnd-new-recipe-btn" style="font-size:.82rem;background:var(--terracotta);border-color:var(--terracotta)">+ Recipe Project</button>
-        <button id="rnd-clear-btn" style="font-size:.78rem;font-family:var(--fm);letter-spacing:.1em;text-transform:uppercase;color:var(--t4);background:none;border:1px solid var(--sand);border-radius:4px;padding:.4rem .8rem;cursor:pointer">Clear All</button>
-      </div>
+<div class="page" id="page-rnd" style="display:none">
+  <div class="ph">
+    <div><div class="pt">R&amp;D Lab</div><div class="ps">Culinary Research &amp; Development — Ingredient &amp; Recipe Development</div></div>
+    <div style="display:flex;gap:.6rem;align-items:center">
+      <button class="btn-p" onclick="showRndForm('ingredient')" style="font-size:.82rem">+ Ingredient Project</button>
+      <button class="btn-p" onclick="showRndForm('recipe')" style="font-size:.82rem;background:var(--terracotta);border-color:var(--terracotta)">+ Recipe Project</button>
+      <button onclick="clearAllRndProjects()" style="font-size:.78rem;font-family:var(--fm);letter-spacing:.1em;text-transform:uppercase;color:var(--t4);background:none;border:1px solid var(--sand);border-radius:4px;padding:.4rem .8rem;cursor:pointer" title="Clear all R&D projects">Clear All</button>
     </div>
-
-    <!-- NEW PROJECT FORM -->
-    <div id="rnd-form" style="display:none;background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:1.5rem;margin-bottom:2rem;max-width:860px">
-      <div style="font-family:var(--fm);font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;color:var(--terracotta);margin-bottom:1rem" id="rnd-form-title">New R&amp;D Project</div>
-      <input type="hidden" id="rnd-type" value="ingredient">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-        <div><label class="fl">Project Name</label><input class="fi" id="rnd-name" placeholder="e.g. Fermented Green Mango, Burnt Leek Garum"></div>
-        <div><label class="fl">Led by</label><input class="fi" id="rnd-chef" placeholder="Chef name or team"></div>
-      </div>
-      <div style="margin-bottom:1rem">
-        <label class="fl">Idea &amp; Vision <span style="font-weight:400;opacity:.6">— describe what you have in mind, the ingredient, the feeling, the dish direction</span></label>
-        <textarea class="fi" id="rnd-idea" rows="4" placeholder="Describe the ingredient or dish concept. Include what excites you about it, what technique you're thinking about, any reference flavours or dishes, and what problem or opportunity you're solving..."></textarea>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
-        <div>
-          <label class="fl">Primary Technique Direction</label>
-          <select class="fi" id="rnd-technique">
-            <option value="">— let AI decide —</option>
-            <option>Fermentation</option><option>Curing &amp; Brining</option><option>Fire &amp; Smoke</option>
-            <option>Dehydration</option><option>Koji &amp; Mould</option><option>Extraction &amp; Infusion</option>
-            <option>Emulsification</option><option>Gelification</option><option>Distillation</option>
-            <option>Raw &amp; Ceviche</option><option>Pressure &amp; Vacuum</option><option>Live Fire Roasting</option>
-            <option>Open to AI</option>
-          </select>
-        </div>
-        <div><label class="fl">Cuisine Context</label><input class="fi" id="rnd-cuisine" placeholder="e.g. Modern Thai, Japanese"></div>
-        <div>
-          <label class="fl">Target Format</label>
-          <select class="fi" id="rnd-format">
-            <option value="">Open</option><option>Fine Dining</option><option>Casual Elevated</option>
-            <option>Bar Snack</option><option>Pastry / Dessert</option><option>Ferment / Condiment</option>
-            <option>Base Preparation</option>
-          </select>
-        </div>
-      </div>
-      <div style="display:flex;gap:.8rem;flex-wrap:wrap">
-        <button class="btn-p" id="rnd-submit-btn">Generate Development Framework</button>
-        <button class="btn-g" id="rnd-form-cancel-btn">Cancel</button>
-      </div>
-    </div>
-
-    <!-- PROJECT CARDS -->
-    <div id="rnd-list"></div>
   </div>
 
-  <!-- ── PROJECT DETAIL VIEW (4 tabs) ── -->
-  <div id="rnd-project-view" style="display:none">
+  <!-- PROJECT LIST -->
+  <div id="rnd-list" style="margin-bottom:2rem"></div>
 
-    <!-- Back bar -->
-    <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1.4rem;padding-bottom:.9rem;border-bottom:1px solid var(--sand)">
-      <button class="btn-p" id="rnd-back-btn" style="font-size:.85rem">← All Projects</button>
-      <div id="rnd-project-title" style="font-family:var(--fd);font-size:1.5rem;font-weight:300;color:var(--t);flex:1"></div>
-      <span id="rnd-project-status-badge" style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:white;padding:.2rem .6rem;border-radius:3px"></span>
+  <!-- NEW PROJECT FORM -->
+  <div id="rnd-form" style="display:none;background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:1.5rem;margin-bottom:2rem;max-width:860px">
+    <div style="font-family:var(--fm);font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;color:var(--terracotta);margin-bottom:1rem" id="rnd-form-title">New R&amp;D Project</div>
+    <input type="hidden" id="rnd-type" value="ingredient">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div>
+        <label class="fl">Project Name</label>
+        <input class="fi" id="rnd-name" placeholder="e.g. Fermented Green Mango, Burnt Leek Garum">
+      </div>
+      <div>
+        <label class="fl">Led by</label>
+        <input class="fi" id="rnd-chef" placeholder="Chef name or team">
+      </div>
     </div>
 
-    <!-- 4 Tab bar -->
-    <div class="tab-row" id="rnd-tab-row" style="margin-bottom:1.4rem">
-      <button class="tab-btn active" id="rnd-tab-btn-research"   data-rndtab="research">🔬 Research</button>
-      <button class="tab-btn"        id="rnd-tab-btn-recipe"     data-rndtab="recipe">📋 Recipe Card</button>
-      <button class="tab-btn"        id="rnd-tab-btn-matrix"     data-rndtab="matrix">⬡ Flavour Matrix</button>
-      <button class="tab-btn"        id="rnd-tab-btn-pickup"     data-rndtab="pickup">📦 Pickup &amp; Stage</button>
+    <div style="margin-bottom:1rem">
+      <label class="fl">Idea &amp; Vision <span style="font-weight:400;opacity:.6">— describe what you have in mind, the ingredient, the feeling, the dish direction</span></label>
+      <textarea class="fi" id="rnd-idea" rows="4" placeholder="Describe the ingredient or dish concept. Include what excites you about it, what technique you're thinking about, any reference flavours or dishes, and what problem or opportunity you're solving..."></textarea>
     </div>
 
-    <!-- TAB 1: RESEARCH -->
-    <div id="rnd-tab-research" class="rnd-tab-pane">
-      <!-- Concept block -->
-      <div style="background:var(--oat);border:1px solid var(--sand);border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.2rem">
-        <div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--terracotta);margin-bottom:.4rem">Original Concept</div>
-        <div id="rnd-r-concept" style="font-size:.9rem;color:var(--t);line-height:1.7;white-space:pre-wrap"></div>
-      </div>
-      <!-- AI Framework -->
-      <div style="margin-bottom:1.4rem">
-        <div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem">AI Development Framework</div>
-        <div id="rnd-r-framework" style="font-size:.88rem;color:var(--t);line-height:1.8"></div>
-      </div>
-      <!-- Sessions log -->
-      <div id="rnd-r-sessions"></div>
-      <!-- Add session -->
-      <div style="background:var(--oat);border:1px solid var(--sand);border-radius:8px;padding:1rem 1.2rem;margin-bottom:1rem">
-        <div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:.6rem">Add Test Session Notes</div>
-        <select id="rnd-session-status-sel" class="fi" style="margin-bottom:.6rem;max-width:220px">
-          <option value="in_development">In Development</option>
-          <option value="testing">Testing</option>
-          <option value="concept">Back to Concept</option>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem" id="rnd-meta-fields">
+      <div>
+        <label class="fl">Primary Technique Direction</label>
+        <select class="fi" id="rnd-technique">
+          <option value="">— let AI decide —</option>
+          <option>Fermentation</option>
+          <option>Curing &amp; Brining</option>
+          <option>Fire &amp; Smoke</option>
+          <option>Dehydration</option>
+          <option>Koji &amp; Mould</option>
+          <option>Extraction &amp; Infusion</option>
+          <option>Emulsification</option>
+          <option>Gelification</option>
+          <option>Distillation</option>
+          <option>Raw &amp; Ceviche</option>
+          <option>Pressure &amp; Vacuum</option>
+          <option>Live Fire Roasting</option>
+          <option>Open to AI</option>
         </select>
-        <textarea class="fi" id="rnd-session-note-input" rows="4" placeholder="Document today's test — what you tried, temperatures, ratios, results, what worked, what failed, next steps..."></textarea>
-        <div style="display:flex;gap:.6rem;margin-top:.6rem">
-          <button class="btn-p" id="rnd-add-session-btn">Save Session Notes</button>
-        </div>
       </div>
-      <!-- Stage advance bar -->
-      <div id="rnd-research-stage-bar" style="margin-top:1.2rem;display:none">
-        <div style="background:var(--parchment);border:1px solid var(--sand);border-left:3px solid var(--terracotta);border-radius:0 8px 8px 0;padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem">
-          <div>
-            <div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.13em;text-transform:uppercase;color:var(--terracotta);margin-bottom:.2rem">Ready to advance?</div>
-            <div id="rnd-research-stage-label" style="font-size:.88rem;color:var(--t)"></div>
-          </div>
-          <button id="rnd-research-advance-btn" class="btn-p" style="white-space:nowrap"></button>
-        </div>
+      <div id="rnd-cuisine-wrap">
+        <label class="fl">Cuisine Context</label>
+        <input class="fi" id="rnd-cuisine" placeholder="e.g. Modern Thai, Japanese">
       </div>
-      <!-- Delete -->
-      <div style="margin-top:.8rem">
-        <button id="rnd-delete-btn" style="font-size:.8rem;color:var(--t4);background:none;border:none;cursor:pointer;padding:.3rem">Delete project</button>
+      <div>
+        <label class="fl">Target Format</label>
+        <select class="fi" id="rnd-format">
+          <option value="">Open</option>
+          <option>Fine Dining</option>
+          <option>Casual Elevated</option>
+          <option>Bar Snack</option>
+          <option>Pastry / Dessert</option>
+          <option>Ferment / Condiment</option>
+          <option>Base Preparation</option>
+        </select>
       </div>
     </div>
 
-    <!-- TAB 2: RECIPE CARD -->
-    <div id="rnd-tab-recipe" class="rnd-tab-pane" style="display:none">
-      <div id="rnd-recipe-content"></div>
+    <div style="display:flex;gap:.8rem;flex-wrap:wrap">
+      <button class="btn-p" onclick="createRndProject()" id="rnd-submit-btn">Generate Development Framework</button>
+      <button class="btn-g" onclick="document.getElementById('rnd-form').style.display='none'">Cancel</button>
     </div>
-
-    <!-- TAB 3: FLAVOUR MATRIX -->
-    <div id="rnd-tab-matrix" class="rnd-tab-pane" style="display:none">
-      <div id="rnd-matrix-content"></div>
-    </div>
-
-    <!-- TAB 4: PICKUP & STAGE -->
-    <div id="rnd-tab-pickup" class="rnd-tab-pane" style="display:none">
-      <div id="rnd-pickup-content"></div>
-    </div>
-
   </div>
+
+  <!-- PROJECT DETAIL VIEW -->
+  <div id="rnd-detail" style="display:none;max-width:960px"></div>
+
 </div>
 
 <div class="page" id="page-lab" style="display:none">
@@ -14008,9 +13782,6 @@ function usePLDataInModule(moduleId) {
     </div>
   </div>
 
-</div>
-
-</main>
 </div>
 
 
@@ -18116,1355 +17887,777 @@ console.log('[Cultivate Agent v2] Initialized. Outlets:', state.outlets.length, 
      ═══════════════════════════════════════════════════════════ -->
 <script>
 (function(){
-'use strict';
 
-// ── STORAGE ───────────────────────────────────────────────────
 var RND_KEY = 'cultivate_rnd_projects_v1';
+
 function getRndProjects(){ try{ return JSON.parse(localStorage.getItem(RND_KEY)||'[]'); }catch(e){ return []; } }
 function saveRndProjects(p){ try{ localStorage.setItem(RND_KEY, JSON.stringify(p)); }catch(e){} }
 
-// ── STATE ─────────────────────────────────────────────────────
-var _currentProjectId = null;
-var _currentTab = 'research';
-
-// ── STAGE CONFIG ──────────────────────────────────────────────
-var STAGES = ['Concept','R&D','Recipe','Costing','Matrix','Pickup','Approved'];
-var STAGE_COLORS = {
-  'Concept':'#4a90d9','R&D':'#9b59b6','Recipe':'#d4a017',
-  'Costing':'#C2744A','Matrix':'#2e8b8b','Pickup':'#5a7a5a','Approved':'#2d6a2d'
-};
-
-function stageColor(s){ return STAGE_COLORS[s] || 'var(--smoke)'; }
-
-// legacy status → new stage map for backwards compat
-function legacyToStage(p){
-  if(p.stage) return p.stage;
-  var map = {concept:'Concept',in_development:'R&D',testing:'Recipe',approved:'Approved'};
-  return map[p.status] || 'Concept';
-}
-
-// ── HELPERS ───────────────────────────────────────────────────
-function el(id){ return document.getElementById(id); }
-function mk(tag, props, children){
-  var node = document.createElement(tag);
-  if(props){
-    Object.keys(props).forEach(function(k){
-      if(k === 'style' && typeof props[k] === 'object'){
-        Object.assign(node.style, props[k]);
-      } else if(k === 'cls'){
-        props[k].split(' ').forEach(function(c){ if(c) node.classList.add(c); });
-      } else if(k === 'html'){
-        node.innerHTML = props[k];
-      } else if(k === 'text'){
-        node.textContent = props[k];
-      } else {
-        node.setAttribute(k, props[k]);
-      }
-    });
-  }
-  if(children){
-    (Array.isArray(children)?children:[children]).forEach(function(c){
-      if(c == null) return;
-      if(typeof c === 'string') node.appendChild(document.createTextNode(c));
-      else node.appendChild(c);
-    });
-  }
-  return node;
-}
-function txt(s){ return document.createTextNode(String(s||'')); }
-function escHtmlRnd(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// ── INIT LISTENERS ────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function(){
-  // New project buttons
-  el('rnd-new-ingredient-btn').addEventListener('click', function(){ showRndForm('ingredient'); });
-  el('rnd-new-recipe-btn').addEventListener('click', function(){ showRndForm('recipe'); });
-  el('rnd-clear-btn').addEventListener('click', clearAllRndProjects);
-  el('rnd-submit-btn').addEventListener('click', createRndProject);
-  el('rnd-form-cancel-btn').addEventListener('click', function(){ el('rnd-form').style.display='none'; });
-  el('rnd-back-btn').addEventListener('click', showRndList);
-
-  // Tab buttons
-  el('rnd-tab-row').addEventListener('click', function(e){
-    var btn = e.target.closest('[data-rndtab]');
-    if(!btn) return;
-    switchRndTab(btn.dataset.rndtab);
-  });
-
-  // Session add
-  el('rnd-add-session-btn').addEventListener('click', function(){
-    if(_currentProjectId) addRndSession(_currentProjectId);
-  });
-
-  // Delete
-  el('rnd-delete-btn').addEventListener('click', function(){
-    if(_currentProjectId) deleteRndProject(_currentProjectId);
-  });
-
-  renderRndList();
-});
-
-// ── SHOW LIST / PROJECT ───────────────────────────────────────
-function showRndList(){
-  el('rnd-list-view').style.display = 'block';
-  el('rnd-project-view').style.display = 'none';
-  _currentProjectId = null;
-  // Scroll the page back to top
-  var mc = document.getElementById('main-content');
-  if(mc) mc.scrollTop = 0;
-  renderRndList();
-}
-window.showRndList = showRndList;
-
-function showRndProjectView(id){
-  el('rnd-list-view').style.display = 'none';
-  el('rnd-project-view').style.display = 'block';
-  // Scroll to top
-  var mc = document.getElementById('main-content');
-  if(mc) mc.scrollTop = 0;
-  _currentProjectId = id;
-
-  // Show/hide tabs based on project type
-  var p = getRndProjects().find(function(x){ return x.id===id; });
-  var isRecipe = p && p.type === 'recipe';
-  var recipeTabBtn = el('rnd-tab-btn-recipe');
-  var matrixTabBtn = el('rnd-tab-btn-matrix');
-  if(recipeTabBtn) recipeTabBtn.style.display = isRecipe ? '' : 'none';
-  if(matrixTabBtn) matrixTabBtn.style.display = isRecipe ? '' : 'none';
-
-  switchRndTab('research');
-  renderRndProjectHeader();
-  renderRndResearchTab();
-}
-
-// ── TAB SWITCHING ─────────────────────────────────────────────
-function switchRndTab(tabName){
-  // Guard: if ingredient project tries to open recipe/matrix tabs, redirect to pickup
-  if(tabName === 'recipe' || tabName === 'matrix'){
-    var cp = _currentProjectId ? getRndProjects().find(function(x){ return x.id===_currentProjectId; }) : null;
-    if(cp && cp.type !== 'recipe') tabName = 'pickup';
-  }
-  _currentTab = tabName;
-  ['research','recipe','matrix','pickup'].forEach(function(t){
-    var btn = el('rnd-tab-btn-'+t);
-    var pane = el('rnd-tab-'+t);
-    if(!btn || !pane) return;
-    var active = t === tabName;
-    pane.style.display = active ? '' : 'none';
-    if(active) btn.classList.add('active'); else btn.classList.remove('active');
-  });
-  if(tabName === 'research')  renderRndResearchTab();
-  if(tabName === 'recipe')    renderRndRecipeTab();
-  if(tabName === 'matrix')    renderRndMatrixTab();
-  if(tabName === 'pickup')    renderRndPickupTab();
-}
-
-// ── HEADER ────────────────────────────────────────────────────
-function renderRndProjectHeader(){
-  var p = getRndProjects().find(function(x){ return x.id===_currentProjectId; });
-  if(!p) return;
-  var stage = legacyToStage(p);
-  el('rnd-project-title').textContent = p.name;
-  var badge = el('rnd-project-status-badge');
-  badge.textContent = stage;
-  badge.style.background = stageColor(stage);
-}
-
-// ── LIST RENDER ───────────────────────────────────────────────
-function renderRndList(){
-  var container = el('rnd-list');
-  if(!container) return;
-  while(container.firstChild) container.removeChild(container.firstChild);
-
-  var projects = getRndProjects();
-  if(!projects.length){
-    var empty = mk('div', {style:{background:'var(--oat)',border:'1px solid var(--sand)',borderRadius:'10px',padding:'2.5rem',textAlign:'center',color:'var(--t4)'}});
-    empty.appendChild(mk('div', {style:{fontFamily:'var(--fd)',fontSize:'1.6rem',fontWeight:'300',marginBottom:'.5rem'}}, 'No R&D Projects Yet'));
-    empty.appendChild(mk('div', {style:{fontSize:'.9rem'}}, 'Start a new ingredient or recipe development project above.'));
-    container.appendChild(empty);
-    return;
-  }
-
-  // Group by stage
-  var grouped = {};
-  STAGES.forEach(function(s){ grouped[s] = []; });
-  projects.forEach(function(p){
-    var s = legacyToStage(p);
-    if(!grouped[s]) grouped[s] = [];
-    grouped[s].push(p);
-  });
-
-  var displayOrder = [['R&D','Active Development'],['Recipe','Recipe Stage'],['Costing','Costing'],['Matrix','Flavour Matrix'],['Pickup','In Pickup'],['Concept','Concepts'],['Approved','Approved']];
-  displayOrder.forEach(function(pair){
-    var list = grouped[pair[0]] || [];
-    if(!list.length) return;
-
-    var label = mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.75rem',letterSpacing:'.15em',textTransform:'uppercase',color:'var(--t4)',margin:'.5rem 0 .6rem'}}, pair[1]);
-    container.appendChild(label);
-
-    var grid = mk('div', {style:{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))',gap:'1rem',marginBottom:'1.5rem'}});
-    list.forEach(function(p){
-      var card = mk('div', {cls:'rnd-card'});
-      card.addEventListener('click', function(){ showRndProjectView(p.id); });
-
-      var top = mk('div', {style:{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:'.4rem'}});
-      top.appendChild(mk('div', {style:{fontFamily:'var(--fd)',fontSize:'1.05rem',fontWeight:'400',color:'var(--t)'}}, p.name));
-      var typeBadge = mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.65rem',letterSpacing:'.1em',textTransform:'uppercase',color:'white',background:stageColor(legacyToStage(p)),padding:'.15rem .45rem',borderRadius:'3px',whiteSpace:'nowrap'}}, p.type);
-      top.appendChild(typeBadge);
-      card.appendChild(top);
-
-      card.appendChild(mk('div', {style:{fontSize:'.82rem',color:'var(--t3)',marginBottom:'.5rem'}}, (p.chef||'') + ' · ' + (p.sessions||[]).length + ' session' + ((p.sessions||[]).length!==1?'s':'')));
-      card.appendChild(mk('div', {style:{fontSize:'.8rem',color:'var(--t4)',lineHeight:'1.5'}}, (p.idea||'').substring(0,100)+((p.idea||'').length>100?'...':'')));
-
-      var stagePill = mk('div', {style:{marginTop:'.6rem',fontSize:'.75rem',color:stageColor(legacyToStage(p))}}, legacyToStage(p));
-      card.appendChild(stagePill);
-
-      grid.appendChild(card);
-    });
-    container.appendChild(grid);
-  });
-}
-
-// ── FORM ──────────────────────────────────────────────────────
 function showRndForm(type){
-  el('rnd-type').value = type;
-  el('rnd-form-title').textContent = type==='ingredient' ? 'New Ingredient Project' : 'New Recipe Project';
-  el('rnd-name').value = '';
-  el('rnd-chef').value = '';
-  el('rnd-idea').value = '';
-  el('rnd-technique').value = '';
-  el('rnd-cuisine').value = '';
-  el('rnd-format').value = '';
-  el('rnd-form').style.display = 'block';
-  el('rnd-name').focus();
+  var f = document.getElementById('rnd-form');
+  f.style.display = 'block';
+  document.getElementById('rnd-type').value = type;
+  document.getElementById('rnd-form-title').textContent = type === 'ingredient' ? 'New Ingredient R&D Project' : 'New Recipe R&D Project';
+  document.getElementById('rnd-name').value = '';
+  document.getElementById('rnd-chef').value = '';
+  document.getElementById('rnd-idea').value = '';
+  document.getElementById('rnd-technique').value = '';
+  document.getElementById('rnd-cuisine').value = '';
+  document.getElementById('rnd-format').value = '';
+  document.getElementById('rnd-detail').style.display = 'none';
+  f.scrollIntoView({behavior:'smooth'});
 }
 window.showRndForm = showRndForm;
 
 function createRndProject(){
-  var type    = el('rnd-type').value;
-  var name    = el('rnd-name').value.trim();
-  var chef    = el('rnd-chef').value.trim();
-  var idea    = el('rnd-idea').value.trim();
-  var tech    = el('rnd-technique').value;
-  var cuisine = el('rnd-cuisine').value.trim();
-  var format  = el('rnd-format').value;
+  var type    = document.getElementById('rnd-type').value;
+  var name    = document.getElementById('rnd-name').value.trim();
+  var chef    = document.getElementById('rnd-chef').value.trim();
+  var idea    = document.getElementById('rnd-idea').value.trim();
+  var tech    = document.getElementById('rnd-technique').value;
+  var cuisine = document.getElementById('rnd-cuisine').value.trim();
+  var format  = document.getElementById('rnd-format').value;
 
-  if(!name){ alert('Please give this project a name.'); el('rnd-name').focus(); return; }
-  if(!idea){ alert('Describe the concept before generating the framework.'); el('rnd-idea').focus(); return; }
+  if(!name || !idea){ alert('Please enter a project name and describe your idea.'); return; }
 
-  var btn = el('rnd-submit-btn');
-  btn.textContent = 'Generating…';
+  var btn = document.getElementById('rnd-submit-btn');
   btn.disabled = true;
+  btn.textContent = 'AI is developing framework...';
 
   var project = {
     id: 'rnd_' + Date.now(),
     type: type,
     name: name,
-    chef: chef || 'Chef Marco',
+    chef: chef || 'R&D Team',
     idea: idea,
     technique: tech,
     cuisine: cuisine,
     format: format,
-    stage: 'R&D',
-    status: 'in_development',
+    status: 'concept',
     created: new Date().toISOString(),
-    sessions: [],
     framework: null,
-    recipeCard: null,
-    matrixResult: null,
-    outlet: (function(){
-      try{ var ao = typeof getActiveOutlet==='function' ? getActiveOutlet() : null; return ao ? ao.name : null; }catch(e){ return null; }
-    })(),
-    approved: false
+    sessions: [],
+    approved: false,
+    allocation: null
   };
 
-  var projects = getRndProjects();
-  projects.push(project);
-  saveRndProjects(projects);
+  var systemPrompt = buildRndSystemPrompt();
+  var userPrompt = buildRndFrameworkPrompt(project);
 
-  el('rnd-form').style.display = 'none';
-  btn.textContent = 'Generate Development Framework';
-  btn.disabled = false;
-
-  // Switch to project view immediately, then generate framework
-  showRndProjectView(project.id);
-
-  // Show loading state
-  var fw = el('rnd-r-framework');
-  if(fw){ fw.innerHTML = '<div style="color:var(--t4);font-style:italic">Generating development framework…<span class="typing" style="display:inline-flex;gap:3px;margin-left:.5rem"><span></span><span></span><span></span></span></div>'; }
-
-  var prompt = buildRndProjectPrompt(project);
-  callRndAPI(buildRndSystemPrompt(), prompt, function(err, result){
-    var ps = getRndProjects();
-    var p = ps.find(function(x){ return x.id===project.id; });
-    if(p){
-      p.framework = err ? ('⚠ Generation failed: ' + (err.message||err)) : result;
-      saveRndProjects(ps);
-    }
-    if(_currentProjectId === project.id) renderRndResearchTab();
+  callRndAPI(systemPrompt, userPrompt, function(err, result){
+    btn.disabled = false;
+    btn.textContent = 'Generate Development Framework';
+    if(err){ alert('AI error: ' + err); return; }
+    project.framework = result;
+    project.status = 'in_development';
+    var projects = getRndProjects();
+    projects.unshift(project);
+    saveRndProjects(projects);
+    document.getElementById('rnd-form').style.display = 'none';
+    renderRndList();
+    openRndProject(project.id);
   });
 }
 window.createRndProject = createRndProject;
 
-// ── RESEARCH TAB ──────────────────────────────────────────────
-function renderRndResearchTab(){
-  var p = getRndProjects().find(function(x){ return x.id===_currentProjectId; });
-  if(!p) return;
-
-  // Approved completion card
-  var approvedCard = el('rnd-r-approved-card');
-  if(!approvedCard){
-    approvedCard = mk('div', {style:{display:'none'}});
-    approvedCard.id = 'rnd-r-approved-card';
-    var researchPane = el('rnd-tab-research');
-    if(researchPane) researchPane.insertBefore(approvedCard, researchPane.firstChild);
-  }
-  if(p.approved){
-    approvedCard.style.display = 'block';
-    while(approvedCard.firstChild) approvedCard.removeChild(approvedCard.firstChild);
-    var card = mk('div', {style:{background:'linear-gradient(135deg,var(--moss) 0%,#3d6b3d 100%)',borderRadius:'10px',padding:'1.4rem 1.6rem',marginBottom:'1.4rem',color:'white'}});
-    var topRow = mk('div', {style:{display:'flex',alignItems:'center',gap:'.8rem',marginBottom:'.8rem'}});
-    topRow.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.72rem',letterSpacing:'.16em',textTransform:'uppercase',opacity:'.8'}}, '✓ Approved R&D'));
-    var rndBadge = mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.65rem',letterSpacing:'.1em',textTransform:'uppercase',background:'var(--terracotta)',color:'white',padding:'.15rem .5rem',borderRadius:'20px'}}, 'R&D');
-    topRow.appendChild(rndBadge);
-    card.appendChild(topRow);
-    card.appendChild(mk('div', {style:{fontFamily:'var(--fd)',fontSize:'1.5rem',fontWeight:'300',letterSpacing:'.04em',marginBottom:'.5rem'}}, p.name));
-    var meta = mk('div', {style:{display:'flex',flexWrap:'wrap',gap:'1rem',fontSize:'.84rem',opacity:'.85'}});
-    if(p.chef) meta.appendChild(mk('span', {}, 'Chef: ' + p.chef));
-    if(p.outlet) meta.appendChild(mk('span', {}, 'Outlet: ' + p.outlet));
-    meta.appendChild(mk('span', {}, (p.sessions||[]).length + ' test sessions'));
-    if(p.technique) meta.appendChild(mk('span', {}, p.technique));
-    card.appendChild(meta);
-    if(p.idea){
-      var ideaEl = mk('div', {style:{marginTop:'.8rem',fontSize:'.86rem',opacity:'.9',lineHeight:'1.6',borderTop:'1px solid rgba(255,255,255,.2)',paddingTop:'.7rem'}}, p.idea.substring(0,200)+(p.idea.length>200?'...':''));
-      card.appendChild(ideaEl);
-    }
-    // View in seasonality button
-    var actions = mk('div', {style:{marginTop:'1rem',display:'flex',gap:'.6rem'}});
-    var sBtn = mk('button', {style:{background:'rgba(255,255,255,.2)',color:'white',border:'1px solid rgba(255,255,255,.4)',borderRadius:'20px',padding:'.3rem .9rem',fontFamily:'var(--fm)',fontSize:'.78rem',letterSpacing:'.1em',textTransform:'uppercase',cursor:'pointer'}}, '→ View in Seasonality');
-    sBtn.addEventListener('click', function(){ if(typeof showPage==='function') showPage('season'); });
-    actions.appendChild(sBtn);
-    card.appendChild(actions);
-    approvedCard.appendChild(card);
-  } else {
-    approvedCard.style.display = 'none';
-  }
-
-  // Concept
-  var conceptEl = el('rnd-r-concept');
-  if(conceptEl) conceptEl.textContent = p.idea;
-
-  // Framework
-  var fw = el('rnd-r-framework');
-  if(fw){
-    var isFailed = p.framework && (p.framework.indexOf('Generation failed') !== -1 || p.framework.indexOf('⚠') !== -1);
-    if(p.framework && !isFailed){
-      fw.innerHTML = '';
-      // Parse markdown to DOM
-      var lines = p.framework.split('\n');
-      var listEl = null;
-
-      function parseInline(text){
-        // Convert **bold**, *italic*, ***bold-italic*** to HTML spans
-        return text
-          .replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>')
-          .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-          .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-          .replace(/`([^`]+)`/g, '<code style="background:var(--surface2);padding:.1rem .3rem;border-radius:3px;font-family:var(--mono,monospace);font-size:.85em">$1</code>');
-      }
-
-      lines.forEach(function(line){
-        var trimmed = line.trim();
-
-        // Empty line — close any open list
-        if(!trimmed){
-          if(listEl){ fw.appendChild(listEl); listEl = null; }
-          return;
-        }
-
-        // H1/H2 → section header (## or #)
-        if(/^#{1,2} /.test(trimmed)){
-          if(listEl){ fw.appendChild(listEl); listEl = null; }
-          var h = mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.74rem',letterSpacing:'.14em',textTransform:'uppercase',color:'var(--terracotta)',marginTop:'1.4rem',marginBottom:'.5rem',paddingBottom:'.3rem',borderBottom:'1px solid var(--sand)'}});
-          h.textContent = trimmed.replace(/^#+\s*/,'');
-          fw.appendChild(h);
-          return;
-        }
-
-        // H3 → sub-header (###)
-        if(/^#{3,} /.test(trimmed)){
-          if(listEl){ fw.appendChild(listEl); listEl = null; }
-          var h3 = mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.72rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--moss)',marginTop:'1rem',marginBottom:'.3rem'}});
-          h3.textContent = trimmed.replace(/^#+\s*/,'');
-          fw.appendChild(h3);
-          return;
-        }
-
-        // Numbered section (1. Title or **1. Title**)
-        if(/^\*{0,2}\d+\.\s/.test(trimmed)){
-          if(listEl){ fw.appendChild(listEl); listEl = null; }
-          var clean = trimmed.replace(/^\*+/,'').replace(/\*+$/,'').replace(/^\d+\.\s*/,'');
-          var h = mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.74rem',letterSpacing:'.13em',textTransform:'uppercase',color:'var(--terracotta)',marginTop:'1.3rem',marginBottom:'.4rem',paddingBottom:'.25rem',borderBottom:'1px solid var(--sand)'}});
-          h.textContent = clean;
-          fw.appendChild(h);
-          return;
-        }
-
-        // Bullet point (- or * or •)
-        if(/^[-*•]\s/.test(trimmed)){
-          if(!listEl){ listEl = mk('ul', {style:{margin:'0 0 .5rem 1rem',padding:'0'}}); }
-          var li = document.createElement('li');
-          li.style.cssText = 'font-size:.88rem;color:var(--t);line-height:1.75;margin-bottom:.2rem';
-          li.innerHTML = parseInline(trimmed.replace(/^[-*•]\s/,''));
-          listEl.appendChild(li);
-          return;
-        }
-
-        // Bold line alone = sub-label
-        if(/^\*\*[^*]+\*\*$/.test(trimmed)){
-          if(listEl){ fw.appendChild(listEl); listEl = null; }
-          var lbl = mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.72rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--ash)',marginTop:'.8rem',marginBottom:'.2rem'}});
-          lbl.textContent = trimmed.replace(/\*\*/g,'');
-          fw.appendChild(lbl);
-          return;
-        }
-
-        // Regular paragraph
-        if(listEl){ fw.appendChild(listEl); listEl = null; }
-        var para = document.createElement('p');
-        para.style.cssText = 'font-size:.88rem;color:var(--t);line-height:1.8;margin:0 0 .4rem';
-        para.innerHTML = parseInline(trimmed);
-        fw.appendChild(para);
-      });
-
-      if(listEl) fw.appendChild(listEl);
-    } else if(isFailed){
-      // Show retry button for previously failed projects
-      fw.innerHTML = '';
-      var failMsg = mk('div', {style:{color:'var(--t4)',fontSize:'.88rem',marginBottom:'.8rem'}}, '⚠ Framework generation failed. Tap Retry to generate.');
-      fw.appendChild(failMsg);
-      var retryBtn = mk('button', {cls:'btn-p', style:{fontSize:'.82rem'}}, '↺ Retry Framework Generation');
-      retryBtn.addEventListener('click', function(){
-        var ps = getRndProjects();
-        var proj = ps.find(function(x){ return x.id===p.id; });
-        if(proj){ proj.framework = null; saveRndProjects(ps); }
-        // Show loading
-        fw.innerHTML = '<div style="color:var(--t4);font-style:italic">Generating…<span class="typing" style="display:inline-flex;gap:3px;margin-left:.5rem"><span></span><span></span><span></span></span></div>';
-        var prompt = buildRndProjectPrompt(proj || p);
-        callRndAPI(buildRndSystemPrompt(), prompt, function(err, result){
-          var ps2 = getRndProjects();
-          var p2 = ps2.find(function(x){ return x.id===p.id; });
-          if(p2){ p2.framework = err ? '⚠ Generation failed. Add session notes manually.' : result; saveRndProjects(ps2); }
-          if(_currentProjectId === p.id) renderRndResearchTab();
-        });
-      });
-      fw.appendChild(retryBtn);
-    } else {
-      fw.innerHTML = '<div style="color:var(--t4);font-style:italic">Generating development framework…<span class="typing" style="display:inline-flex;gap:3px;margin-left:.5rem"><span></span><span></span><span></span></span></div>';
-    }
-  }
-
-  // Sessions
-  renderRndSessionsDOM(p);
-
-  // Stage advance bar — show what the next step is
-  var stageBar = el('rnd-research-stage-bar');
-  var stageLabel = el('rnd-research-stage-label');
-  var advBtn = el('rnd-research-advance-btn');
-  if(stageBar && stageLabel && advBtn){
-    var activeStages = (p.type === 'ingredient') ? ['Concept','R&D','Testing','Approved'] : STAGES;
-    var currentStage = legacyToStage(p);
-    var currentIdx = activeStages.indexOf(currentStage);
-    if(currentIdx < activeStages.length - 1){
-      var nextStage = activeStages[currentIdx + 1];
-      var stageDescriptions = {
-        'R&D': 'Start active development and testing',
-        'Testing': 'Begin structured testing protocol',
-        'Recipe': 'Build the recipe card',
-        'Costing': 'Cost the dish',
-        'Matrix': 'Run Flavour Matrix analysis',
-        'Pickup': 'Schedule for menu pickup',
-        'Approved': 'Approve and release to kitchen'
-      };
-      stageLabel.textContent = 'Current: ' + currentStage + '  →  Next: ' + nextStage + (stageDescriptions[nextStage] ? '  ·  ' + stageDescriptions[nextStage] : '');
-      advBtn.textContent = 'Move to ' + nextStage + ' →';
-      advBtn.onclick = function(){
-        var ps = getRndProjects();
-        var proj = ps.find(function(x){ return x.id===p.id; });
-        if(proj){ proj.stage = nextStage; if(nextStage==='Approved') proj.approved=true; saveRndProjects(ps); }
-        renderRndProjectHeader();
-        renderRndResearchTab();
-        showToast('Moved to ' + nextStage);
-      };
-      stageBar.style.display = 'block';
-    } else {
-      stageBar.style.display = 'none';
-    }
-  }
+function buildRndSystemPrompt(){
+  return [
+    'You are the Cultivate Studio R&D Intelligence Engine — a culinary research system built for Executive Chef Marco Turatti and his R&D team at InterContinental Phuket Resort.',
+    '',
+    'IDENTITY: You are a researcher, not a chef. You think in hypotheses, controlled variables, failure modes, and iteration logic — not recipes.',
+    'The audience is technically literate. Never simplify. Peer-to-peer. Executive Chef level.',
+    '',
+    'RESEARCHER MINDSET:',
+    '- Every project begins with a hypothesis: what you expect to happen and the scientific basis for that expectation',
+    '- Define a control before any variation. Isolate one variable at a time. Never change two things simultaneously.',
+    '- Define success criteria before testing, not after',
+    '- Document failure as rigorously as success — a failed test is data',
+    '- Think in time: 24h, 48h, 72h, 1 week, 1 month',
+    '- Think in conditions: pH, temperature, salinity, humidity, Aw, oxygen exposure',
+    '',
+    'SCIENTIFIC FRAMEWORKS:',
+    '- Enzyme kinetics: Aspergillus proteases peak at 55-60C, deactivate above 70C. Amylases dominant above 35C.',
+    '- Water activity (Aw): ferments 0.93-0.97, cured products below 0.85. Controls microbial growth and texture.',
+    '- pH dynamics: LAB drive pH from 6.5 toward 3.5-4.0. pH below 4.5 + salt above 10% = safe against pathogens.',
+    '- Maillard reaction: onset 140C, accelerates above 150C. Requires low moisture + reducing sugars + free amino acids.',
+    '- Polarity principle: water extracts polar compounds (salt, acid, umami, sugar). Fat extracts nonpolar (volatile aromatics). Alcohol dissolves both.',
+    '- Osmotic pressure: every 1% salt shift matters. Non-iodized salt only.',
+    '- Gas exchange: CO2 = fermentation activity. Anaerobic = lacto. Aerobic = acetobacter.',
+    '',
+    'FERMENTATION SCIENCE:',
+    '- LAB (Lactic Acid Bacteria): sugar to lactic acid. Anaerobic, halo-tolerant. Target: lacto-ferments at 2% salt.',
+    '- AAB (Acetic Acid Bacteria): alcohol to acetic acid. Aerobic. Target: vinegars, kombucha.',
+    '- Koji (Aspergillus oryzae): proteases (protein to amino acids = umami) + amylases (starch to sugar = sweetness). Growth at 30C/86F.',
+    '- Garum protocol: 12% salt, 60C, 10-12 weeks. Skim fat weekly. A.sojae preferred for higher protease/umami.',
+    '- Koji ratios: Amazake 1:2:1 (koji:water:starch). Shio koji 1:1 + 5% salt. Amino paste short 1:1 + 5% salt. Amino paste long 1:2 + 13% salt.',
+    '- Salt table: lacto veg 2%, shio koji 5%, amino paste 5-13%, garum 12-13%, miso 12%, shoyu moromi 15-16%.',
+    '',
+    'FLAVOUR SCIENCE:',
+    '- Four Rules (Patterson): similar needs contrast; contrasting needs a bridge; heavy needs a lift; light needs grounding.',
+    '- Seven Dials: salt, sweet, sour, bitter, umami, fat, heat — refinement levers after construction.',
+    '- Locking: correct ratio of correct combination creates unified transcendent flavour.',
+    '- Burying: high-intensity ingredients (fish sauce, rosemary, cinnamon) support rather than dominate.',
+    '- Noma 10 Principles: polarity governs extraction; speed of cooling = flavour preservation; preservation = transformation; fat elongates, water punctuates.',
+    '- Ingredient characterisation: character, shape (foreground/background/bridge), texture, intensity, facets.',
+    '',
+    'REFERENCE CHEFS & RESTAURANTS:',
+    'Noma (fermentation, foraging, Nordic), Narisawa (satoyama cuisine, Japan), Suhring (modern German, Bangkok), Bo.lan (Thai fermentation), Paste (Thai heritage), Saawan (vegetable-forward Thai), Kjolle (Peruvian altitude ingredients), Florilege (Japan, ingredient science), Den (Tokyo, playful precision), Alicia Foundation (food science research, Spain).',
+    '',
+    'RESEARCH OUTPUT STRUCTURE — always produce these 10 sections:',
+    '1. Research Hypothesis',
+    '2. Scientific Opportunity Analysis',
+    '3. Control & Variable Map',
+    '4. Phased Testing Protocol (Phase 1: Baseline, Phase 2: Variables, Phase 3: Optimisation, Phase 4: Reproducibility)',
+    '5. Measurement Criteria (sensory + measurable benchmarks)',
+    '6. Failure Mode Analysis',
+    '7. Compound & Flavour Science',
+    '8. Iteration Decision Tree',
+    '9. Waste & By-product Research',
+    '10. Reference Literature & Pioneer Work',
+    '',
+    'FORMAT: Respond in clean HTML with inline styles. Use <strong> for section headers. Precise. No romanticisation. Exact measurements not approximations.'
+  ].join('\n');
 }
 
-function renderRndSessionsDOM(p){
-  var container = el('rnd-r-sessions');
-  if(!container) return;
-  while(container.firstChild) container.removeChild(container.firstChild);
-  var sessions = p.sessions || [];
-  if(!sessions.length) return;
 
-  var hdr = mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.75rem',letterSpacing:'.15em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'1rem'}}, 'Research Log — '+sessions.length+' Session'+(sessions.length!==1?'s':''));
-  container.appendChild(hdr);
+function buildRndFrameworkPrompt(p){
+  var typeLabel = p.type === 'ingredient' ? 'INGREDIENT RESEARCH PROJECT' : 'RECIPE RESEARCH PROJECT';
+  return typeLabel + '\n\n' +
+    'PROJECT NAME: ' + p.name + '\n' +
+    'RESEARCH LEAD: ' + p.chef + '\n' +
+    'TYPE: ' + (p.type === 'ingredient' ? 'Single Ingredient — Compound & Technique Research' : 'Recipe Development — Multi-variable Culinary Research') + '\n' +
+    'TECHNIQUE DIRECTION: ' + (p.technique || 'Open — determine through literature and science') + '\n' +
+    'CUISINE CONTEXT: ' + (p.cuisine || 'Open') + '\n' +
+    'TARGET FORMAT: ' + (p.format || 'Open') + '\n\n' +
+    'RESEARCHER\'S BRIEF:\n' + p.idea + '\n\n' +
+    '---\n\n' +
+    'Generate a full research and development framework for this project. Structure it as a working research document using the following architecture:\n\n' +
 
-  sessions.forEach(function(s, i){
-    var sc = stageColor(s.status==='in_development'?'R&D':s.status==='testing'?'Recipe':s.status==='concept'?'Concept':'R&D');
-    var dateStr = new Date(s.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-    var timeStr = new Date(s.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    '1. RESEARCH HYPOTHESIS\n' +
+    'State the central hypothesis in one sentence. What do you expect to happen, and what is the scientific basis for that expectation? Reference specific mechanisms (enzymatic, chemical, physical).\n\n' +
 
-    var sessionEl = mk('div', {style:{marginBottom:'1.4rem',border:'1px solid var(--sand)',borderLeft:'3px solid '+sc,borderRadius:'6px',overflow:'hidden'}});
+    '2. SCIENTIFIC OPPORTUNITY ANALYSIS\n' +
+    'What is the underlying science that makes this worth investigating? What compounds, reactions, or transformations are at play? What does existing literature (including embedded books) tell us about this territory? What remains unexplored or undocumented?\n\n' +
 
-    // Session header
-    var sHdr = mk('div', {style:{background:'var(--oat)',padding:'.6rem 1rem',display:'flex',justifyContent:'space-between',alignItems:'center'}});
-    var sLeft = mk('div', {style:{display:'flex',alignItems:'center',gap:'.8rem'}});
-    sLeft.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.7rem',letterSpacing:'.12em',textTransform:'uppercase',color:'white',background:sc,padding:'.2rem .55rem',borderRadius:'3px'}}, 'Session '+(i+1)));
-    sHdr.appendChild(sLeft);
-    sHdr.appendChild(mk('div', {style:{fontSize:'.75rem',color:'var(--t4)'}}, dateStr+' · '+timeStr));
-    sessionEl.appendChild(sHdr);
+    '3. CONTROL & VARIABLE MAP\n' +
+    'Define the control condition (baseline). List all independent variables to test. List all dependent variables to measure. List all fixed constants that must not change between tests. Include: temperature ranges, salt %, pH targets, time intervals, humidity, oxygen exposure, substrate ratios.\n\n' +
 
-    // Notes
-    var notesEl = mk('div', {style:{padding:'.8rem 1rem',borderBottom:'1px solid var(--sand)'}});
-    notesEl.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.68rem',letterSpacing:'.12em',textTransform:'uppercase',color:'var(--terracotta)',marginBottom:'.4rem'}}, 'Research Notes'));
-    var noteText = mk('div', {style:{fontSize:'.87rem',color:'var(--t)',lineHeight:'1.7',whiteSpace:'pre-wrap'}}, s.note);
-    notesEl.appendChild(noteText);
-    sessionEl.appendChild(notesEl);
+    '4. TESTING PROTOCOL — PHASED\n' +
+    'Phase 1 — Baseline Establishment: exact parameters, expected sensory and measurable outcomes\n' +
+    'Phase 2 — Variable Introduction: one change per test, document what changes and why\n' +
+    'Phase 3 — Optimisation: narrowing toward the optimal condition based on Phase 2 data\n' +
+    'Phase 4 — Stability & Reproducibility: confirm the result holds across multiple runs\n' +
+    'For each phase: exact weights, temperatures, times, and measurement points.\n\n' +
 
-    // AI analysis
-    var analysisEl = mk('div', {style:{padding:'.8rem 1rem'}});
-    if(s.aiAnalysis){
-      analysisEl.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.68rem',letterSpacing:'.12em',textTransform:'uppercase',color:'var(--sage)',marginBottom:'.5rem'}}, 'R&D Analysis'));
-      analysisEl.appendChild(mk('div', {style:{fontSize:'.85rem',color:'var(--t)',lineHeight:'1.7'},html:s.aiAnalysis}));
-    } else {
-      var noAna = mk('div', {style:{display:'flex',alignItems:'center',gap:'.8rem'}});
-      noAna.appendChild(mk('div', {style:{color:'var(--t4)',fontSize:'.82rem',fontStyle:'italic'}}, 'No analysis yet'));
-      var reBtn = mk('button', {style:{fontSize:'.75rem',fontFamily:'var(--fm)',letterSpacing:'.1em',textTransform:'uppercase',background:'none',border:'1px solid var(--sand)',borderRadius:'3px',padding:'.25rem .6rem',cursor:'pointer',color:'var(--t3)'}}, 'Analyse');
-      (function(sessionIdx){
-        reBtn.addEventListener('click', function(){ runRndSessionAnalysis(_currentProjectId, sessionIdx); });
-      })(i);
-      noAna.appendChild(reBtn);
-      analysisEl.appendChild(noAna);
-    }
-    sessionEl.appendChild(analysisEl);
-    container.appendChild(sessionEl);
-  });
+    '5. MEASUREMENT CRITERIA\n' +
+    'What does success look like at each phase? Define sensory benchmarks (aroma, texture, taste, colour) AND measurable benchmarks (pH, Aw, weight loss, yield %). What instruments or tools are needed?\n\n' +
+
+    '6. FAILURE MODE ANALYSIS\n' +
+    'What are the likely failure modes? For each: cause, early warning signs in the data, and corrective action. Include both microbial safety failures and quality failures.\n\n' +
+
+    '7. COMPOUND & FLAVOUR SCIENCE\n' +
+    'What specific compounds are being developed, preserved, or transformed? Reference known chemistry: Maillard products, glutamate development, volatile aromatic compounds, lactic acid curves, enzyme activity windows. Apply Patterson polarity principle and Noma extraction theory where relevant.\n\n' +
+
+    '8. ITERATION DECISION TREE\n' +
+    'How should the researcher read results and decide what to adjust next? Provide a clear logic: if X then try Y, if Z then investigate W. This should allow the R&D team to continue developing without needing AI guidance at every step.\n\n' +
+
+    '9. WASTE & BY-PRODUCT RESEARCH\n' +
+    'What by-products does this process generate? What research potential do they hold? Apply zero-waste principle: every by-product is a research opportunity.\n\n' +
+
+    '10. REFERENCE LITERATURE & PIONEER WORK\n' +
+    'Who has worked in this territory? What have they documented? What remains unpublished or undocumented that this project could contribute to? Use web search to find the most current relevant work.\n\n' +
+
+    'Use web search to find the latest peer-reviewed research, documented chef experiments, and scientific papers relevant to this specific investigation. Cite sources.';
 }
 
-// ── RECIPE CARD TAB ───────────────────────────────────────────
-function renderRndRecipeTab(){
-  var p = getRndProjects().find(function(x){ return x.id===_currentProjectId; });
-  if(!p) return;
-  var container = el('rnd-recipe-content');
-  while(container.firstChild) container.removeChild(container.firstChild);
 
-  if(p.recipeCard){
-    renderRndRecipeCardDOM(p, container);
-  } else {
-    // Offer to generate or link
-    var wrap = mk('div', {style:{maxWidth:'700px'}});
+function getCultivateBookKnowledge(){
+  return `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CULINARY KNOWLEDGE LAYER — BOOK LEARNING (June 2026)
+Source: "The Art of Flavor" (Patterson & Aftel) + "Koji Alchemy" (Umansky & Shih)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-    var intro = mk('div', {style:{background:'var(--oat)',border:'1px solid var(--sand)',borderRadius:'8px',padding:'1.2rem 1.4rem',marginBottom:'1.2rem'}});
-    intro.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.76rem',letterSpacing:'.14em',textTransform:'uppercase',color:'var(--terracotta)',marginBottom:'.5rem'}}, 'Recipe Card'));
-    intro.appendChild(mk('div', {style:{fontSize:'.9rem',color:'var(--t)',lineHeight:'1.7',marginBottom:'1rem'}}, 'Generate a structured recipe card from this R&D concept, or link to an existing recipe in your Recipe Manager.'));
+THE ART OF FLAVOR — CORE FRAMEWORKS:
 
-    var genBtn = mk('button', {cls:'btn-p'}, '⬡ Generate Recipe Card from Concept');
-    genBtn.addEventListener('click', function(){ generateRndRecipeCard(p.id); });
-    intro.appendChild(genBtn);
+FOUR RULES OF FLAVOR (apply when advising on dish construction or menu development):
+1. Similar ingredients need a contrasting flavor — comfort combinations become bland without counterpoint. Acid, bitterness, or sharp aromatics rescue monotony.
+2. Contrasting ingredients need a unifying flavor — disparate elements need a bridge: a shared aromatic, fat, or acid that links them.
+3. Heavy flavors need a lifting note — rich, dense, fatty preparations need brightness to prevent collapse. Acid (lemon, vinegar, citrus zest) is the classic lifter.
+4. Light flavors need to be grounded — delicate ingredients need a base: fat, umami, earthy spice. Without grounding, they disappear.
 
-    // Link existing recipe
-    var recipes = [];
-    try{ recipes = JSON.parse(localStorage.getItem('cultivate_recipes_v1')||'[]'); }catch(e){}
-    if(recipes.length){
-      intro.appendChild(mk('div', {style:{margin:'.8rem 0 .4rem',fontFamily:'var(--fm)',fontSize:'.74rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t4)'}}, 'Or link an existing recipe:'));
-      var sel = mk('select', {cls:'fi', style:{maxWidth:'320px',marginRight:'.5rem'}});
-      sel.appendChild(mk('option', {value:''}, '— select recipe —'));
-      recipes.forEach(function(r, i){
-        sel.appendChild(mk('option', {value:String(i)}, r.name));
-      });
-      intro.appendChild(sel);
-      var linkBtn = mk('button', {cls:'btn-g', style:{marginTop:'.5rem'}}, 'Link Recipe');
-      linkBtn.addEventListener('click', function(){
-        var idx = parseInt(sel.value);
-        if(isNaN(idx)) return;
-        var ps = getRndProjects();
-        var proj = ps.find(function(x){ return x.id===_currentProjectId; });
-        if(proj){ proj.recipeCard = {linked:true, recipeIndex:idx, recipeName:recipes[idx].name}; proj.stage='Recipe'; saveRndProjects(ps); }
-        renderRndProjectHeader();
-        renderRndRecipeTab();
-      });
-      intro.appendChild(linkBtn);
-    }
+FLAVOR COMPASS — Aromatic families:
+• SPICES: Sweet (anise, nutmeg, allspice — warmth/richness), Sharp (pepper — elevates), Fresh (ginger, lemongrass — retain brightness), Earthy (saffron, cumin — anchor/deepen)
+• HERBS: Sweet herbs (chervil, dill, parsley — brightness, best fresh), Savory herbs (thyme, rosemary — require heat to mellow)
+• CITRUS: Brightness, bridging agent, cuts richness, alters perception of both spices and herbs
+• FLOWERS: Smooth sharp tastes, floral depth as undertone or foreground
 
-    wrap.appendChild(intro);
-    container.appendChild(wrap);
-  }
+LOCKING AND BURYING:
+• Locking — right ingredients in right proportions create transcendent unified flavor. Proportion is critical: locking = correct ratio of correct combination.
+• Burying — deliberately managing high-intensity ingredients so they support rather than dominate. Strong elements (fish sauce, rosemary, cinnamon, chili) should remain mildly present as background seasoning, never foreground. Intentional burying is never total.
+
+SEVEN DIALS — Refinement levers (apply after construction):
+Salt: draws out flavor, amplifies sweetness and acidity | Sweet: bridges and balances, use judiciously | Sour: brightens, energizes, cuts richness | Bitter: complexity, use sparingly | Umami: savory depth, amplifies without overwhelming | Fat: mouthfeel carrier, flavor amplifier | Heat/spice: complexity, energy, cuts richness
+
+INGREDIENT CHARACTERIZATION SYSTEM:
+• Character — dominant personality (bright, earthy, floral, sharp, rich)
+• Shape — how it sits in a dish (foreground, background, bridge)
+• Texture — physical presence (crunchy, silky, grainy, yielding)
+• Intensity — how powerful, can it dominate or does it need support?
+• Facets — nuances within it (a lemon has sour, floral, bitter, and bright facets)
+
+COOKING SPECTRUM: Raw (maximum integrity, variable) → Soft-cooking (sweating/boiling/steaming, preserves innate qualities) → Hard-cooking (sautéing/roasting/grilling, Maillard creates new compounds)
+
+PHILOSOPHICAL CORE (Patterson): Flavor is composable. Every choice constrains subsequent choices. Too much harmony breeds boredom — counterpoint is required. Balance is relative to ingredient character. Mastery of rules leads to freedom from rules.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+KOJI ALCHEMY — OPERATIONAL KNOWLEDGE:
+
+WHAT KOJI DOES: Aspergillus oryzae produces two enzyme families:
+• Proteases → break proteins into amino acids → UMAMI
+• Amylases → convert starches to simple sugars → SWEETNESS + fermentation fuel
+Temperature controls which dominates: 95–105°F (35–40°C) = amylase dominant (sweetness); below 95°F (35°C) = protease dominant (umami)
+
+KOJI TERMINOLOGY:
+• Shio Koji — koji + water + 5% salt, ready 1 week. Quick umami marinade.
+• Amazake — koji + cooked starch + water. Sweet, no salt — chef controls sodium.
+• Amino Paste — koji + protein + salt, fermented to paste. Short-term (2wks–3mo, 5% salt); Long-term (6–12mo, 13% salt).
+• Amino Sauce — koji + protein + higher water, fermented to liquid. 12 months, 13% salt.
+• Kojizuke — koji-based pickling medium for vegetables.
+• Autolysis — enzymatic self-breakdown for flavor enhancement.
+
+QUICK RATIOS (per unit of koji):
+Amazake: 1 koji : 2 water : 1 starch | Shio Koji: 1 koji : 1 water : 5% salt | Amino Paste short: 1 koji : 1 protein : 5% salt | Amino Paste long: 1 koji : 2 protein : 13% salt | Amino Sauce: 1 koji : 2 water : 1 protein : 13% salt
+
+KOJI APPLICATIONS IN THE KITCHEN:
+• Meat aging — koji proteases externally replicate enzymatic aging. Near 100% yield vs 15–30% loss in traditional dry-aging. Leave koji crust on during cooking for superior Maillard browning.
+• Dairy — koji enzymes applied to dairy achieve aged cheese flavor in 2 months vs 10+ months traditional. Amazake-cultured cream resists curdling.
+• Vegetables — kojizuke enhances pickling by developing sugars and umami. Use sparingly — too much koji softens texture. Root veg: 3–5 days; tender veg: hours only.
+• Sweet applications — long-grain rice koji at 95°F reaches peak sweetness at 48 hours. Flavor profile similar to ripe pear. Use in custards, caramel, cultured butter, fruit transformation.
+• Amino sauces from food waste — fish scraps, meat bones, vegetable peels, bread crusts all viable substrates. Zero-waste principle: no such thing as a by-product, only another product.
+• Vegetable charcuterie — salt cure + koji inoculation on beets, carrots, squash, mushrooms creates meat-like texture and concentrated umami.
+
+GROWING KOJI — four critical conditions:
+1. Microbially clean slate — cook/steam substrate before inoculation
+2. Temperature management — 86–95°F for growth, mix regularly to dissipate heat
+3. Humidity — damp not wet
+4. Accessible starch with structure — polished grains, break post-cooking for nutrient access
+
+KOJI PHILOSOPHY (Umansky): Koji is not a flavor — it is a transformation system. What koji produces depends entirely on the substrate. Waste is a conceptual error. Every fermentation by-product is another product. Koji connects terroir to fermentation identity — a miso made in Southern Thailand using local proteins and koji will have a flavor no paste made elsewhere can replicate.
+
+SYNTHESIS — HOW BOTH BOOKS CONNECT TO CULTIVATE STUDIO:
+• Patterson's Four Rules + Koji's enzymatic logic = complete flavor architecture system
+• Umami Seven Dial → amino paste/sauce as the umami source tool
+• Burying high-intensity flavors → shio koji as a buried umami layer in marinades
+• Light flavors need grounding → amazake or amino paste as the ground for delicate ingredients
+• Locking = right proportions → koji ratios govern flavor locking in fermented products
+• Fermentation as flavor technique (Patterson) → koji fermentation as the complete fermentation system (Umansky)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NOMA GUIDE TO BUILDING FLAVOUR — CORE KNOWLEDGE
+Source: René Redzepi & The Noma Test Kitchen (Full Original Book, 779pp)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FLAVOUR SCIENCE FOUNDATION:
+Flavour = taste + aroma, intrinsically linked. Five tastes (salt/sweet/sour/bitter/umami) operate in the mouth via taste receptors. Aroma operates via ~400 olfactory receptors, retronasal — molecules travel up through the nasal cavity when chewing. The olfactory bulb processes up to 10,000 distinct aromas. Five tastes alone ≠ flavour. Flavour = taste × aroma.
+
+THE POLARITY PRINCIPLE (Noma's foundational extraction theory):
+"Like dissolves like." Every extraction decision flows from molecular polarity:
+• POLAR (water-loving): salt, acid, umami, sugar, miso, soy, vinegar → extract with water-based liquids
+• NONPOLAR (fat-loving): volatile aroma compounds — toasted nuts, fresh herbs, rose, pine, wood bark → extract with oil, butter, cream
+• Alcohol and vinegar dissolve BOTH polar and nonpolar molecules — most versatile extractants
+• Fat doesn't just add richness — it unlocks flavours water cannot reach. Fat holds scent, stretches aroma in time, makes it linger.
+• Steep seaweed in water → umami (polar). Infuse seaweed in oil → aromatic oceanic complexity (nonpolar). Same ingredient, different dimension.
+
+NOMA MOTHER FLAVOURS — identity ingredient system (persistent across 20+ years):
+• BLACK CURRANT (whole plant): unripe berries → salt-packed tangy capers; ripe berry → pickles/reductions; young wood/branches → Black Currant Wood Oil (Noma's "olive oil" — green, herbaceous, fruity, pine resin, floral); shoots/buds → pickled for winter
+• ROSE (beach rose, Rosa rugosa): quick-grilled over open fire → beyond natural aroma; infused into vinegar; ground into salt; blended into oil (finishing oil — potent)
+• PINE (Douglas fir, Noble fir): young cones → "Pine Cone Olives" (pickled); shoots → fresh/pickled for terpene; bark → smoking medium; Douglas Fir Oil via vacuum steam infusion
+• ELDERFLOWER: peak season only — Elderflower Vinegar, Elderflower Oil, Elderflower Syrup (used as savoury seasoning element)
+• KELP/SEAWEED: raw in water → glutamate-rich dashi; roasted then water → deeper Maillard-inflected umami; in oil → aromatic oceanic extraction; crystallized after reduction → Noma Umami Salt (signature finishing salt)
+
+NOMA SALT PHILOSOPHY:
+Salt shapes, not just seasons. "When the right salt meets the right dish, 1+1=3."
+• BLENDED SALTS: ground with flavouring ingredients — Pine Salt, Elderflower Salt, Yuzu Salt, Ant Salt, Rose Petal Salt
+• REDUCED SALTS: flavoured liquid (dashi, broth, juice) reduced to crystallization in dehydrator — Noble Fir Salt, Noma Umami Salt, Noma Roasted Umami Salt, Saffron Kelp Salt
+• NOMA UMAMI SALT: built on kelp (naturally glutamate-rich). Roasted version = richness + umami for meat/veg. Sweet version = lifts chocolate and fruit. "Ordinary salt enhances — Noma salt finishes."
+• Timing is everything: fish/meat benefits from early salting; broths/sauces need salt only at finish.
+
+NOMA PICKLING & PRESERVATION SYSTEM:
+Preservation = flavour transformation, not just shelf life. Time in vinegar creates depth, tension, memory impossible to achieve with fresh only.
+• COLD PICKLING: vinegar only, no heat. For soft/fragrant items (flowers, delicate herbs). Pure, bracing.
+• HOT PICKLING: 3 parts vinegar : 2 parts water (or dashi) : 1 part sugar. Complex with flowers, herbs, spices, dried mushrooms.
+• Blending into vinegar: vibrant but risks oxidation — make right before service or keep on ice
+• Key outcome: pickled item + flavoured vinegar as bonus product (for dressings, ceviche, finishing)
+
+NOMA OIL & FAT SYSTEM:
+• VACUUM STEAM INFUSION: 60°C/140°F, 100% fan, minimum 4 hours to overnight — gentle, non-oxidative
+• HERB OIL BLENDING: max speed 7 minutes, immediate ice bath — preserves colour and volatile aromas
+• BLACK CURRANT WOOD OIL: 1kg young branches + 2kg neutral oil, vacuum 60°C 4h+, overnight infuse, strain over ice
+• BROWN BUTTER EMULSION (Noma hollandaise): 300g brown butter + 4 soft-boiled whole eggs + 100g water + 80g lemon juice — uses whole egg not just yolk
+• FUDGE SYSTEM (proprietary): butter + water reduction + infused oil = flavour carrier with body and elongated finish. Black Currant Wood Fudge: 35g butter + 20g Peaso Reduction + 15g BC Wood Oil + 10g Cucumber Reduction
+
+NOMA BROTH ARCHITECTURE:
+• ROASTED KELP DASHI: 23g roasted kelp + 1kg filtered water — base for umami salts, sauces, broth finishing
+• SELF-CLARIFYING SEAFOOD BROTH: blend raw shellfish + water → vacuum seal → steam 90°C → protein coagulates into raft → press through cloth = crystal-clear intensely flavoured consommé. No outside proteins — shellfish protein does all clarification work.
+• PINE DASHI: pine shoots infused in kelp dashi base — forest/terpene character in broth
+• FREEZE-THAW JUICING: freeze ingredient in vacuum bag, thaw at room temp → cellulase enzymes activate, break cell walls → flavourful slightly viscous juice. Best for rhubarb, quince, potato.
+
+NOMA'S 10 PRINCIPLES OF FLAVOUR BUILDING:
+1. POLARITY governs all extraction — fat for aroma compounds, water for taste compounds
+2. SPEED OF COOLING = flavour preservation — all infused oils and herb extracts hit ice immediately
+3. PRESERVATION = TRANSFORMATION — vinegar/salt/fat/sugar changes flavour character fundamentally, not just extends it
+4. DESIGNED SALTS = FLAVOUR ARCHITECTURE — salt is not neutral; the right salt finishes a dish
+5. DRYING TRANSFORMS — reveals qualities hidden when fresh; dried = different flavour register, not lesser
+6. FERMENTATION AS INVISIBLE SEASONING — garum/amino sauce/shio koji used as invisible depth layer, not identifiable ferment flavour
+7. FAT ELONGATES, WATER PUNCTUATES — use fat where flavour should linger; use acid/water where it should hit bright and exit
+8. BROTH AS PRECISION INSTRUMENT — each Noma broth is a named, specific product with defined flavour purpose
+9. WHOLE-INGREDIENT UTILIZATION — every part of source plant deployed: black currant (unripe berry, ripe berry, shoot, bud, branch), rose (petal, hip, stem), pine (shoot, needle, cone, bark)
+10. THE DEEP LARDER (Gastronomique) — most complex finishing elements live in the background: ant honey, candied tree sap, mushroom garum, Dashi RDX — these are the things that make a dish irreducible
+
+NOMA DRYING PHILOSOPHY:
+"Drying transforms. It shifts how flavour presents itself. It softens some edges, deepens others, and reveals qualities you don't get when ingredients are fresh." Dried ingredients act as connective tissue — linking dish elements into something cohesive. Pumpkin Bushi = pumpkin dried bushi-style → deep, smoky, elegant umami multiplier.
+
+NOMA SPICE MIX SYSTEM (Nordic, not classical trade-route spices):
+Danish Curry Powder, Marigold Spice Mix, Mustard Seed Spice Mix, Mushroom Spice Mix, Roseroot Spice Mix, Berry Spice Mix, Gooseberry Pumpkin Spice Mix, Woodruff & Japanese Quince Za'atar — all built from foraged/regional Nordic ingredients
+
+CROSS-REFERENCE WITH EXISTING BRAIN KNOWLEDGE:
+• Koji enzyme mechanisms + Noma polarity principle = complete extraction decision tree: enzymatic breakdown for taste compounds (water-polar) + fat extraction for aromatic compounds (nonpolar)
+• Marco's Mussel Garum (existing brain) + Noma Self-Clarifying Broth system = complementary: garum as invisible seasoning, self-clarified broth as clean flavour base
+• Patterson's Four Rules (existing brain) + Noma's fat/water duality = operational execution framework: Rule 3 (heavy needs lift) → always acid-based (water/polar); Rule 4 (light needs grounding) → always fat-based (oil/butter/nonpolar)
+• Koji temperature logic (existing brain) matches Noma’s 60°C infusion protocol — both protect volatile compounds from heat degradation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NOMA GUIDE TO FERMENTATION — COMPLETE SCIENCE LAYER
+Source: René Redzepi & David Zilber (Full Original Book, 450pp)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+FERMENTATION SCIENCE FOUNDATION:
+Fermentation = transformation by microorganisms via enzymes. Starch and protein molecules too large for taste receptors become amino acids + simple sugars = more obviously delicious. Koji rice has sweetness plain rice lacks. Raw beef fermented into garum has savoriness that speaks on a primitive level.
+
+THREE MICROBIAL PLAYERS:
+• LAB (Lactic Acid Bacteria) — on skins of all fruits/vegetables. Convert sugar → lactic acid → sourness. Anaerobic, halo-tolerant. Used for: all lacto-ferments.
+• AAB (Acetic Acid Bacteria) — convert alcohol → acetic acid. Aerobic (need oxygen). Used for: vinegar, kombucha.
+• Aspergillus oryzae (koji) — proteases (proteins → amino acids → UMAMI) + amylases (starches → sugars → SWEETNESS). Growth: 30°C/86°F. Still enzyme-active at 60°C.
+• Aspergillus sojae — higher protease than A. oryzae → more glutamate → more umami. Preferred for garum and shoyu.
+
+SAFETY: pH below 4.5 + salt above 10% = safe against virtually all pathogens. 1% shift in salt = difference between great ferment and dangerous one. Always non-iodized salt. Water activity: salt binds water molecules → microbes cannot grow.
+
+SALT TABLE (baker’s % = % of main ingredient weight):
+Lacto veg: 2% | Shio Koji: ~5% | Amino paste short: 5% | Garum: 12-13% | Miso: ~12% | Shoyu moromi: 15-16%
+
+TEMPERATURE TABLE:
+Koji growth: 30°C/86°F, 44-48hrs | Lacto: room temp | Garum + black garlic: 60°C/140°F (enzymatic max + Maillard) | DIY: rice cooker/slow cooker keep-warm ≈ 60°C
+
+LACTO SYSTEM: 2% salt, vacuum bag, room temp. Brine: 40g salt/kg water. Fermented berry juice = body + effervescence + saltiness + sweetness + acidity simultaneously. Use as vinaigrette base or dressing for raw seafood.
+
+KOMBUCHA: SCOBY = yeast + AAB cooperative. Yeast → alcohol; AAB → acetic acid. Noma uses as sauce base, vinaigrettes, acid substitute in cold dishes. Harvest at correct sweetness-acid balance.
+
+VINEGAR: Two-stage. Quick method: aquarium air pump + bubbling stone + previous batch as AAB starter, 10-14 days. Spirit vinegars: dilute spirits to 5-7% ABV → AAB convert → vinegar retains spirit character. Target: 5-6% acidity.
+
+KOJI NOMA EXTENSIONS (beyond Koji Alchemy already in brain):
+Pearl Barley Koji = Noma standard (more complex than white rice). Lacto Koji Water: Pearl Barley Koji + water + 5% salt, vacuum bag, room temp 5-6 days → sweet-sour-savory liquid used everywhere. Koji Cure (Shio Koji): 400g koji + 400g water + 60g salt, 1 week → marinade that seasons/tenderizes/infuses simultaneously, deepens for weeks in fridge. Roasted Koji Mole: roast koji at 160°C until deep brown → blend with cream+milk → strain → hot chocolate-like sauce with umami complexity. Koji Stock: 500g dried koji + water, simmer 10 min, strain → versatile umami base.
+
+MISO/PEASO SUBSTRATE SUBSTITUTION: Any protein can become miso. Yellow peas → Peaso (Okasan miso equivalent). Rye → Ryeso (Hatcho miso equivalent). Dried corn nixtamalized → Maizo. Defatted hazelnut pulp → Hazelnut miso. Principle: every region makes miso from locally abundant protein. Peaso Water (yellow pea cooking liquid) = concentrated umami reduction base used throughout Noma kitchen.
+
+SHOYU: Koji grown directly on legume+wheat → moromi brine 15-16% salinity → 6-12+ months. A. sojae preferred: higher protease → richer umami. Yellow Pea Shoyu = Noma version. Coffee Shoyu reduced to glaze → lacquer for fish.`;
 }
 
-function generateRndRecipeCard(projectId){
-  var ps = getRndProjects();
-  var p = ps.find(function(x){ return x.id===projectId; });
-  if(!p) return;
+function callRndAPI(sys, userMsg, cb){
+  var key = localStorage.getItem('cultivate_api_key') || '';
+  if(!key){ cb('No API key configured', null); return; }
 
-  var container = el('rnd-recipe-content');
-  while(container.firstChild) container.removeChild(container.firstChild);
-  container.appendChild(mk('div', {style:{padding:'2rem',textAlign:'center',color:'var(--t4)',fontStyle:'italic'}}, 'Generating recipe card…'));
+  var knowledgeContext = 'CULTIVATE STUDIO — FULL CULINARY KNOWLEDGE BASE\n\nApply all of the following to your research framework:\n\n' + getCultivateBookKnowledge();
 
-  var sessionSummary = (p.sessions||[]).map(function(s,i){ return 'Session '+(i+1)+': '+s.note.substring(0,200); }).join('\n');
-  var prompt = 'Generate a complete restaurant-quality recipe card for this R&D project. Incorporate learnings from the test sessions.\n\n' +
-    'Project: ' + p.name + '\n' +
-    'Concept: ' + p.idea + '\n' +
-    (p.technique ? 'Primary technique: '+p.technique+'\n':'') +
-    (p.cuisine ? 'Cuisine: '+p.cuisine+'\n':'') +
-    (p.format ? 'Format: '+p.format+'\n':'') +
-    (sessionSummary ? '\nR&D Sessions:\n'+sessionSummary+'\n':'') +
-    '\nReturn ONLY a valid JSON object with this exact structure — no markdown, no explanation:\n' +
-    '{' +
-      '"name":"full dish name",' +
-      '"portions":4,' +
-      '"prep_time":"X min active, Y hrs advance",' +
-      '"cook_time":"X min",' +
-      '"technique":"primary technique tags, comma separated",' +
-      '"allergens":"comma separated",' +
-      '"dietary":"",' +
-      '"flavour_profile":{"dominant":"","supporting":"","bridge":""},' +
-      '"components":[{' +
-        '"name":"component name",' +
-        '"ingredients":[{"item":"ingredient name","quantity":"amount","unit":"g/ml/etc","note":"optional prep note"}],' +
-        '"steps":["numbered method step"]' +
-      '}],' +
-      '"plating":"plating description",' +
-      '"chef_notes":"hypothesis, variables, failure modes, success criteria — the R&D intelligence"' +
-    '}';
+  var messages = [
+    {role:'user', content: knowledgeContext},
+    {role:'assistant', content: 'Understood. I have absorbed the full Cultivate Studio culinary knowledge base — Art of Flavor, Koji Alchemy, Noma Building Flavour, and Noma Fermentation. I will apply all frameworks, ratios, science, and principles to this research project.'},
+    {role:'user', content: userMsg}
+  ];
 
-  callRndAPI(buildRndSystemPrompt(), prompt, function(err, txt){
-    if(err || !txt){
-      var updated = getRndProjects().find(function(x){ return x.id===projectId; });
-      if(updated){ updated.recipeCard = {error:true, raw:'Generation failed.'}; }
-      saveRndProjects(getRndProjects());
-      renderRndRecipeTab();
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key': key,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({
+      model:'claude-sonnet-4-5',
+      max_tokens: 4000,
+      system: sys,
+      messages: messages
+    })
+  }).then(function(r){
+    if(!r.ok) return r.json().then(function(e){ throw new Error(e.error && e.error.message ? e.error.message : JSON.stringify(e)); });
+    return r.json();
+  }).then(function(d){
+    var txt = (d.content||[]).filter(function(c){ return c.type==='text'; }).map(function(c){ return c.text||''; }).join('');
+    if(!txt){
+      console.error('[RND API] Empty. stop_reason:', d.stop_reason, 'content:', JSON.stringify(d.content||[]).substring(0,300));
+      cb('Empty response — stop_reason: ' + d.stop_reason, null);
       return;
     }
-    var parsed = null;
-    try{ var clean = txt.replace(/```json|```/g,'').trim(); parsed = JSON.parse(clean); }catch(e){}
-    var finalPs = getRndProjects();
-    var fp = finalPs.find(function(x){ return x.id===projectId; });
-    if(fp){
-      fp.recipeCard = parsed || {raw:txt};
-      fp.stage = 'Recipe';
-      saveRndProjects(finalPs);
-    }
-    if(_currentProjectId === projectId){ renderRndProjectHeader(); renderRndRecipeTab(); }
+    cb(null, txt);
+  }).catch(function(e){
+    console.error('[RND API] Error:', e);
+    cb(e.message||String(e), null);
   });
 }
 
-function renderRndRecipeCardDOM(p, container){
-  var rc = p.recipeCard;
-  if(!rc) return;
 
-  // Linked recipe shortcut
-  if(rc.linked){
-    var lk = mk('div',{style:{background:'var(--oat)',border:'1px solid var(--sand)',borderRadius:'8px',padding:'1.2rem 1.4rem'}});
-    lk.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.76rem',letterSpacing:'.14em',textTransform:'uppercase',color:'var(--moss)',marginBottom:'.5rem'}},'✓ Linked to Recipe Manager'));
-    lk.appendChild(mk('div',{style:{fontSize:'1.1rem',fontFamily:'var(--fd)',fontWeight:'300',marginBottom:'.8rem'}},rc.recipeName||'Recipe'));
-    var goBtn=mk('button',{cls:'btn-p'},'Open in Recipe Manager');
-    goBtn.addEventListener('click',function(){ if(typeof showPage==='function') showPage('recipes'); });
-    lk.appendChild(goBtn); container.appendChild(lk); return;
-  }
-
-  // Stale format or error — if no components array, force regenerate
-  var isStale = !rc.components || !Array.isArray(rc.components) || rc.components.length === 0;
-  if(rc.error || rc.raw || isStale){
-    var staleWrap = mk('div',{style:{background:'var(--oat)',border:'1px solid var(--sand)',borderRadius:'10px',padding:'1.4rem 1.6rem',maxWidth:'600px'}});
-    staleWrap.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.72rem',letterSpacing:'.14em',textTransform:'uppercase',color:'var(--terracotta)',marginBottom:'.5rem'}},'Recipe Card — New Format Available'));
-    staleWrap.appendChild(mk('div',{style:{fontSize:'.9rem',color:'var(--t)',lineHeight:'1.7',marginBottom:'1.1rem'}},'This recipe was generated with an older format. Regenerate to get the new structured card — hero image area, two-column ingredients + method, flavour profile, R&D Origin tab with session history.'));
-    var rb=mk('button',{cls:'btn-p',style:{marginRight:'.6rem'}},'↺ Regenerate with New Format');
-    rb.addEventListener('click',function(){
-      var ps=getRndProjects();
-      var proj=ps.find(function(x){return x.id===p.id;});
-      if(proj){proj.recipeCard=null;saveRndProjects(ps);}
-      renderRndRecipeTab();
-    });
-    staleWrap.appendChild(rb);
-    container.appendChild(staleWrap);
-    return;
-  }
-
-  var card = mk('div',{style:{background:'white',border:'1px solid var(--border)',borderRadius:'12px',overflow:'hidden',boxShadow:'0 4px 24px rgba(60,48,36,.1)',marginBottom:'1rem'}});
-
-  // ── HERO ──
-  var hero = mk('div',{style:{position:'relative',height:'220px',background:'linear-gradient(135deg,#2A1F12 0%,#4A3020 50%,#6B4A2A 100%)',overflow:'hidden'}});
-  var grad = mk('div',{style:{position:'absolute',inset:'0',background:'linear-gradient(to top,rgba(20,12,6,.75) 0%,transparent 60%)'}});
-  hero.appendChild(grad);
-  var heroContent = mk('div',{style:{position:'absolute',bottom:'0',left:'0',right:'0',padding:'1.1rem 1.4rem'}});
-  heroContent.appendChild(mk('div',{style:{fontFamily:'var(--fd)',fontSize:'2rem',fontWeight:'300',color:'white',letterSpacing:'.03em',lineHeight:'1.1',marginBottom:'.4rem'}},rc.name||p.name));
-  var tagsRow = mk('div',{style:{display:'flex',gap:'.3rem',flexWrap:'wrap'}});
-  function addHeroTag(text,bg,color,border){
-    var t=mk('span',{style:{fontFamily:'var(--fm)',fontSize:'.6rem',letterSpacing:'.08em',textTransform:'uppercase',padding:'.15rem .45rem',borderRadius:'2px',background:bg,color:color,border:'1px solid '+border}},text);
-    tagsRow.appendChild(t);
-  }
-  if(rc.technique) addHeroTag(rc.technique,'rgba(255,255,255,.18)','rgba(255,255,255,.9)','rgba(255,255,255,.3)');
-  if(p.outlet) addHeroTag(p.outlet,'rgba(106,140,106,.35)','#C8F0C8','rgba(106,140,106,.4)');
-  if(rc.allergens) addHeroTag(rc.allergens,'rgba(194,116,74,.35)','#FFD4B8','rgba(194,116,74,.4)');
-  addHeroTag('R&D Origin','rgba(83,74,183,.45)','#D0CCFF','rgba(83,74,183,.5)');
-  heroContent.appendChild(tagsRow);
-  hero.appendChild(heroContent);
-  card.appendChild(hero);
-
-  // ── STATUS BAR ──
-  var sb = mk('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'.6rem 1.4rem',background:'var(--parchment)',borderBottom:'1px solid var(--border)',flexWrap:'wrap',gap:'.5rem'}});
-  var dots = mk('div',{style:{display:'flex',gap:'1rem',flexWrap:'wrap'}});
-  function addDot(label,color){
-    var d=mk('div',{style:{display:'flex',alignItems:'center',gap:'.3rem',fontFamily:'var(--fm)',fontSize:'.66rem',letterSpacing:'.08em',textTransform:'uppercase',color:'var(--smoke)'}});
-    d.appendChild(mk('div',{style:{width:'6px',height:'6px',borderRadius:'50%',background:color,flexShrink:'0'}}));
-    d.appendChild(document.createTextNode(label));
-    dots.appendChild(d);
-  }
-  addDot('Recipe','var(--moss)');
-  addDot('R&D Linked','#534AB7');
-  addDot('Costing','var(--sand)');
-  addDot('Matrix','var(--sand)');
-  sb.appendChild(dots);
-  var sbActs = mk('div',{style:{display:'flex',gap:'.4rem'}});
-  var advanceBtn = mk('button',{style:{fontFamily:'var(--fm)',fontSize:'.66rem',letterSpacing:'.1em',textTransform:'uppercase',padding:'.3rem .8rem',borderRadius:'4px',cursor:'pointer',background:'var(--terracotta)',color:'white',border:'none'}});
-  // Determine next stage for recipe projects
-  var recipeActiveStages = STAGES;
-  var curStage = legacyToStage(p);
-  var curIdx = recipeActiveStages.indexOf(curStage);
-  if(curIdx < recipeActiveStages.length-1){
-    var nextSt = recipeActiveStages[curIdx+1];
-    advanceBtn.textContent = 'Move to '+nextSt+' →';
-    advanceBtn.addEventListener('click',function(){
-      var ps=getRndProjects(); var proj=ps.find(function(x){return x.id===p.id;});
-      if(proj){proj.stage=nextSt; if(nextSt==='Approved')proj.approved=true; saveRndProjects(ps);}
-      renderRndProjectHeader(); renderRndRecipeTab(); showToast('Moved to '+nextSt);
-    });
-  } else {
-    advanceBtn.textContent = '✓ Approved';
-    advanceBtn.style.background = 'var(--moss)';
-  }
-  sbActs.appendChild(advanceBtn);
-  sb.appendChild(sbActs);
-  card.appendChild(sb);
-
-  // ── INNER TABS ──
-  var tabNames = ['recipe','rnd'];
-  var activeInnerTab = 'recipe';
-  var tabBar = mk('div',{style:{display:'flex',borderBottom:'1px solid var(--border)',background:'white',overflowX:'auto'}});
-  var panels = {};
-  function addInnerTab(id,label){
-    var t=mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.68rem',letterSpacing:'.1em',textTransform:'uppercase',padding:'.75rem 1.2rem',cursor:'pointer',color:'var(--t4)',borderBottom:'2px solid transparent',whiteSpace:'nowrap',transition:'all .15s'}});
-    t.textContent=label;
-    t.dataset.tab=id;
-    if(id===activeInnerTab){t.style.color='var(--terracotta)';t.style.borderBottomColor='var(--terracotta)';}
-    t.addEventListener('click',function(){
-      tabBar.querySelectorAll('[data-tab]').forEach(function(tb){tb.style.color='var(--t4)';tb.style.borderBottomColor='transparent';});
-      t.style.color='var(--terracotta)'; t.style.borderBottomColor='var(--terracotta)';
-      Object.keys(panels).forEach(function(k){panels[k].style.display='none';});
-      if(panels[id]) panels[id].style.display='block';
-    });
-    tabBar.appendChild(t);
-  }
-  addInnerTab('recipe','📋 Recipe');
-  addInnerTab('rnd','🔬 R&D Origin');
-  card.appendChild(tabBar);
-
-  // ── RECIPE PANEL ──
-  var recipePanel = mk('div',{style:{padding:'1.4rem 1.6rem'}});
-  panels['recipe'] = recipePanel;
-
-  // Meta row
-  var metaRow = mk('div',{style:{display:'flex',gap:'1.2rem',flexWrap:'wrap',fontSize:'.84rem',color:'var(--smoke)',marginBottom:'1.1rem',paddingBottom:'.8rem',borderBottom:'1px solid var(--border)'}});
-  if(rc.portions) metaRow.appendChild(mk('span',{},'Portions: '+rc.portions));
-  if(rc.prep_time) metaRow.appendChild(mk('span',{},'Prep: '+rc.prep_time));
-  if(rc.cook_time) metaRow.appendChild(mk('span',{},'Cook: '+rc.cook_time));
-  recipePanel.appendChild(metaRow);
-
-  // Flavour profile strip
-  if(rc.flavour_profile && (rc.flavour_profile.dominant||rc.flavour_profile.supporting||rc.flavour_profile.bridge)){
-    var fp=mk('div',{style:{background:'linear-gradient(135deg,#FDF5EE,#FAF0E6)',border:'1px solid #E8D4C0',borderRadius:'8px',padding:'.8rem 1.1rem',marginBottom:'1.2rem'}});
-    fp.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.65rem',letterSpacing:'.14em',textTransform:'uppercase',color:'var(--terracotta)',marginBottom:'.5rem'}},'Flavour Profile'));
-    var fpRow=mk('div',{style:{display:'flex',flexWrap:'wrap',gap:'1.2rem'}});
-    if(rc.flavour_profile.dominant){
-      var fd=mk('div',{});
-      fd.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.6rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'.15rem'}},'Dominant'));
-      fd.appendChild(mk('div',{style:{fontSize:'.86rem',color:'var(--t)'}},rc.flavour_profile.dominant));
-      fpRow.appendChild(fd);
-    }
-    if(rc.flavour_profile.supporting){
-      var fs=mk('div',{});
-      fs.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.6rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'.15rem'}},'Supporting'));
-      fs.appendChild(mk('div',{style:{fontSize:'.86rem',color:'var(--t)'}},rc.flavour_profile.supporting));
-      fpRow.appendChild(fs);
-    }
-    if(rc.flavour_profile.bridge){
-      var fb=mk('div',{});
-      fb.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.6rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--moss)',marginBottom:'.15rem'}},'Bridge'));
-      fb.appendChild(mk('div',{style:{fontSize:'.86rem',color:'var(--moss)'}},rc.flavour_profile.bridge));
-      fpRow.appendChild(fb);
-    }
-    fp.appendChild(fpRow);
-    recipePanel.appendChild(fp);
-  }
-
-  // Components — each as a section
-  if(rc.components && rc.components.length){
-    rc.components.forEach(function(comp){
-      // Component header
-      var ch=mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.68rem',letterSpacing:'.15em',textTransform:'uppercase',color:'var(--t4)',paddingBottom:'.35rem',borderBottom:'1px solid var(--border)',marginBottom:'.8rem',marginTop:'1.3rem'}},comp.name||'Component');
-      recipePanel.appendChild(ch);
-
-      var twoCol=mk('div',{style:{display:'grid',gridTemplateColumns:'1fr 1.4fr',gap:'1.6rem'}});
-
-      // Ingredients column
-      var ingCol=mk('div',{});
-      var ingSecLabel=mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.62rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'.5rem'}},'Ingredients');
-      ingCol.appendChild(ingSecLabel);
-      var ingUl=mk('ul',{style:{listStyle:'none',margin:'0',padding:'0'}});
-      (comp.ingredients||[]).forEach(function(ing){
-        var li=mk('li',{style:{display:'flex',justifyContent:'space-between',alignItems:'baseline',padding:'.35rem 0',borderBottom:'1px solid var(--border)',fontSize:'.88rem'}});
-        var nameSpan=mk('span',{style:{color:'var(--t)'}},ing.item||(ing.name||''));
-        li.appendChild(nameSpan);
-        var qtySpan=mk('span',{style:{fontFamily:'var(--fm)',fontSize:'.73rem',color:'var(--smoke)',marginLeft:'.5rem',flexShrink:'0'}},((ing.quantity||'')+(ing.unit?' '+ing.unit:'')).trim()+(ing.note?' — '+ing.note:''));
-        li.appendChild(qtySpan);
-        ingUl.appendChild(li);
-      });
-      ingCol.appendChild(ingUl);
-      twoCol.appendChild(ingCol);
-
-      // Method column
-      var methCol=mk('div',{});
-      var methSecLabel=mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.62rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'.5rem'}},'Method');
-      methCol.appendChild(methSecLabel);
-      var methOl=mk('ol',{style:{listStyle:'none',margin:'0',padding:'0',counterReset:'steps'}});
-      (comp.steps||[]).forEach(function(step,si){
-        var li=mk('li',{style:{display:'flex',gap:'.7rem',padding:'.5rem 0',borderBottom:'1px solid var(--border)',fontSize:'.87rem',lineHeight:'1.65'}});
-        var num=mk('span',{style:{fontFamily:'var(--fm)',fontSize:'.68rem',color:'var(--terracotta)',minWidth:'18px',marginTop:'.1rem',flexShrink:'0'}},String(si+1));
-        li.appendChild(num);
-        li.appendChild(mk('span',{style:{color:'var(--t)'}},step));
-        methOl.appendChild(li);
-      });
-      methCol.appendChild(methOl);
-      twoCol.appendChild(methCol);
-      recipePanel.appendChild(twoCol);
-    });
-  }
-
-  // Plating
-  if(rc.plating){
-    var platWrap=mk('div',{style:{marginTop:'1.4rem',paddingTop:'1rem',borderTop:'1px solid var(--border)'}});
-    platWrap.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.68rem',letterSpacing:'.15em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'.5rem'}},'Plating'));
-    platWrap.appendChild(mk('div',{style:{fontSize:'.88rem',color:'var(--t)',lineHeight:'1.7'}},rc.plating));
-    recipePanel.appendChild(platWrap);
-  }
-
-  // Actions
-  var acts=mk('div',{style:{display:'flex',gap:'.6rem',marginTop:'1.4rem',paddingTop:'1rem',borderTop:'1px solid var(--border)',flexWrap:'wrap'}});
-  var saveBtn=mk('button',{cls:'btn-p'},'✓ Save to Recipe Manager');
-  saveBtn.addEventListener('click',function(){ saveRndCardToRecipes(p.id); });
-  acts.appendChild(saveBtn);
-  var regenBtn=mk('button',{cls:'btn-g'},'↺ Regenerate');
-  regenBtn.addEventListener('click',function(){ var ps=getRndProjects(); var proj=ps.find(function(x){return x.id===p.id;}); if(proj){proj.recipeCard=null;saveRndProjects(ps);} renderRndRecipeTab(); });
-  acts.appendChild(regenBtn);
-  recipePanel.appendChild(acts);
-  card.appendChild(recipePanel);
-
-  // ── R&D ORIGIN PANEL ──
-  var rndPanel=mk('div',{style:{padding:'1.4rem 1.6rem',display:'none'}});
-  panels['rnd']=rndPanel;
-
-  // Origin block
-  var origBlock=mk('div',{style:{background:'linear-gradient(135deg,#f0eeff,#ede8ff)',border:'1px solid #C8C0F0',borderRadius:'8px',padding:'1rem 1.1rem',marginBottom:'1.2rem'}});
-  origBlock.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.65rem',letterSpacing:'.12em',textTransform:'uppercase',color:'#534AB7',marginBottom:'.35rem'}},'R&D Origin'));
-  origBlock.appendChild(mk('div',{style:{fontFamily:'var(--fd)',fontSize:'1.25rem',fontWeight:'300',color:'var(--t)',marginBottom:'.25rem'}},p.name));
-  var rndMeta='';
-  if(p.chef) rndMeta+=p.chef+' · ';
-  rndMeta+=(p.sessions||[]).length+' sessions';
-  if(p.technique) rndMeta+=' · '+p.technique;
-  origBlock.appendChild(mk('div',{style:{fontSize:'.8rem',color:'var(--smoke)'}},rndMeta));
-  if(p.idea){
-    origBlock.appendChild(mk('div',{style:{fontSize:'.86rem',color:'var(--t)',lineHeight:'1.65',marginTop:'.6rem',paddingTop:'.6rem',borderTop:'1px solid rgba(83,74,183,.15)'}},p.idea));
-  }
-  rndPanel.appendChild(origBlock);
-
-  // Sessions
-  (p.sessions||[]).forEach(function(s,i){
-    var sess=mk('div',{style:{border:'1px solid var(--border)',borderLeft:'3px solid #E8A050',borderRadius:'6px',overflow:'hidden',marginBottom:'.75rem'}});
-    var sh=mk('div',{style:{background:'var(--oat)',padding:'.4rem .85rem',display:'flex',justifyContent:'space-between',alignItems:'center'}});
-    var sn=mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.63rem',letterSpacing:'.1em',textTransform:'uppercase',background:'#E8A050',color:'white',padding:'.12rem .4rem',borderRadius:'3px'}});
-    sn.textContent='Session '+(i+1);
-    sh.appendChild(sn);
-    sh.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.63rem',color:'var(--t4)'}},new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})));
-    sess.appendChild(sh);
-    var notes=mk('div',{style:{padding:'.6rem .85rem',fontSize:'.85rem',color:'var(--t)',lineHeight:'1.65',borderBottom:'1px solid var(--border)'}},s.note);
-    sess.appendChild(notes);
-    if(s.aiAnalysis){
-      var ana=mk('div',{style:{padding:'.6rem .85rem',fontSize:'.82rem',color:'var(--smoke)',lineHeight:'1.65',background:'#FDFCFF'}});
-      ana.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.6rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--sage)',marginBottom:'.3rem'}},'R&D Analysis'));
-      ana.appendChild(mk('span',{},s.aiAnalysis));
-      sess.appendChild(ana);
-    }
-    rndPanel.appendChild(sess);
-  });
-
-  // Chef notes
-  if(rc.chef_notes){
-    var cn=mk('div',{style:{background:'var(--oat)',border:'1px solid var(--sand)',borderLeft:'3px solid var(--moss)',padding:'.85rem 1rem',borderRadius:'0 6px 6px 0',marginTop:'.5rem'}});
-    cn.appendChild(mk('div',{style:{fontFamily:'var(--fm)',fontSize:'.65rem',letterSpacing:'.12em',textTransform:'uppercase',color:'var(--moss)',marginBottom:'.4rem'}},'Chef Notes & Hypothesis'));
-    cn.appendChild(mk('div',{style:{fontSize:'.87rem',color:'var(--t)',lineHeight:'1.75',fontStyle:'italic'}},rc.chef_notes));
-    rndPanel.appendChild(cn);
-  }
-  card.appendChild(rndPanel);
-
-  container.appendChild(card);
-}
-
-function saveRndCardToRecipes(projectId){
-  var p = getRndProjects().find(function(x){ return x.id===projectId; });
-  if(!p || !p.recipeCard || p.recipeCard.linked) return;
-  var rc = p.recipeCard;
-  if(rc.raw){ showToast('Recipe card not structured — regenerate first.'); return; }
-  var ings = [];
-  if(rc.components) rc.components.forEach(function(c){ if(c.ingredients) c.ingredients.forEach(function(i){ ings.push({name:(i.item||''),qty:i.quantity||'',unit:i.unit||'',cost:0}); }); });
-  var methodParts = [];
-  if(rc.components) rc.components.forEach(function(c){ if(c.steps) c.steps.forEach(function(s){ methodParts.push(s); }); });
-  var recipeEntry = {
-    id: 'rnd_'+projectId+'_'+Date.now(),
-    name: rc.name||p.name,
-    section:'production',
-    outlet:'',
-    cat:'Main',
-    portions:rc.portions||4,
-    tag:'R&D',
-    dietary:'',
-    allergens:'',
-    method:methodParts.join('. '),
-    notes:rc.chef_notes||'',
-    photo:null,
-    sellPrice:0,
-    wasteDest:{},
-    nutrition:null,
-    ingredients:ings,
-    rndSource:projectId
-  };
-  var recipes = [];
-  try{ recipes = JSON.parse(localStorage.getItem('cultivate_recipes_v1')||'[]'); }catch(e){}
-  recipes.push(recipeEntry);
-  try{ localStorage.setItem('cultivate_recipes_v1', JSON.stringify(recipes)); }catch(e){}
-  if(typeof renderRecipes==='function') renderRecipes();
-  showToast(recipeEntry.name + ' saved to Recipe Manager');
-  // Mark project as linked
-  var ps = getRndProjects();
-  var proj = ps.find(function(x){return x.id===projectId;});
-  if(proj){ proj.recipeCard.linked=true; proj.recipeCard.recipeName=recipeEntry.name; proj.stage='Costing'; saveRndProjects(ps); }
-  renderRndProjectHeader();
-}
-
-// ── FLAVOUR MATRIX TAB ────────────────────────────────────────
-function renderRndMatrixTab(){
-  var p = getRndProjects().find(function(x){ return x.id===_currentProjectId; });
-  if(!p) return;
-  var container = el('rnd-matrix-content');
-  while(container.firstChild) container.removeChild(container.firstChild);
-
-  if(p.matrixResult){
-    var resultEl = mk('div', {style:{background:'var(--oat)',border:'1px solid var(--sand)',borderRadius:'8px',padding:'1.2rem 1.4rem'}});
-    resultEl.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.72rem',letterSpacing:'.14em',textTransform:'uppercase',color:'var(--terracotta)',marginBottom:'.7rem'}}, 'Flavour Matrix Analysis'));
-    resultEl.appendChild(mk('div', {style:{fontSize:'.9rem',color:'var(--t)',lineHeight:'1.8'},html:p.matrixResult}));
-    var rerunBtn = mk('button', {cls:'btn-g', style:{marginTop:'.8rem'}}, '↺ Re-run Matrix');
-    rerunBtn.addEventListener('click', function(){ runRndMatrixAnalysis(p.id); });
-    resultEl.appendChild(rerunBtn);
-    container.appendChild(resultEl);
-    return;
-  }
-
-  var intro = mk('div', {style:{background:'var(--oat)',border:'1px solid var(--sand)',borderRadius:'8px',padding:'1.2rem 1.4rem',maxWidth:'700px'}});
-  intro.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.76rem',letterSpacing:'.14em',textTransform:'uppercase',color:'var(--terracotta)',marginBottom:'.5rem'}}, 'Flavour Matrix'));
-  intro.appendChild(mk('div', {style:{fontSize:'.9rem',color:'var(--t)',lineHeight:'1.7',marginBottom:'1rem'}}, 'Run the Flavour Matrix against this dish concept to check flavour architecture, identify creative tensions, and surface Creative Frontier opportunities.'));
-
-  // Pull ingredients from recipe card if available
-  var ingContext = '';
-  if(p.recipeCard && !p.recipeCard.linked && !p.recipeCard.error && p.recipeCard.components){
-    var allIngs = [];
-    p.recipeCard.components.forEach(function(c){ if(c.ingredients) c.ingredients.forEach(function(i){ allIngs.push(i.item); }); });
-    if(allIngs.length) ingContext = '\n\nIngredients: ' + allIngs.join(', ');
-  }
-
-  var label = mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.74rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'.4rem'}}, 'Dish description for matrix analysis:');
-  intro.appendChild(label);
-  var textArea = mk('textarea', {cls:'fi', rows:'3', style:{marginBottom:'.8rem'}});
-  textArea.value = p.name + ' — ' + (p.idea||'').substring(0,200) + ingContext;
-  intro.appendChild(textArea);
-
-  var runBtn = mk('button', {cls:'btn-p'}, '⬡ Run Flavour Matrix');
-  runBtn.addEventListener('click', function(){
-    var desc = textArea.value.trim();
-    if(!desc) return;
-    runRndMatrixAnalysis(p.id, desc);
-  });
-  intro.appendChild(runBtn);
-  container.appendChild(intro);
-}
-
-function runRndMatrixAnalysis(projectId, overrideDesc){
-  var p = getRndProjects().find(function(x){ return x.id===projectId; });
-  if(!p) return;
-  var container = el('rnd-matrix-content');
-  while(container.firstChild) container.removeChild(container.firstChild);
-  container.appendChild(mk('div', {style:{padding:'2rem',textAlign:'center',color:'var(--t4)',fontStyle:'italic'}}, 'Running matrix analysis…'));
-
-  var desc = overrideDesc || (p.name + ' — ' + p.idea);
-  var matrixPrompt = 'Run a complete Flavour Matrix analysis on this dish.\n\nDish: ' + desc + '\n\n' +
-    'Use your full flavour matrix knowledge. Identify:\n' +
-    '1. Flavour verdict (Classical Correct / Tension Opportunity / Creative Frontier / Tension Overload / Volume Mismatch)\n' +
-    '2. Spectrum check — which dimensions are strong/weak\n' +
-    '3. Creative tensions — specific ingredient collisions that would elevate this dish\n' +
-    '4. Vector analysis if Creative Frontier applies\n' +
-    '5. One specific, actionable direction for the next test\n\n' +
-    'Peer-level analysis. No simplification. Chef Marco level.';
-
-  callRndAPI(buildRndSystemPrompt(), matrixPrompt, function(err, txt){
-    var ps = getRndProjects();
-    var proj = ps.find(function(x){ return x.id===projectId; });
-    if(proj){
-      proj.matrixResult = err ? 'Matrix analysis failed.' : txt;
-      if(!err) proj.stage = 'Matrix';
-      saveRndProjects(ps);
-    }
-    if(_currentProjectId === projectId){ renderRndProjectHeader(); renderRndMatrixTab(); }
-  });
-}
-window.runRndMatrixAnalysis = runRndMatrixAnalysis;
-
-// ── PICKUP & STAGE TAB ────────────────────────────────────────
-function renderRndPickupTab(){
-  var p = getRndProjects().find(function(x){ return x.id===_currentProjectId; });
-  if(!p) return;
-  var container = el('rnd-pickup-content');
-  while(container.firstChild) container.removeChild(container.firstChild);
-
-  var stage = legacyToStage(p);
-
-  // Ingredient projects use a simpler pipeline
-  var activeStages = (p.type === 'ingredient')
-    ? ['Concept','R&D','Testing','Approved']
-    : STAGES;
-
-  // Normalise stage to valid value for this type
-  if(p.type === 'ingredient' && activeStages.indexOf(stage) === -1) stage = 'R&D';
-
-  // Stage pipeline visual
-  var pipelineWrap = mk('div', {style:{marginBottom:'1.6rem'}});
-  pipelineWrap.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.72rem',letterSpacing:'.14em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'1rem'}}, 'Pipeline Stage'));
-
-  var pipeline = mk('div', {style:{display:'flex',flexWrap:'wrap',gap:'.4rem',marginBottom:'1rem'}});
-  activeStages.forEach(function(s){
-    var isActive = s === stage;
-    var isPast = activeStages.indexOf(s) < activeStages.indexOf(stage);
-    var pill = mk('div', {style:{
-      fontFamily:'var(--fm)',fontSize:'.72rem',letterSpacing:'.1em',textTransform:'uppercase',
-      padding:'.3rem .7rem',borderRadius:'20px',
-      background: isActive ? stageColor(s) : isPast ? 'var(--sand)' : 'var(--surface2)',
-      color: isActive ? 'white' : isPast ? 'var(--t3)' : 'var(--t4)',
-      border: isActive ? 'none' : '1px solid var(--border)'
-    }}, (isPast ? '✓ ' : isActive ? '● ' : '') + s);
-    pipeline.appendChild(pill);
-  });
-  pipelineWrap.appendChild(pipeline);
-  container.appendChild(pipelineWrap);
-
-  // Advance stage
-  var currentIdx = activeStages.indexOf(stage);
-  if(currentIdx < activeStages.length - 1){
-    var nextStage = activeStages[currentIdx+1];
-    var advanceWrap = mk('div', {style:{background:'var(--oat)',border:'1px solid var(--sand)',borderRadius:'8px',padding:'1rem 1.2rem',marginBottom:'1.2rem'}});
-    advanceWrap.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.74rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'.6rem'}}, 'Advance Stage'));
-    var advBtn = mk('button', {cls:'btn-p'}, 'Move to ' + nextStage + ' →');
-    advBtn.addEventListener('click', function(){
-      var ps = getRndProjects();
-      var proj = ps.find(function(x){return x.id===p.id;});
-      if(proj){ proj.stage = nextStage; if(nextStage==='Approved') proj.approved=true; saveRndProjects(ps); }
-      renderRndProjectHeader();
-      renderRndPickupTab();
-    });
-    advanceWrap.appendChild(advBtn);
-    container.appendChild(advanceWrap);
-  }
-
-  // Outlet assignment
-  var outletWrap = mk('div', {style:{background:'var(--oat)',border:'1px solid var(--sand)',borderRadius:'8px',padding:'1rem 1.2rem',marginBottom:'1.2rem'}});
-  outletWrap.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.74rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'.6rem'}}, 'Outlet Assignment'));
-
-  var outlets = [];
-  try{ outlets = (typeof getOutletProfiles==='function' ? getOutletProfiles() : []).map(function(o){ return o.name; }); }catch(e){}
-  if(outlets.length){
-    var outletSel = mk('select', {cls:'fi', style:{maxWidth:'260px',marginRight:'.6rem'}});
-    outletSel.appendChild(mk('option', {value:'central'}, 'Central (all outlets)'));
-    outlets.forEach(function(o){ outletSel.appendChild(mk('option', {value:o, selected:p.outlet===o?'true':null}, o)); });
-    if(p.outlet) outletSel.value = p.outlet;
-    outletWrap.appendChild(outletSel);
-    var assignBtn = mk('button', {cls:'btn-g'}, 'Assign');
-    assignBtn.addEventListener('click', function(){
-      var ps = getRndProjects();
-      var proj = ps.find(function(x){return x.id===p.id;});
-      if(proj){ proj.outlet=outletSel.value; saveRndProjects(ps); showToast('Assigned to '+outletSel.value); }
-    });
-    outletWrap.appendChild(assignBtn);
-  } else {
-    outletWrap.appendChild(mk('div', {style:{fontSize:'.88rem',color:'var(--t4)',fontStyle:'italic'}}, 'No outlets configured.'));
-  }
-  container.appendChild(outletWrap);
-
-  // Approve block
-  if(stage !== 'Approved'){
-    var approveWrap = mk('div', {style:{background:'var(--oat)',border:'1px solid var(--sand)',borderRadius:'8px',padding:'1rem 1.2rem',marginBottom:'1.2rem'}});
-    approveWrap.appendChild(mk('div', {style:{fontFamily:'var(--fm)',fontSize:'.74rem',letterSpacing:'.1em',textTransform:'uppercase',color:'var(--t4)',marginBottom:'.6rem'}}, 'Final Approval'));
-    if(p.type === 'ingredient'){
-      var appIngBtn = mk('button', {cls:'btn-p', style:{background:'#5a7a5a',borderColor:'#5a7a5a'}}, '✓ Approve & Send to Seasonality');
-      appIngBtn.addEventListener('click', function(){ approveRndProject(p.id); });
-      approveWrap.appendChild(appIngBtn);
-    } else {
-      var appRecBtn = mk('button', {cls:'btn-p', style:{background:'#5a7a5a',borderColor:'#5a7a5a'}}, '✓ Approve & Send to Recipe Manager');
-      appRecBtn.addEventListener('click', function(){ approveRndProject(p.id); });
-      approveWrap.appendChild(appRecBtn);
-    }
-    container.appendChild(approveWrap);
-  } else {
-    var approvedMsg = mk('div', {style:{color:'#2d6a2d',fontSize:'.9rem',padding:'1rem',background:'var(--oat)',border:'1px solid var(--sand)',borderRadius:'8px'}});
-    approvedMsg.appendChild(mk('div', {}, '✅ Approved — assigned to '+(p.outlet||'Central')));
-    container.appendChild(approvedMsg);
-  }
-}
-
-// ── SESSION MANAGEMENT ────────────────────────────────────────
 function addRndSession(id){
-  var noteEl = el('rnd-session-note-input');
-  var statusEl = el('rnd-session-status-sel');
-  if(!noteEl || !statusEl) return;
-  var note = noteEl.value.trim();
-  if(!note){ alert('Please write your session notes before saving.'); noteEl.focus(); return; }
+  var noteEl = document.getElementById('rnd-session-note-'+id);
+  var statusEl = document.getElementById('rnd-session-status-'+id);
+  if(!noteEl || !noteEl.value.trim()){ alert('Add your testing notes first.'); return; }
 
-  var ps = getRndProjects();
-  var p = ps.find(function(x){ return x.id===id; });
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
   if(!p) return;
-  if(!p.sessions) p.sessions = [];
 
-  var newStatus = statusEl.value;
-  p.sessions.push({ date: new Date().toISOString(), note: note, status: newStatus, aiAnalysis: null });
+  var sessionNote = noteEl.value.trim();
+  var newStatus = statusEl ? statusEl.value : p.status;
+  var sessionNum = p.sessions.length + 1;
+
+  // Save session immediately
+  var session = {
+    date: new Date().toISOString(),
+    note: sessionNote,
+    status: newStatus,
+    sessionNum: sessionNum,
+    aiAnalysis: null
+  };
+  p.sessions.push(session);
   p.status = newStatus;
-  saveRndProjects(ps);
+  saveRndProjects(projects);
   noteEl.value = '';
-  renderRndResearchTab();
-  renderRndProjectHeader();
-  showToast('Session saved — analysing...');
 
-  // Auto-run AI analysis — use index AFTER push, read id by closure
-  var sessionIdx = p.sessions.length - 1;
-  runRndSessionAnalysis(id, sessionIdx);
+  // Re-render immediately so chef sees the note saved
+  openRndProject(id);
+
+  // Now run AI analysis on the new session
+  var analysisEl = document.getElementById('rnd-session-analysis-' + (sessionNum - 1));
+  if(analysisEl){
+    analysisEl.innerHTML = '<div style="color:var(--t4);font-size:.82rem;font-style:italic">AI is analysing your notes...</div>';
+  }
+
+  runRndSessionAnalysis(id, sessionNum - 1);
 }
 window.addRndSession = addRndSession;
 
 function runRndSessionAnalysis(projectId, sessionIndex){
-  // Always read fresh from storage
-  var ps = getRndProjects();
-  var p = ps.find(function(x){ return x.id===projectId; });
-  if(!p || !p.sessions || p.sessions.length <= sessionIndex) return;
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===projectId; });
+  if(!p) return;
 
-  var s = p.sessions[sessionIndex];
-  var analysisPrompt = 'Analyse this R&D test session for the project "'+p.name+'".' +
-    '\n\nOriginal concept: '+p.idea+
-    '\n\nSession notes:\n'+s.note+
-    '\n\nProvide: (1) what the results indicate scientifically, (2) what likely happened chemically/microbiologically, (3) specific hypothesis for the next test, (4) one question to investigate.' +
-    '\nPeer-level. No simplification. Short and dense.';
+  var session = p.sessions[sessionIndex];
+  if(!session) return;
+
+  // Build context: original framework + all previous sessions + new notes
+  var sessionHistory = '';
+  p.sessions.forEach(function(s, i){
+    sessionHistory += '\nSESSION ' + (i+1) + ' — ' + new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + ' — Stage: ' + s.status + '\n';
+    sessionHistory += 'Notes: ' + s.note + '\n';
+    if(s.aiAnalysis) sessionHistory += 'Previous AI Analysis: ' + s.aiAnalysis.replace(/<[^>]*>/g,'') + '\n';
+  });
+
+  var analysisPrompt = 'RESEARCH PROJECT: ' + p.name + '\n' +
+    'TYPE: ' + p.type + '\n' +
+    'ORIGINAL CONCEPT: ' + p.idea + '\n\n' +
+    'ORIGINAL FRAMEWORK SUMMARY:\n' + (p.framework || '').replace(/<[^>]*>/g,'').substring(0, 2000) + '\n\n' +
+    'FULL SESSION HISTORY:\n' + sessionHistory + '\n\n' +
+    'You are the R&D researcher reviewing Session ' + (sessionIndex+1) + ' notes above. ' +
+    'Analyse the results as a researcher would — read the data, identify what it tells you, what it confirms or contradicts from the framework hypothesis, what variables may be at play, and define precisely what should happen in the next session. ' +
+    'Structure your response as:\n' +
+    '1. DATA READING — what the session notes tell us scientifically\n' +
+    '2. HYPOTHESIS STATUS — confirmed / partially confirmed / contradicted / inconclusive, and why\n' +
+    '3. VARIABLES IDENTIFIED — what factors appear to be influencing the result\n' +
+    '4. NEXT SESSION PROTOCOL — exactly what to test next, with parameters (temp, time, ratio, pH target, etc.)\n' +
+    '5. WATCH POINTS — what to observe and measure in the next session\n\n' +
+    'Be precise. No speculation without data basis. If the notes are insufficient to draw conclusions, say so and specify what data is missing.';
 
   callRndAPI(buildRndSystemPrompt(), analysisPrompt, function(err, txt){
-    // Re-read storage fresh before writing
-    var ps2 = getRndProjects();
-    var p2 = ps2.find(function(x){ return x.id===projectId; });
-    if(p2 && p2.sessions && p2.sessions.length > sessionIndex){
-      p2.sessions[sessionIndex].aiAnalysis = err ? '\u26a0 Analysis failed — tap Analyse to retry.' : txt;
-      saveRndProjects(ps2);
+    var projects2 = getRndProjects();
+    var p2 = projects2.find(function(x){ return x.id===projectId; });
+    if(!p2) return;
+
+    if(!err && txt){
+      p2.sessions[sessionIndex].aiAnalysis = txt;
+      saveRndProjects(projects2);
     }
-    // Re-render only if still on this project's research tab
-    if(_currentProjectId === projectId && _currentTab === 'research'){
-      var ps3 = getRndProjects();
-      var p3 = ps3.find(function(x){ return x.id===projectId; });
-      if(p3) renderRndSessionsDOM(p3);
-    }
+
+    // Re-render to show the analysis — small delay to ensure save completed
+    setTimeout(function(){ openRndProject(projectId); }, 100);
   });
 }
 window.runRndSessionAnalysis = runRndSessionAnalysis;
 
-// ── APPROVE / DELETE ──────────────────────────────────────────
 function approveRndProject(id){
-  var ps = getRndProjects();
-  var p = ps.find(function(x){ return x.id===id; });
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
   if(!p) return;
-  p.approved = true;
-  p.stage = 'Approved';
-  p.status = 'approved';
+
   if(p.type === 'ingredient'){
-    if(!confirm('Mark "'+p.name+'" as approved and send to Seasonality?')) return;
-    injectRndToSeasonality(p);
+    if(confirm('Mark "'+p.name+'" as approved and send to Seasonality as an R&D ingredient?')){
+      p.approved = true;
+      p.status = 'approved';
+      p.allocation = 'seasonality';
+      injectRndToSeasonality(p);
+      saveRndProjects(projects);
+      renderRndList();
+      openRndProject(id);
+      showToast(p.name + ' added to Seasonality as R&D ingredient');
+    }
   } else {
-    if(!confirm('Mark "'+p.name+'" as approved and send to Recipe Manager?')) return;
-    injectRndToRecipes(p);
+    var outlets = typeof getOutletProfiles === 'function' ? getOutletProfiles() : [];
+    var options = '<option value="central">Central (all outlets)</option>';
+    outlets.forEach(function(o){ options += '<option value="'+escHtml(o.name)+'">'+escHtml(o.name)+'</option>'; });
+    var sel = document.getElementById('rnd-allocate-select-'+id);
+    if(sel){
+      p.approved = true;
+      p.status = 'approved';
+      p.allocation = sel.value;
+      injectRndToRecipes(p);
+      saveRndProjects(projects);
+      renderRndList();
+      openRndProject(id);
+      showToast(p.name + ' approved and sent to Recipe Manager');
+    }
   }
-  saveRndProjects(ps);
-  renderRndProjectHeader();
-  renderRndPickupTab();
-  showToast(p.name + ' approved');
 }
 window.approveRndProject = approveRndProject;
 
 function injectRndToSeasonality(p){
-  try{
+  try {
     var contrib = JSON.parse(localStorage.getItem('cultivate_season_contrib_v1')||'[]');
-    var sessions = (p.sessions||[]).length;
-    var note = 'R&D Lab — ' + (p.chef||'') + ' · ' + sessions + ' test session' + (sessions!==1?'s':'') + '. ' + (p.idea||'').substring(0,160);
-    if(p.technique) note += ' · Technique: ' + p.technique;
     contrib.push({
       id: 'rnd_' + Date.now(),
       name: p.name,
-      type: 'R&D Approved',
+      type: 'R&D Development',
       peakMonths: [],
-      note: note,
+      note: 'R&D Lab — ' + p.chef + '. ' + p.idea.substring(0,120) + '...',
       source: 'rnd',
-      rndBadge: true,
-      outlet: p.outlet || 'Central',
-      chef: p.chef || '',
       date: new Date().toISOString()
     });
     localStorage.setItem('cultivate_season_contrib_v1', JSON.stringify(contrib));
-    if(typeof renderSeason === 'function') renderSeason();
-  }catch(e){ console.error('injectRndToSeasonality:', e); }
+  } catch(e){}
 }
 
 function injectRndToRecipes(p){
-  try{
+  try {
     var recipes = JSON.parse(localStorage.getItem('cultivate_recipes_v1')||'[]');
-    recipes.push({ id:'rnd_'+Date.now(), name:p.name, outlet:p.outlet||'central', section:'production', cat:'Main', type:'R&D', tag:'R&D', portions:4, description:(p.idea||'').substring(0,200), source:'rnd', date:new Date().toISOString(), ingredients:[], method:'', notes:'' });
+    recipes.push({
+      id: 'rnd_' + Date.now(),
+      name: p.name,
+      outlet: p.allocation || 'central',
+      type: 'R&D',
+      description: p.idea.substring(0,200),
+      source: 'rnd',
+      date: new Date().toISOString()
+    });
     localStorage.setItem('cultivate_recipes_v1', JSON.stringify(recipes));
-    if(typeof renderRecipes==='function') renderRecipes();
-  }catch(e){}
+  } catch(e){}
 }
-
-function deleteRndProject(id){
-  if(!confirm('Delete this R&D project? This cannot be undone.')) return;
-  var ps = getRndProjects().filter(function(p){ return p.id!==id; });
-  saveRndProjects(ps);
-  showRndList();
-}
-window.deleteRndProject = deleteRndProject;
 
 function clearAllRndProjects(){
-  if(!confirm('Clear ALL R&D projects? This permanently deletes every project, framework, and testing log.')) return;
+  if(!confirm('Clear ALL R&D projects? This will permanently delete every project, framework, and testing log. This cannot be undone.')) return;
   localStorage.removeItem(RND_KEY);
-  showRndList();
+  document.getElementById('rnd-detail').style.display = 'none';
+  document.getElementById('rnd-form').style.display = 'none';
+  renderRndList();
   showToast('R&D Lab cleared');
 }
 window.clearAllRndProjects = clearAllRndProjects;
 
-// ── AI API ────────────────────────────────────────────────────
-function callRndAPI(sys, userMsg, cb){
-  var key = localStorage.getItem('cultivate_api_key') || window.ANTHROPIC_KEY || '';
-  if(!key){
-    if(typeof showKeyModal === 'function'){
-      showKeyModal(function(){ callRndAPI(sys, userMsg, cb); });
-    } else {
-      cb(new Error('No API key set'), null);
-    }
+function deleteRndProject(id){
+  if(!confirm('Delete this R&D project? This cannot be undone.')) return;
+  var projects = getRndProjects().filter(function(p){ return p.id !== id; });
+  saveRndProjects(projects);
+  document.getElementById('rnd-detail').style.display = 'none';
+  renderRndList();
+}
+window.deleteRndProject = deleteRndProject;
+
+function statusLabel(s){
+  var map = {concept:'🔵 Concept', in_development:'🟡 In Development', testing:'🟠 Testing', approved:'✅ Approved'};
+  return map[s] || s;
+}
+function statusColor(s){
+  var map = {concept:'#4a90d9', in_development:'#d4a017', testing:'#C2744A', approved:'#5a7a5a'};
+  return map[s] || 'var(--smoke)';
+}
+
+function renderRndList(){
+  var el = document.getElementById('rnd-list');
+  if(!el) return;
+  var projects = getRndProjects();
+  if(!projects.length){
+    el.innerHTML = '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:2.5rem;text-align:center;color:var(--t4)"><div style="font-family:var(--fd);font-size:1.6rem;font-weight:300;margin-bottom:.5rem">No R&D Projects Yet</div><div style="font-size:.9rem">Start a new ingredient or recipe development project above.</div></div>';
     return;
   }
-  fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 3000,
-      system: sys,
-      messages: [{role:'user', content:userMsg}]
-    })
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(d){
-    if(d.content && d.content[0] && d.content[0].text){
-      cb(null, d.content[0].text);
+  var grouped = {concept:[], in_development:[], testing:[], approved:[]};
+  projects.forEach(function(p){ (grouped[p.status] || grouped.concept).push(p); });
+  var html = '';
+  [['in_development','Active Projects'],['testing','In Testing'],['concept','Concepts'],['approved','Approved']].forEach(function(pair){
+    var list = grouped[pair[0]];
+    if(!list.length) return;
+    html += '<div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin:.5rem 0 .6rem">'+pair[1]+'</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem">';
+    list.forEach(function(p){
+      html += '<div onclick="openRndProject(\''+p.id+'\')\" class="rnd-card">';
+      html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.4rem">';
+      html += '<div style="font-family:var(--fd);font-size:1.05rem;font-weight:400;color:var(--t)">'+escHtml(p.name)+'</div>';
+      html += '<div style="font-family:var(--fm);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:white;background:'+statusColor(p.status)+';padding:.15rem .45rem;border-radius:3px;white-space:nowrap">'+p.type+'</div>';
+      html += '</div>';
+      html += '<div style="font-size:.82rem;color:var(--t3);margin-bottom:.5rem">'+escHtml(p.chef)+' · '+(p.sessions.length)+' test session'+(p.sessions.length!==1?'s':'')+'</div>';
+      html += '<div style="font-size:.8rem;color:var(--t4);line-height:1.5">'+escHtml(p.idea.substring(0,100))+(p.idea.length>100?'...':'')+'</div>';
+      html += '<div style="margin-top:.6rem;font-size:.75rem;color:'+statusColor(p.status)+'">'+statusLabel(p.status)+'</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+function openRndProject(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
+  if(!p) return;
+  var det = document.getElementById('rnd-detail');
+  det.style.display = 'block';
+  det.scrollIntoView({behavior:'smooth'});
+
+  var outlets = typeof getOutletProfiles === 'function' ? getOutletProfiles() : [];
+  var outletOptions = '<option value="central">Central (all outlets)</option>';
+  outlets.forEach(function(o){ outletOptions += '<option value="'+escHtml(o.name)+'">'+escHtml(o.name)+'</option>'; });
+
+  var sessionsHtml = '';
+  if(p.sessions.length){
+    sessionsHtml = '<div style="margin-bottom:1.4rem">';
+    sessionsHtml += '<div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:1rem">Research Log — ' + p.sessions.length + ' Session' + (p.sessions.length!==1?'s':'') + '</div>';
+
+    // Show sessions in chronological order (oldest first = natural research progression)
+    p.sessions.forEach(function(s, i){
+      var stageColor = statusColor(s.status);
+      var dateStr = new Date(s.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+      var timeStr = new Date(s.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+
+      sessionsHtml += '<div style="margin-bottom:1.4rem;border:1px solid var(--sand);border-left:3px solid '+stageColor+';border-radius:6px;overflow:hidden">';
+
+      // Session header
+      sessionsHtml += '<div style="background:var(--oat);padding:.6rem 1rem;display:flex;justify-content:space-between;align-items:center">';
+      sessionsHtml += '<div style="display:flex;align-items:center;gap:.8rem">';
+      sessionsHtml += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:white;background:'+stageColor+';padding:.2rem .55rem;border-radius:3px">Session ' + (i+1) + '</div>';
+      sessionsHtml += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:'+stageColor+'">'+statusLabel(s.status)+'</div>';
+      sessionsHtml += '</div>';
+      sessionsHtml += '<div style="font-size:.75rem;color:var(--t4)">' + dateStr + ' · ' + timeStr + '</div>';
+      sessionsHtml += '</div>';
+
+      // Chef notes
+      sessionsHtml += '<div style="padding:.8rem 1rem;border-bottom:1px solid var(--sand)">';
+      sessionsHtml += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--terracotta);margin-bottom:.4rem">Research Notes</div>';
+      sessionsHtml += '<div style="font-size:.87rem;color:var(--t);line-height:1.7;white-space:pre-wrap">'+escHtml(s.note)+'</div>';
+      sessionsHtml += '</div>';
+
+      // AI analysis
+      sessionsHtml += '<div style="padding:.8rem 1rem" id="rnd-session-analysis-'+i+'">';
+      if(s.aiAnalysis){
+        sessionsHtml += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sage);margin-bottom:.5rem">R&D Analysis</div>';
+        sessionsHtml += '<div style="font-size:.85rem;color:var(--t);line-height:1.7">'+s.aiAnalysis+'</div>';
+      } else {
+        sessionsHtml += '<div style="display:flex;align-items:center;gap:.8rem">';
+        sessionsHtml += '<div style="color:var(--t4);font-size:.82rem;font-style:italic">No analysis yet</div>';
+        sessionsHtml += '<button onclick="runRndSessionAnalysis(\''+p.id+'\','+i+')" style="font-size:.75rem;font-family:var(--fm);letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--sand);border-radius:3px;padding:.25rem .6rem;cursor:pointer;color:var(--t3)">Re-analyse</button>';
+        sessionsHtml += '</div>';
+      }
+      sessionsHtml += '</div>';
+
+      sessionsHtml += '</div>';
+    });
+    sessionsHtml += '</div>';
+  }
+
+  var approvalHtml = '';
+  if(!p.approved){
+    if(p.type==='recipe'){
+      approvalHtml = '<div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">';
+      approvalHtml += '<select id="rnd-allocate-select-'+p.id+'" class="fi" style="max-width:220px">'+outletOptions+'</select>';
+      approvalHtml += '<button class="btn-p" onclick="approveRndProject(\''+p.id+'\')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Recipes</button>';
+      approvalHtml += '</div>';
     } else {
-      var errMsg = d.error ? (d.error.type + ': ' + d.error.message) : ('Unexpected response: ' + JSON.stringify(d).substring(0,200));
-      console.error('[R&D API]', errMsg);
-      cb(new Error(errMsg), null);
+      approvalHtml = '<button class="btn-p" onclick="approveRndProject(\''+p.id+'\')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Seasonality</button>';
     }
-  })
-  .catch(function(e){ console.error('[R&D API fetch error]', e); cb(e, null); });
-}
+  } else {
+    approvalHtml = '<div style="color:#5a7a5a;font-size:.88rem">✅ Approved — sent to '+(p.type==='ingredient'?'Seasonality':'Recipe Manager ('+p.allocation+')')+'</div>';
+  }
 
-function buildRndProjectPrompt(p){
-  return 'Create a complete R&D development framework for the following project.\n\n' +
-    'Project Name: '+p.name+'\nType: '+p.type+'\nLed by: '+p.chef+'\n'+
-    'Concept: '+p.idea+'\n'+
-    (p.technique?'Technique direction: '+p.technique+'\n':'')+
-    (p.cuisine?'Cuisine context: '+p.cuisine+'\n':'')+
-    (p.format?'Target format: '+p.format+'\n':'')+
-    '\nProduce a full research framework with these 10 sections:\n'+
-    '1. Research Hypothesis\n2. Scientific Opportunity Analysis\n3. Control & Variable Map\n'+
-    '4. Phased Testing Protocol (Phase 1: Baseline, Phase 2: Variables, Phase 3: Optimisation, Phase 4: Reproducibility)\n'+
-    '5. Critical Parameters (time, temperature, salt %, pH, Aw)\n6. Failure Mode Analysis\n'+
-    '7. Success Criteria\n8. Equipment & Safety\n9. Reference Connections\n10. First Test (what to do today)\n\n'+
-    'Dense, peer-level, no simplification. Chef Marco is the audience.';
-}
+  det.innerHTML =
+    '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:1.5rem">' +
 
-// ── SYSTEM PROMPT ─────────────────────────────────────────────
-function buildRndSystemPrompt(){
-  // Use lean R&D-specific prompt — do NOT call buildSystemPrompt() (too large, causes API timeout)
-  return (
-    'You are the Cultivate Studio R&D Intelligence Engine — a culinary research system built for Executive Chef Marco Turatti at InterContinental Phuket Resort.\n\n' +
-    'IDENTITY: You are a researcher, not a chef. You think in hypotheses, controlled variables, failure modes, and iteration logic.\n' +
-    'The audience is technically literate. Never simplify. Peer-to-peer. Executive Chef level.\n\n' +
-    'RESEARCHER MINDSET:\n' +
-    '- Every project begins with a hypothesis: what you expect to happen and the scientific basis\n' +
-    '- Define a control before any variation. Isolate one variable at a time.\n' +
-    '- Define success criteria before testing, not after\n' +
-    '- Document failure as rigorously as success — a failed test is data\n' +
-    '- Think in time: 24h, 48h, 72h, 1 week, 1 month\n' +
-    '- Think in conditions: pH, temperature, salinity, humidity, Aw, oxygen exposure\n\n' +
-    'SCIENTIFIC FRAMEWORKS:\n' +
-    '- Enzyme kinetics: Aspergillus proteases peak at 55-60C, deactivate above 70C. Amylases dominant above 35C.\n' +
-    '- Water activity (Aw): ferments 0.93-0.97, cured products below 0.85.\n' +
-    '- pH dynamics: LAB drive pH from 6.5 toward 3.5-4.0. pH below 4.5 + salt above 10% = safe against pathogens.\n' +
-    '- Maillard reaction: onset 140C, accelerates above 150C. Requires low moisture + reducing sugars + free amino acids.\n' +
-    '- Polarity principle: water extracts polar compounds. Fat extracts nonpolar (volatile aromatics). Alcohol dissolves both.\n' +
-    '- Garum protocol: 12% salt, 60C, 10-12 weeks.\n' +
-    '- Koji ratios: Amazake 1:2:1 (koji:water:starch). Shio koji 1:1 + 5% salt. Amino paste 1:2 + 13% salt.\n' +
-    '- Salt table: lacto veg 2%, shio koji 5%, amino paste 5-13%, garum 12-13%, miso 12%.\n\n' +
-    'Reference: Noma, Narisawa, Suhring, Bo.lan, Paste, Saawan, Kjolle, Florilege, Den, Alicia Foundation.'
-  );
-}
+    // Header
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem">' +
+    '<div>' +
+    '<div style="font-family:var(--fd);font-size:1.8rem;font-weight:300;color:var(--t);letter-spacing:.03em">'+escHtml(p.name)+'</div>' +
+    '<div style="font-size:.83rem;color:var(--t3);margin-top:.25rem">'+escHtml(p.chef)+' · Started '+new Date(p.created).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'</div>' +
+    '</div>' +
+    '<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">' +
+    '<span style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;background:'+statusColor(p.status)+';color:white;padding:.2rem .6rem;border-radius:3px">'+statusLabel(p.status)+'</span>' +
+    '<span style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;background:var(--sage);color:white;padding:.2rem .6rem;border-radius:3px">'+p.type+'</span>' +
+    '</div>' +
+    '</div>' +
 
-// ── SHOWPAGE HOOK (no re-wrapping) ────────────────────────────
-document.addEventListener('cultivate:pagechange', function(e){
-  if(e.detail && e.detail.page === 'rnd') renderRndList();
+    // Concept
+    '<div style="background:white;border:1px solid var(--sand);border-radius:6px;padding:1rem;margin-bottom:1.2rem">' +
+    '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--terracotta);margin-bottom:.4rem">Original Concept</div>' +
+    '<div style="font-size:.9rem;color:var(--t);line-height:1.7;white-space:pre-wrap">'+escHtml(p.idea)+'</div>' +
+    '</div>' +
+
+    // AI Framework
+    '<div style="margin-bottom:1.4rem">' +
+    '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:.8rem">AI Development Framework</div>' +
+    '<div style="font-size:.88rem;color:var(--t);line-height:1.7">'+(p.framework || '<span style="color:var(--t4)">Generating...</span>')+'</div>' +
+    '</div>' +
+
+    // Sessions log
+    sessionsHtml +
+
+    // Add session
+    '<div style="background:white;border:1px solid var(--sand);border-radius:6px;padding:1rem;margin-bottom:1.2rem">' +
+    '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:.6rem">Add Test Session Notes</div>' +
+    '<select id="rnd-session-status-'+p.id+'" class="fi" style="margin-bottom:.6rem;max-width:220px">' +
+    '<option value="in_development">In Development</option>' +
+    '<option value="testing">Testing</option>' +
+    '<option value="concept">Back to Concept</option>' +
+    '</select>' +
+    '<textarea class="fi" id="rnd-session-note-'+p.id+'" rows="4" placeholder="Document today\'s test — what you tried, temperatures, ratios, results, what worked, what failed, next steps..."></textarea>' +
+    '<div style="display:flex;gap:.6rem;margin-top:.6rem">' +
+    '<button class="btn-p" onclick="addRndSession(\''+p.id+'\')">Save Session Notes</button>' +
+    '</div>' +
+    '</div>' +
+
+    // Approval
+    '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem;padding-top:1rem;border-top:1px solid var(--sand)">' +
+    approvalHtml +
+    '<button onclick="deleteRndProject(\''+p.id+'\')" style="font-size:.8rem;color:var(--t4);background:none;border:none;cursor:pointer;padding:.3rem">Delete project</button>' +
+    '</div>' +
+
+    '</div>';
+}
+window.openRndProject = openRndProject;
+
+// Init
+document.addEventListener('DOMContentLoaded', function(){
+  renderRndList();
 });
 
-// Fallback: patch showPage once only (guard prevents double-wrap)
-if(!window._rndShowPagePatched){
-  window._rndShowPagePatched = true;
-  var _origSP = window.showPage;
-  if(typeof _origSP === 'function'){
-    window.showPage = function(id){
-      _origSP(id);
-      if(id==='rnd') renderRndList();
-    };
-  }
+// Re-render when page becomes visible
+var _origShowPage = window.showPage;
+if(typeof _origShowPage === 'function'){
+  window.showPage = function(id){
+    _origShowPage(id);
+    if(id==='rnd') renderRndList();
+  };
 }
 
 })();
