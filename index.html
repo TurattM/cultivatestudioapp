@@ -759,6 +759,19 @@ select.fi{cursor:pointer}
 .kpi-item{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:.7rem;text-align:center}
 .kpi-label{font-size:.84rem;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.2rem}
 .rnd-card{cursor:pointer;background:var(--oat);border:1px solid var(--sand);border-radius:8px;padding:1rem;transition:box-shadow .2s}
+@media print{
+  body > *:not(#app):not(.page-wrap):not([id="root"]){display:none!important}
+  #rnd-list{display:none!important}
+  #rnd-form{display:none!important}
+  .ph{display:none!important}
+  nav,.nav,header,.sidebar{display:none!important}
+  #rnd-detail{display:block!important}
+  #rnd-detail [id*="-panel-"]{display:none!important}
+  #rnd-detail [id*="-panel-"].rnd-active-panel{display:block!important}
+  .export-bar{display:none!important}
+  @page{margin:1.5cm;size:A4 portrait}
+}
+#rnd-detail div[id^='rnd-s'],#rnd-detail div[class='rnd-fw-section']{background:white!important;color:var(--t)!important}
 .rnd-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.08)}
 
 /* ── MENU INTEL ──────────────────────────────────────────────*/
@@ -1677,6 +1690,17 @@ h1, h2 {
   <div style="font-family:var(--fd);font-size:1.25rem;font-weight:300;letter-spacing:.08em;margin-bottom:.95rem" id="s-hdr"></div>
 
   <div class="sg" id="s-grid"></div>
+
+  <!-- R&D NICHE PRODUCE SECTION -->
+  <div id="rnd-season-section" style="margin-top:2rem;display:none">
+    <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.9rem;padding-top:1.2rem;border-top:2px solid var(--sand)">
+      <span style="font-size:1.1rem">🧪</span>
+      <div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:#534AB7">R&amp;D Niche Produce</div>
+      <div style="font-family:var(--fm);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--t4);margin-left:.3rem">— Approved from R&amp;D Lab</div>
+    </div>
+    <div id="rnd-season-grid" class="sg" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr))"></div>
+  </div>
+
 </div>
 
 <div class="page" id="page-menu">
@@ -5503,7 +5527,8 @@ var uploadedMenus=[], umFileDataStore=null;
 var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 var MONTHS_S=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-var INTEL_LAYERS = [
+window.INTEL_LAYERS = window.INTEL_LAYERS || [];
+var INTEL_LAYERS = window.INTEL_LAYERS = [
   {title:'Ingredient-Led and Terroir', color:'var(--moss)', desc:'The ingredient and its provenance dictates the dish. Season, place and producer are the starting point.', chefs:[
     {name:'Rene Redzepi', rest:'Noma', loc:'Copenhagen', note:'Father of New Nordic. Foraging, fermentation, living food. Archive is essential study.'},
     {name:'Alain Passard', rest:'Arpege', loc:'Paris', note:'Three Michelin stars. Vegetables as luxury. Removed red meat in 2001. Garden-to-table at the highest level.'},
@@ -6945,6 +6970,7 @@ function showPage(id) {
       });
     } catch(e2){}
     renderSeason();
+    setTimeout(function(){ if(typeof renderRndSeasonSection==='function') renderRndSeasonSection(); }, 100);
   }
   if (id==='menu') renderMenuPage();
   if (id==='intel') renderIntelMatrix();
@@ -9242,6 +9268,7 @@ function renderSeason(overrideData) {
   g.innerHTML=html;
   // handlers attached via document delegation below
   // handlers attached via document delegation below
+  if(typeof renderRndSeasonSection === 'function') renderRndSeasonSection();
 }
 
 function renderMenuPage() {
@@ -13400,6 +13427,49 @@ function usePLDataInModule(moduleId) {
   return false;
 }
 
+
+function _rndEsc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function renderRndSeasonSection(){
+  try{
+    var section = document.getElementById('rnd-season-section');
+    var grid = document.getElementById('rnd-season-grid');
+    if(!section || !grid) return;
+    var stored = JSON.parse(localStorage.getItem('cultivate_season_contrib_v1')||'[]');
+    var rndItems = stored.filter(function(c){ return c.source === 'rnd'; });
+    if(!rndItems.length){ section.style.display='none'; return; }
+    section.style.display = 'block';
+    var cards = '';
+    rndItems.forEach(function(item){
+      var name = item.n || item.name || '';
+      var note = (item.note || '');
+      var parts = note.split('.');
+      var chef = (parts[0]||'').replace('R&D Lab — ','').replace('R&D Lab - ','').replace('R&D Lab','').trim();
+      var shortNote = parts.slice(1).join('.').trim().substring(0,60);
+      var rndId = item.rndId || '';
+      cards += '<div style="background:white;border:2px solid rgba(83,74,183,.3);border-radius:8px;padding:.75rem .8rem;position:relative">';
+      cards += '<div style="position:absolute;top:.3rem;left:.3rem;background:#534AB7;color:white;font-family:DM Mono,monospace;font-size:.55rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.1rem .38rem;border-radius:2px">R&amp;D</div>';
+      cards += '<div style="margin-top:.9rem;text-align:center">';
+      cards += '<div style="font-size:1.4rem;margin-bottom:.3rem">&#129514;</div>';
+      cards += '<div style="font-family:Cormorant Garamond,serif;font-size:.9rem;color:#3D3028;line-height:1.25;margin-bottom:.2rem">'+_rndEsc(name)+'</div>';
+      if(chef) cards += '<div style="font-family:DM Mono,monospace;font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:#534AB7;margin-bottom:.15rem">'+_rndEsc(chef)+'</div>';
+      if(shortNote) cards += '<div style="font-size:.72rem;color:#7A6A5A;line-height:1.4">'+_rndEsc(shortNote)+'</div>';
+      cards += '</div>';
+      if(rndId){
+        cards += '<button onclick="rndOpenFromSeason(\'' + rndId + '\')" style="margin-top:.5rem;width:100%;border:1px solid rgba(83,74,183,.4);background:none;padding:.22rem;font-family:DM Mono,monospace;font-size:.65rem;text-transform:uppercase;color:#534AB7;cursor:pointer;border-radius:3px">View in R&amp;D</button>';
+      }
+      cards += '</div>';
+    });
+    grid.innerHTML = cards;
+  } catch(e){ console.warn('rndSeasonSection:', e); }
+}
+
+window.rndOpenFromSeason = function(rndId){
+  if(!rndId) return;
+  if(typeof showPage === 'function') showPage('rnd');
+  setTimeout(function(){ if(typeof openRndProject === 'function') openRndProject(rndId); }, 250);
+};
+
 </script>
 
 <div id="key-modal" style="display:none;position:fixed;inset:0;background:rgba(74,63,53,.45);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(3px)">
@@ -13435,87 +13505,66 @@ function usePLDataInModule(moduleId) {
      ══════════════════════════════════════════════════════════ -->
 <div class="page" id="page-rnd" style="display:none">
   <div class="ph">
-    <div><div class="pt">R&amp;D Lab</div><div class="ps">Culinary Research &amp; Development — Ingredient &amp; Recipe Development</div></div>
-    <div style="display:flex;gap:.6rem;align-items:center">
-      <button class="btn-p" onclick="showRndForm('ingredient')" style="font-size:.82rem">+ Ingredient Project</button>
-      <button class="btn-p" onclick="showRndForm('recipe')" style="font-size:.82rem;background:var(--terracotta);border-color:var(--terracotta)">+ Recipe Project</button>
-      <button onclick="clearAllRndProjects()" style="font-size:.78rem;font-family:var(--fm);letter-spacing:.1em;text-transform:uppercase;color:var(--t4);background:none;border:1px solid var(--sand);border-radius:4px;padding:.4rem .8rem;cursor:pointer" title="Clear all R&D projects">Clear All</button>
+    <div>
+      <div class="pt">R&amp;D Lab</div>
+      <div class="ps" id="rnd-page-subtitle">Culinary Research &amp; Development</div>
+    </div>
+    <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+      <button class="btn-p" onclick="rndShowNewForm('ingredient')" style="font-size:.82rem">+ Ingredient Project</button>
+      <button class="btn-p" onclick="rndShowNewForm('recipe')" style="font-size:.82rem;background:var(--terracotta);border-color:var(--terracotta)">+ Recipe Project</button>
+      <button onclick="clearAllRndProjects()" style="font-size:.78rem;font-family:var(--fm);letter-spacing:.1em;text-transform:uppercase;color:var(--t4);background:none;border:1px solid var(--sand);border-radius:4px;padding:.4rem .8rem;cursor:pointer">Clear All</button>
     </div>
   </div>
-
-  <!-- PROJECT LIST -->
+  <div id="rnd-outlet-banner" style="display:none;background:linear-gradient(135deg,#f0eeff,#ede8ff);border:1px solid #C8C0F0;border-radius:8px;padding:.7rem 1rem;margin-bottom:1.2rem">
+    <span style="font-family:var(--fm);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:#534AB7">Active Shell — </span>
+    <span id="rnd-outlet-banner-name" style="font-family:var(--fd);font-size:1rem;font-weight:300;color:var(--t)"></span>
+  </div>
+  <div id="rnd-admin-tabs" style="display:none;margin-bottom:1.2rem">
+    <div id="rnd-admin-tab-bar" style="display:flex;gap:.4rem;flex-wrap:wrap"></div>
+  </div>
   <div id="rnd-list" style="margin-bottom:2rem"></div>
-
-  <!-- NEW PROJECT FORM -->
   <div id="rnd-form" style="display:none;background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:1.5rem;margin-bottom:2rem;max-width:860px">
     <div style="font-family:var(--fm);font-size:.78rem;letter-spacing:.15em;text-transform:uppercase;color:var(--terracotta);margin-bottom:1rem" id="rnd-form-title">New R&amp;D Project</div>
     <input type="hidden" id="rnd-type" value="ingredient">
-
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
-      <div>
-        <label class="fl">Project Name</label>
-        <input class="fi" id="rnd-name" placeholder="e.g. Fermented Green Mango, Burnt Leek Garum">
-      </div>
-      <div>
-        <label class="fl">Led by</label>
-        <input class="fi" id="rnd-chef" placeholder="Chef name or team">
-      </div>
+      <div><label class="fl">Project Name</label><input class="fi" id="rnd-name" placeholder="e.g. Fermented Green Mango, Burnt Leek Garum"></div>
+      <div><label class="fl">Led by</label><input class="fi" id="rnd-chef" placeholder="Chef name or team"></div>
     </div>
-
+    <div style="margin-bottom:1rem" id="rnd-outlet-assign-wrap">
+      <label class="fl">Assign to Outlet</label>
+      <select class="fi" id="rnd-outlet-assign" style="max-width:280px"><option value="central">Central (all outlets)</option></select>
+    </div>
     <div style="margin-bottom:1rem">
-      <label class="fl">Idea &amp; Vision <span style="font-weight:400;opacity:.6">— describe what you have in mind, the ingredient, the feeling, the dish direction</span></label>
-      <textarea class="fi" id="rnd-idea" rows="4" placeholder="Describe the ingredient or dish concept. Include what excites you about it, what technique you're thinking about, any reference flavours or dishes, and what problem or opportunity you're solving..."></textarea>
+      <label class="fl">Idea &amp; Vision</label>
+      <textarea class="fi" id="rnd-idea" rows="4" placeholder="Describe the ingredient or dish concept — technique direction, reference flavours, what problem or opportunity you're solving..."></textarea>
     </div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem" id="rnd-meta-fields">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem">
       <div>
-        <label class="fl">Primary Technique Direction</label>
+        <label class="fl">Primary Technique</label>
         <select class="fi" id="rnd-technique">
           <option value="">— let AI decide —</option>
-          <option>Fermentation</option>
-          <option>Curing &amp; Brining</option>
-          <option>Fire &amp; Smoke</option>
-          <option>Dehydration</option>
-          <option>Koji &amp; Mould</option>
-          <option>Extraction &amp; Infusion</option>
-          <option>Emulsification</option>
-          <option>Gelification</option>
-          <option>Distillation</option>
-          <option>Raw &amp; Ceviche</option>
-          <option>Pressure &amp; Vacuum</option>
-          <option>Live Fire Roasting</option>
-          <option>Open to AI</option>
+          <option>Fermentation</option><option>Curing &amp; Brining</option><option>Fire &amp; Smoke</option>
+          <option>Dehydration</option><option>Koji &amp; Mould</option><option>Extraction &amp; Infusion</option>
+          <option>Emulsification</option><option>Gelification</option><option>Raw &amp; Ceviche</option>
+          <option>Live Fire Roasting</option><option>Open to AI</option>
         </select>
       </div>
-      <div id="rnd-cuisine-wrap">
-        <label class="fl">Cuisine Context</label>
-        <input class="fi" id="rnd-cuisine" placeholder="e.g. Modern Thai, Japanese">
-      </div>
+      <div><label class="fl">Cuisine Context</label><input class="fi" id="rnd-cuisine" placeholder="e.g. Modern Thai, Japanese"></div>
       <div>
         <label class="fl">Target Format</label>
         <select class="fi" id="rnd-format">
-          <option value="">Open</option>
-          <option>Fine Dining</option>
-          <option>Casual Elevated</option>
-          <option>Bar Snack</option>
-          <option>Pastry / Dessert</option>
-          <option>Ferment / Condiment</option>
-          <option>Base Preparation</option>
+          <option value="">Open</option><option>Fine Dining</option><option>Casual Elevated</option>
+          <option>Bar Snack</option><option>Pastry / Dessert</option><option>Ferment / Condiment</option><option>Base Preparation</option>
         </select>
       </div>
     </div>
-
     <div style="display:flex;gap:.8rem;flex-wrap:wrap">
       <button class="btn-p" onclick="createRndProject()" id="rnd-submit-btn">Generate Development Framework</button>
       <button class="btn-g" onclick="document.getElementById('rnd-form').style.display='none'">Cancel</button>
     </div>
   </div>
-
-  <!-- PROJECT DETAIL VIEW -->
   <div id="rnd-detail" style="display:none;max-width:960px"></div>
-
 </div>
-
 <div class="page" id="page-lab" style="display:none">
   <div class="ph"><div><div class="pt">Lab</div><div class="ps">Culinary Laboratory — Coming Soon</div></div><div style="background:#C2744A;color:white;font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;padding:.25rem .7rem">Coming Soon</div></div>
   <div style="background:#0d0d0d;border-radius:8px;min-height:320px;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem">
@@ -17882,33 +17931,142 @@ console.log('[Cultivate Agent v2] Initialized. Outlets:', state.outlets.length, 
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════
-     CULTIVATE STUDIO — R&D LAB MODULE
-     localStorage key: cultivate_rnd_projects_v1
+     CULTIVATE STUDIO — R&D LAB MODULE v2
+     Pipeline: Concept→R&D→Recipe→Costing→Matrix→Pickup→Approved
+     localStorage key: cultivate_rnd_projects_v2
      ═══════════════════════════════════════════════════════════ -->
 <script>
 (function(){
 
-var RND_KEY = 'cultivate_rnd_projects_v1';
+/* ======================================================
+   CONSTANTS & STORAGE
+====================================================== */
+var RND_KEY = 'cultivate_rnd_projects_v2';
+
+var PIPELINE_STAGES = [
+  {id:'concept',    label:'Concept',  color:'#4a90d9'},
+  {id:'rnd',        label:'R&D',      color:'#534AB7'},
+  {id:'recipe',     label:'Recipe',   color:'#C8902A'},
+  {id:'costing',    label:'Costing',  color:'#6B8C6B'},
+  {id:'matrix',     label:'Matrix',   color:'#C2744A'},
+  {id:'pickup',     label:'Pickup',   color:'#2A7A6B'},
+  {id:'approved',   label:'Approved', color:'#3a6a3a'}
+];
 
 function getRndProjects(){ try{ return JSON.parse(localStorage.getItem(RND_KEY)||'[]'); }catch(e){ return []; } }
 function saveRndProjects(p){ try{ localStorage.setItem(RND_KEY, JSON.stringify(p)); }catch(e){} }
 
-function showRndForm(type){
+/* ======================================================
+   OUTLET / ROLE HELPERS
+====================================================== */
+function rndGetRole(){ return (typeof _currentRole !== 'undefined') ? _currentRole : null; }
+function rndIsAdmin(){ return rndGetRole() === 'admin'; }
+function rndGetActiveOutlet(){ try{ return (typeof getActiveOutlet === 'function') ? getActiveOutlet() : null; }catch(e){ return null; } }
+function rndGetAllOutlets(){ try{ return (typeof getOutletProfiles === 'function') ? getOutletProfiles() : []; }catch(e){ return []; } }
+
+// Which outlet context is currently active for the R&D tab
+var _rndAdminFilter = 'all'; // 'all' | outlet name
+
+function rndGetVisibleProjects(){
+  var all = getRndProjects();
+  if(rndIsAdmin()){
+    if(_rndAdminFilter === 'all') return all;
+    return all.filter(function(p){ return p.outlet === _rndAdminFilter; });
+  }
+  var ao = rndGetActiveOutlet();
+  if(!ao) return all; // central/no outlet = see everything
+  return all.filter(function(p){ return p.outlet === ao.name || p.outlet === 'central'; });
+}
+
+function rndCanEdit(p){
+  if(rndIsAdmin()) return true;
+  var ao = rndGetActiveOutlet();
+  if(!ao) return true;
+  return p.outlet === ao.name || p.outlet === 'central';
+}
+
+/* ======================================================
+   PAGE INIT
+====================================================== */
+function initRndPage(){
+  rndUpdateOutletBanner();
+  rndBuildAdminTabs();
+  rndPopulateOutletAssign();
+  renderRndList();
+}
+window.initRndPage = initRndPage;
+
+function rndUpdateOutletBanner(){
+  var banner = document.getElementById('rnd-outlet-banner');
+  var nameEl = document.getElementById('rnd-outlet-banner-name');
+  var ao = rndGetActiveOutlet();
+  if(!rndIsAdmin() && ao && banner && nameEl){
+    banner.style.display = 'block';
+    nameEl.textContent = ao.name;
+  } else if(banner){
+    banner.style.display = 'none';
+  }
+}
+
+function rndBuildAdminTabs(){
+  var container = document.getElementById('rnd-admin-tabs');
+  var bar = document.getElementById('rnd-admin-tab-bar');
+  if(!container || !bar) return;
+  if(!rndIsAdmin()){ container.style.display = 'none'; return; }
+  var outlets = rndGetAllOutlets();
+  if(!outlets.length){ container.style.display = 'none'; return; }
+  container.style.display = 'block';
+  var html = '<button onclick="rndSetAdminFilter(\'all\',this)" style="font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.35rem .8rem;border-radius:4px;cursor:pointer;border:1px solid var(--sand);background:'+('' === _rndAdminFilter || _rndAdminFilter==='all'?'var(--terracotta)':'var(--oat)')+';color:'+(_rndAdminFilter==='all'?'white':'var(--smoke)')+'">All Outlets</button>';
+  outlets.forEach(function(o){
+    var active = _rndAdminFilter === o.name;
+    html += '<button onclick="rndSetAdminFilter(\''+escHtml(o.name)+'\',this)" style="font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.35rem .8rem;border-radius:4px;cursor:pointer;border:1px solid var(--sand);background:'+(active?'var(--terracotta)':'var(--oat)')+';color:'+(active?'white':'var(--smoke)')+'">'+escHtml(o.name)+'</button>';
+  });
+  bar.innerHTML = html;
+}
+window.rndSetAdminFilter = function(name, btn){
+  _rndAdminFilter = name;
+  rndBuildAdminTabs();
+  renderRndList();
+};
+
+function rndPopulateOutletAssign(){
+  var sel = document.getElementById('rnd-outlet-assign');
+  if(!sel) return;
+  if(!rndIsAdmin()){
+    var ao = rndGetActiveOutlet();
+    sel.innerHTML = ao ? '<option value="'+escHtml(ao.name)+'">'+escHtml(ao.name)+'</option>'
+                       : '<option value="central">Central</option>';
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  var outlets = rndGetAllOutlets();
+  var html = '<option value="central">Central (all outlets)</option>';
+  outlets.forEach(function(o){ html += '<option value="'+escHtml(o.name)+'">'+escHtml(o.name)+'</option>'; });
+  sel.innerHTML = html;
+}
+
+/* ======================================================
+   NEW PROJECT FORM
+====================================================== */
+function rndShowNewForm(type){
+  rndPopulateOutletAssign();
   var f = document.getElementById('rnd-form');
   f.style.display = 'block';
   document.getElementById('rnd-type').value = type;
   document.getElementById('rnd-form-title').textContent = type === 'ingredient' ? 'New Ingredient R&D Project' : 'New Recipe R&D Project';
-  document.getElementById('rnd-name').value = '';
-  document.getElementById('rnd-chef').value = '';
-  document.getElementById('rnd-idea').value = '';
-  document.getElementById('rnd-technique').value = '';
-  document.getElementById('rnd-cuisine').value = '';
-  document.getElementById('rnd-format').value = '';
+  ['rnd-name','rnd-chef','rnd-idea','rnd-cuisine'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  ['rnd-technique','rnd-format'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
   document.getElementById('rnd-detail').style.display = 'none';
   f.scrollIntoView({behavior:'smooth'});
 }
-window.showRndForm = showRndForm;
+window.rndShowNewForm = rndShowNewForm;
+// Legacy alias
+window.showRndForm = rndShowNewForm;
 
+/* ======================================================
+   CREATE PROJECT
+====================================================== */
 function createRndProject(){
   var type    = document.getElementById('rnd-type').value;
   var name    = document.getElementById('rnd-name').value.trim();
@@ -17917,12 +18075,12 @@ function createRndProject(){
   var tech    = document.getElementById('rnd-technique').value;
   var cuisine = document.getElementById('rnd-cuisine').value.trim();
   var format  = document.getElementById('rnd-format').value;
+  var outlet  = document.getElementById('rnd-outlet-assign').value || 'central';
 
   if(!name || !idea){ alert('Please enter a project name and describe your idea.'); return; }
 
   var btn = document.getElementById('rnd-submit-btn');
-  btn.disabled = true;
-  btn.textContent = 'AI is developing framework...';
+  btn.disabled = true; btn.textContent = 'AI is developing framework...';
 
   var project = {
     id: 'rnd_' + Date.now(),
@@ -17933,23 +18091,25 @@ function createRndProject(){
     technique: tech,
     cuisine: cuisine,
     format: format,
-    status: 'concept',
+    outlet: outlet,
+    stage: 'concept',  // pipeline stage
     created: new Date().toISOString(),
     framework: null,
     sessions: [],
+    // Recipe pipeline data
+    recipeData: null,      // {ingredients:[], method:[], portions:10, notes:'', allergens:[]}
+    costingData: null,     // {rows:[{name,qty,unit,price}], sellPrice:0}
+    matrixData: null,      // {score, verdict, axes:[], insights:[]}
+    pickupData: null,      // {steps:[], garnish:'', timing:'', temperature:'', photo:''}
     approved: false,
     allocation: null
   };
 
-  var systemPrompt = buildRndSystemPrompt();
-  var userPrompt = buildRndFrameworkPrompt(project);
-
-  callRndAPI(systemPrompt, userPrompt, function(err, result){
-    btn.disabled = false;
-    btn.textContent = 'Generate Development Framework';
+  callRndAPI(buildRndSystemPrompt(), buildRndFrameworkPrompt(project), function(err, result){
+    btn.disabled = false; btn.textContent = 'Generate Development Framework';
     if(err){ alert('AI error: ' + err); return; }
     project.framework = result;
-    project.status = 'in_development';
+    project.stage = (type === 'ingredient') ? 'rnd' : 'rnd';
     var projects = getRndProjects();
     projects.unshift(project);
     saveRndProjects(projects);
@@ -17960,388 +18120,1769 @@ function createRndProject(){
 }
 window.createRndProject = createRndProject;
 
-function buildRndSystemPrompt(){
-  return [
-    'You are the Cultivate Studio R&D Intelligence Engine — a culinary research system built for Executive Chef Marco Turatti and his R&D team at InterContinental Phuket Resort.',
-    '',
-    'IDENTITY: You are a researcher, not a chef. You think in hypotheses, controlled variables, failure modes, and iteration logic — not recipes.',
-    'The audience is technically literate. Never simplify. Peer-to-peer. Executive Chef level.',
-    '',
-    'RESEARCHER MINDSET:',
-    '- Every project begins with a hypothesis: what you expect to happen and the scientific basis for that expectation',
-    '- Define a control before any variation. Isolate one variable at a time. Never change two things simultaneously.',
-    '- Define success criteria before testing, not after',
-    '- Document failure as rigorously as success — a failed test is data',
-    '- Think in time: 24h, 48h, 72h, 1 week, 1 month',
-    '- Think in conditions: pH, temperature, salinity, humidity, Aw, oxygen exposure',
-    '',
-    'SCIENTIFIC FRAMEWORKS:',
-    '- Enzyme kinetics: Aspergillus proteases peak at 55-60C, deactivate above 70C. Amylases dominant above 35C.',
-    '- Water activity (Aw): ferments 0.93-0.97, cured products below 0.85. Controls microbial growth and texture.',
-    '- pH dynamics: LAB drive pH from 6.5 toward 3.5-4.0. pH below 4.5 + salt above 10% = safe against pathogens.',
-    '- Maillard reaction: onset 140C, accelerates above 150C. Requires low moisture + reducing sugars + free amino acids.',
-    '- Polarity principle: water extracts polar compounds (salt, acid, umami, sugar). Fat extracts nonpolar (volatile aromatics). Alcohol dissolves both.',
-    '- Osmotic pressure: every 1% salt shift matters. Non-iodized salt only.',
-    '- Gas exchange: CO2 = fermentation activity. Anaerobic = lacto. Aerobic = acetobacter.',
-    '',
-    'FERMENTATION SCIENCE:',
-    '- LAB (Lactic Acid Bacteria): sugar to lactic acid. Anaerobic, halo-tolerant. Target: lacto-ferments at 2% salt.',
-    '- AAB (Acetic Acid Bacteria): alcohol to acetic acid. Aerobic. Target: vinegars, kombucha.',
-    '- Koji (Aspergillus oryzae): proteases (protein to amino acids = umami) + amylases (starch to sugar = sweetness). Growth at 30C/86F.',
-    '- Garum protocol: 12% salt, 60C, 10-12 weeks. Skim fat weekly. A.sojae preferred for higher protease/umami.',
-    '- Koji ratios: Amazake 1:2:1 (koji:water:starch). Shio koji 1:1 + 5% salt. Amino paste short 1:1 + 5% salt. Amino paste long 1:2 + 13% salt.',
-    '- Salt table: lacto veg 2%, shio koji 5%, amino paste 5-13%, garum 12-13%, miso 12%, shoyu moromi 15-16%.',
-    '',
-    'FLAVOUR SCIENCE:',
-    '- Four Rules (Patterson): similar needs contrast; contrasting needs a bridge; heavy needs a lift; light needs grounding.',
-    '- Seven Dials: salt, sweet, sour, bitter, umami, fat, heat — refinement levers after construction.',
-    '- Locking: correct ratio of correct combination creates unified transcendent flavour.',
-    '- Burying: high-intensity ingredients (fish sauce, rosemary, cinnamon) support rather than dominate.',
-    '- Noma 10 Principles: polarity governs extraction; speed of cooling = flavour preservation; preservation = transformation; fat elongates, water punctuates.',
-    '- Ingredient characterisation: character, shape (foreground/background/bridge), texture, intensity, facets.',
-    '',
-    'REFERENCE CHEFS & RESTAURANTS:',
-    'Noma (fermentation, foraging, Nordic), Narisawa (satoyama cuisine, Japan), Suhring (modern German, Bangkok), Bo.lan (Thai fermentation), Paste (Thai heritage), Saawan (vegetable-forward Thai), Kjolle (Peruvian altitude ingredients), Florilege (Japan, ingredient science), Den (Tokyo, playful precision), Alicia Foundation (food science research, Spain).',
-    '',
-    'RESEARCH OUTPUT STRUCTURE — always produce these 10 sections:',
-    '1. Research Hypothesis',
-    '2. Scientific Opportunity Analysis',
-    '3. Control & Variable Map',
-    '4. Phased Testing Protocol (Phase 1: Baseline, Phase 2: Variables, Phase 3: Optimisation, Phase 4: Reproducibility)',
-    '5. Measurement Criteria (sensory + measurable benchmarks)',
-    '6. Failure Mode Analysis',
-    '7. Compound & Flavour Science',
-    '8. Iteration Decision Tree',
-    '9. Waste & By-product Research',
-    '10. Reference Literature & Pioneer Work',
-    '',
-    'FORMAT: Respond in clean HTML with inline styles. Use <strong> for section headers. Precise. No romanticisation. Exact measurements not approximations.'
-  ].join('\n');
+/* ======================================================
+   PIPELINE NAVIGATION
+====================================================== */
+function rndGetStageIndex(stageId){
+  return PIPELINE_STAGES.findIndex(function(s){ return s.id === stageId; });
 }
-
-
-function buildRndFrameworkPrompt(p){
-  var typeLabel = p.type === 'ingredient' ? 'INGREDIENT RESEARCH PROJECT' : 'RECIPE RESEARCH PROJECT';
-  return typeLabel + '\n\n' +
-    'PROJECT NAME: ' + p.name + '\n' +
-    'RESEARCH LEAD: ' + p.chef + '\n' +
-    'TYPE: ' + (p.type === 'ingredient' ? 'Single Ingredient — Compound & Technique Research' : 'Recipe Development — Multi-variable Culinary Research') + '\n' +
-    'TECHNIQUE DIRECTION: ' + (p.technique || 'Open — determine through literature and science') + '\n' +
-    'CUISINE CONTEXT: ' + (p.cuisine || 'Open') + '\n' +
-    'TARGET FORMAT: ' + (p.format || 'Open') + '\n\n' +
-    'RESEARCHER\'S BRIEF:\n' + p.idea + '\n\n' +
-    '---\n\n' +
-    'Generate a full research and development framework for this project. Structure it as a working research document using the following architecture:\n\n' +
-
-    '1. RESEARCH HYPOTHESIS\n' +
-    'State the central hypothesis in one sentence. What do you expect to happen, and what is the scientific basis for that expectation? Reference specific mechanisms (enzymatic, chemical, physical).\n\n' +
-
-    '2. SCIENTIFIC OPPORTUNITY ANALYSIS\n' +
-    'What is the underlying science that makes this worth investigating? What compounds, reactions, or transformations are at play? What does existing literature (including embedded books) tell us about this territory? What remains unexplored or undocumented?\n\n' +
-
-    '3. CONTROL & VARIABLE MAP\n' +
-    'Define the control condition (baseline). List all independent variables to test. List all dependent variables to measure. List all fixed constants that must not change between tests. Include: temperature ranges, salt %, pH targets, time intervals, humidity, oxygen exposure, substrate ratios.\n\n' +
-
-    '4. TESTING PROTOCOL — PHASED\n' +
-    'Phase 1 — Baseline Establishment: exact parameters, expected sensory and measurable outcomes\n' +
-    'Phase 2 — Variable Introduction: one change per test, document what changes and why\n' +
-    'Phase 3 — Optimisation: narrowing toward the optimal condition based on Phase 2 data\n' +
-    'Phase 4 — Stability & Reproducibility: confirm the result holds across multiple runs\n' +
-    'For each phase: exact weights, temperatures, times, and measurement points.\n\n' +
-
-    '5. MEASUREMENT CRITERIA\n' +
-    'What does success look like at each phase? Define sensory benchmarks (aroma, texture, taste, colour) AND measurable benchmarks (pH, Aw, weight loss, yield %). What instruments or tools are needed?\n\n' +
-
-    '6. FAILURE MODE ANALYSIS\n' +
-    'What are the likely failure modes? For each: cause, early warning signs in the data, and corrective action. Include both microbial safety failures and quality failures.\n\n' +
-
-    '7. COMPOUND & FLAVOUR SCIENCE\n' +
-    'What specific compounds are being developed, preserved, or transformed? Reference known chemistry: Maillard products, glutamate development, volatile aromatic compounds, lactic acid curves, enzyme activity windows. Apply Patterson polarity principle and Noma extraction theory where relevant.\n\n' +
-
-    '8. ITERATION DECISION TREE\n' +
-    'How should the researcher read results and decide what to adjust next? Provide a clear logic: if X then try Y, if Z then investigate W. This should allow the R&D team to continue developing without needing AI guidance at every step.\n\n' +
-
-    '9. WASTE & BY-PRODUCT RESEARCH\n' +
-    'What by-products does this process generate? What research potential do they hold? Apply zero-waste principle: every by-product is a research opportunity.\n\n' +
-
-    '10. REFERENCE LITERATURE & PIONEER WORK\n' +
-    'Who has worked in this territory? What have they documented? What remains unpublished or undocumented that this project could contribute to? Use web search to find the most current relevant work.\n\n' +
-
-    'Use web search to find the latest peer-reviewed research, documented chef experiments, and scientific papers relevant to this specific investigation. Cite sources.';
+function rndAdvanceStage(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
+  if(!p || !rndCanEdit(p)) return;
+  var idx = rndGetStageIndex(p.stage);
+  if(idx < PIPELINE_STAGES.length - 1){
+    p.stage = PIPELINE_STAGES[idx+1].id;
+    saveRndProjects(projects);
+    renderRndList();
+    openRndProject(id);
+  }
 }
+window.rndAdvanceStage = rndAdvanceStage;
 
-
-function getCultivateBookKnowledge(){
-  return `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CULINARY KNOWLEDGE LAYER — BOOK LEARNING (June 2026)
-Source: "The Art of Flavor" (Patterson & Aftel) + "Koji Alchemy" (Umansky & Shih)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-THE ART OF FLAVOR — CORE FRAMEWORKS:
-
-FOUR RULES OF FLAVOR (apply when advising on dish construction or menu development):
-1. Similar ingredients need a contrasting flavor — comfort combinations become bland without counterpoint. Acid, bitterness, or sharp aromatics rescue monotony.
-2. Contrasting ingredients need a unifying flavor — disparate elements need a bridge: a shared aromatic, fat, or acid that links them.
-3. Heavy flavors need a lifting note — rich, dense, fatty preparations need brightness to prevent collapse. Acid (lemon, vinegar, citrus zest) is the classic lifter.
-4. Light flavors need to be grounded — delicate ingredients need a base: fat, umami, earthy spice. Without grounding, they disappear.
-
-FLAVOR COMPASS — Aromatic families:
-• SPICES: Sweet (anise, nutmeg, allspice — warmth/richness), Sharp (pepper — elevates), Fresh (ginger, lemongrass — retain brightness), Earthy (saffron, cumin — anchor/deepen)
-• HERBS: Sweet herbs (chervil, dill, parsley — brightness, best fresh), Savory herbs (thyme, rosemary — require heat to mellow)
-• CITRUS: Brightness, bridging agent, cuts richness, alters perception of both spices and herbs
-• FLOWERS: Smooth sharp tastes, floral depth as undertone or foreground
-
-LOCKING AND BURYING:
-• Locking — right ingredients in right proportions create transcendent unified flavor. Proportion is critical: locking = correct ratio of correct combination.
-• Burying — deliberately managing high-intensity ingredients so they support rather than dominate. Strong elements (fish sauce, rosemary, cinnamon, chili) should remain mildly present as background seasoning, never foreground. Intentional burying is never total.
-
-SEVEN DIALS — Refinement levers (apply after construction):
-Salt: draws out flavor, amplifies sweetness and acidity | Sweet: bridges and balances, use judiciously | Sour: brightens, energizes, cuts richness | Bitter: complexity, use sparingly | Umami: savory depth, amplifies without overwhelming | Fat: mouthfeel carrier, flavor amplifier | Heat/spice: complexity, energy, cuts richness
-
-INGREDIENT CHARACTERIZATION SYSTEM:
-• Character — dominant personality (bright, earthy, floral, sharp, rich)
-• Shape — how it sits in a dish (foreground, background, bridge)
-• Texture — physical presence (crunchy, silky, grainy, yielding)
-• Intensity — how powerful, can it dominate or does it need support?
-• Facets — nuances within it (a lemon has sour, floral, bitter, and bright facets)
-
-COOKING SPECTRUM: Raw (maximum integrity, variable) → Soft-cooking (sweating/boiling/steaming, preserves innate qualities) → Hard-cooking (sautéing/roasting/grilling, Maillard creates new compounds)
-
-PHILOSOPHICAL CORE (Patterson): Flavor is composable. Every choice constrains subsequent choices. Too much harmony breeds boredom — counterpoint is required. Balance is relative to ingredient character. Mastery of rules leads to freedom from rules.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-KOJI ALCHEMY — OPERATIONAL KNOWLEDGE:
-
-WHAT KOJI DOES: Aspergillus oryzae produces two enzyme families:
-• Proteases → break proteins into amino acids → UMAMI
-• Amylases → convert starches to simple sugars → SWEETNESS + fermentation fuel
-Temperature controls which dominates: 95–105°F (35–40°C) = amylase dominant (sweetness); below 95°F (35°C) = protease dominant (umami)
-
-KOJI TERMINOLOGY:
-• Shio Koji — koji + water + 5% salt, ready 1 week. Quick umami marinade.
-• Amazake — koji + cooked starch + water. Sweet, no salt — chef controls sodium.
-• Amino Paste — koji + protein + salt, fermented to paste. Short-term (2wks–3mo, 5% salt); Long-term (6–12mo, 13% salt).
-• Amino Sauce — koji + protein + higher water, fermented to liquid. 12 months, 13% salt.
-• Kojizuke — koji-based pickling medium for vegetables.
-• Autolysis — enzymatic self-breakdown for flavor enhancement.
-
-QUICK RATIOS (per unit of koji):
-Amazake: 1 koji : 2 water : 1 starch | Shio Koji: 1 koji : 1 water : 5% salt | Amino Paste short: 1 koji : 1 protein : 5% salt | Amino Paste long: 1 koji : 2 protein : 13% salt | Amino Sauce: 1 koji : 2 water : 1 protein : 13% salt
-
-KOJI APPLICATIONS IN THE KITCHEN:
-• Meat aging — koji proteases externally replicate enzymatic aging. Near 100% yield vs 15–30% loss in traditional dry-aging. Leave koji crust on during cooking for superior Maillard browning.
-• Dairy — koji enzymes applied to dairy achieve aged cheese flavor in 2 months vs 10+ months traditional. Amazake-cultured cream resists curdling.
-• Vegetables — kojizuke enhances pickling by developing sugars and umami. Use sparingly — too much koji softens texture. Root veg: 3–5 days; tender veg: hours only.
-• Sweet applications — long-grain rice koji at 95°F reaches peak sweetness at 48 hours. Flavor profile similar to ripe pear. Use in custards, caramel, cultured butter, fruit transformation.
-• Amino sauces from food waste — fish scraps, meat bones, vegetable peels, bread crusts all viable substrates. Zero-waste principle: no such thing as a by-product, only another product.
-• Vegetable charcuterie — salt cure + koji inoculation on beets, carrots, squash, mushrooms creates meat-like texture and concentrated umami.
-
-GROWING KOJI — four critical conditions:
-1. Microbially clean slate — cook/steam substrate before inoculation
-2. Temperature management — 86–95°F for growth, mix regularly to dissipate heat
-3. Humidity — damp not wet
-4. Accessible starch with structure — polished grains, break post-cooking for nutrient access
-
-KOJI PHILOSOPHY (Umansky): Koji is not a flavor — it is a transformation system. What koji produces depends entirely on the substrate. Waste is a conceptual error. Every fermentation by-product is another product. Koji connects terroir to fermentation identity — a miso made in Southern Thailand using local proteins and koji will have a flavor no paste made elsewhere can replicate.
-
-SYNTHESIS — HOW BOTH BOOKS CONNECT TO CULTIVATE STUDIO:
-• Patterson's Four Rules + Koji's enzymatic logic = complete flavor architecture system
-• Umami Seven Dial → amino paste/sauce as the umami source tool
-• Burying high-intensity flavors → shio koji as a buried umami layer in marinades
-• Light flavors need grounding → amazake or amino paste as the ground for delicate ingredients
-• Locking = right proportions → koji ratios govern flavor locking in fermented products
-• Fermentation as flavor technique (Patterson) → koji fermentation as the complete fermentation system (Umansky)
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-NOMA GUIDE TO BUILDING FLAVOUR — CORE KNOWLEDGE
-Source: René Redzepi & The Noma Test Kitchen (Full Original Book, 779pp)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-FLAVOUR SCIENCE FOUNDATION:
-Flavour = taste + aroma, intrinsically linked. Five tastes (salt/sweet/sour/bitter/umami) operate in the mouth via taste receptors. Aroma operates via ~400 olfactory receptors, retronasal — molecules travel up through the nasal cavity when chewing. The olfactory bulb processes up to 10,000 distinct aromas. Five tastes alone ≠ flavour. Flavour = taste × aroma.
-
-THE POLARITY PRINCIPLE (Noma's foundational extraction theory):
-"Like dissolves like." Every extraction decision flows from molecular polarity:
-• POLAR (water-loving): salt, acid, umami, sugar, miso, soy, vinegar → extract with water-based liquids
-• NONPOLAR (fat-loving): volatile aroma compounds — toasted nuts, fresh herbs, rose, pine, wood bark → extract with oil, butter, cream
-• Alcohol and vinegar dissolve BOTH polar and nonpolar molecules — most versatile extractants
-• Fat doesn't just add richness — it unlocks flavours water cannot reach. Fat holds scent, stretches aroma in time, makes it linger.
-• Steep seaweed in water → umami (polar). Infuse seaweed in oil → aromatic oceanic complexity (nonpolar). Same ingredient, different dimension.
-
-NOMA MOTHER FLAVOURS — identity ingredient system (persistent across 20+ years):
-• BLACK CURRANT (whole plant): unripe berries → salt-packed tangy capers; ripe berry → pickles/reductions; young wood/branches → Black Currant Wood Oil (Noma's "olive oil" — green, herbaceous, fruity, pine resin, floral); shoots/buds → pickled for winter
-• ROSE (beach rose, Rosa rugosa): quick-grilled over open fire → beyond natural aroma; infused into vinegar; ground into salt; blended into oil (finishing oil — potent)
-• PINE (Douglas fir, Noble fir): young cones → "Pine Cone Olives" (pickled); shoots → fresh/pickled for terpene; bark → smoking medium; Douglas Fir Oil via vacuum steam infusion
-• ELDERFLOWER: peak season only — Elderflower Vinegar, Elderflower Oil, Elderflower Syrup (used as savoury seasoning element)
-• KELP/SEAWEED: raw in water → glutamate-rich dashi; roasted then water → deeper Maillard-inflected umami; in oil → aromatic oceanic extraction; crystallized after reduction → Noma Umami Salt (signature finishing salt)
-
-NOMA SALT PHILOSOPHY:
-Salt shapes, not just seasons. "When the right salt meets the right dish, 1+1=3."
-• BLENDED SALTS: ground with flavouring ingredients — Pine Salt, Elderflower Salt, Yuzu Salt, Ant Salt, Rose Petal Salt
-• REDUCED SALTS: flavoured liquid (dashi, broth, juice) reduced to crystallization in dehydrator — Noble Fir Salt, Noma Umami Salt, Noma Roasted Umami Salt, Saffron Kelp Salt
-• NOMA UMAMI SALT: built on kelp (naturally glutamate-rich). Roasted version = richness + umami for meat/veg. Sweet version = lifts chocolate and fruit. "Ordinary salt enhances — Noma salt finishes."
-• Timing is everything: fish/meat benefits from early salting; broths/sauces need salt only at finish.
-
-NOMA PICKLING & PRESERVATION SYSTEM:
-Preservation = flavour transformation, not just shelf life. Time in vinegar creates depth, tension, memory impossible to achieve with fresh only.
-• COLD PICKLING: vinegar only, no heat. For soft/fragrant items (flowers, delicate herbs). Pure, bracing.
-• HOT PICKLING: 3 parts vinegar : 2 parts water (or dashi) : 1 part sugar. Complex with flowers, herbs, spices, dried mushrooms.
-• Blending into vinegar: vibrant but risks oxidation — make right before service or keep on ice
-• Key outcome: pickled item + flavoured vinegar as bonus product (for dressings, ceviche, finishing)
-
-NOMA OIL & FAT SYSTEM:
-• VACUUM STEAM INFUSION: 60°C/140°F, 100% fan, minimum 4 hours to overnight — gentle, non-oxidative
-• HERB OIL BLENDING: max speed 7 minutes, immediate ice bath — preserves colour and volatile aromas
-• BLACK CURRANT WOOD OIL: 1kg young branches + 2kg neutral oil, vacuum 60°C 4h+, overnight infuse, strain over ice
-• BROWN BUTTER EMULSION (Noma hollandaise): 300g brown butter + 4 soft-boiled whole eggs + 100g water + 80g lemon juice — uses whole egg not just yolk
-• FUDGE SYSTEM (proprietary): butter + water reduction + infused oil = flavour carrier with body and elongated finish. Black Currant Wood Fudge: 35g butter + 20g Peaso Reduction + 15g BC Wood Oil + 10g Cucumber Reduction
-
-NOMA BROTH ARCHITECTURE:
-• ROASTED KELP DASHI: 23g roasted kelp + 1kg filtered water — base for umami salts, sauces, broth finishing
-• SELF-CLARIFYING SEAFOOD BROTH: blend raw shellfish + water → vacuum seal → steam 90°C → protein coagulates into raft → press through cloth = crystal-clear intensely flavoured consommé. No outside proteins — shellfish protein does all clarification work.
-• PINE DASHI: pine shoots infused in kelp dashi base — forest/terpene character in broth
-• FREEZE-THAW JUICING: freeze ingredient in vacuum bag, thaw at room temp → cellulase enzymes activate, break cell walls → flavourful slightly viscous juice. Best for rhubarb, quince, potato.
-
-NOMA'S 10 PRINCIPLES OF FLAVOUR BUILDING:
-1. POLARITY governs all extraction — fat for aroma compounds, water for taste compounds
-2. SPEED OF COOLING = flavour preservation — all infused oils and herb extracts hit ice immediately
-3. PRESERVATION = TRANSFORMATION — vinegar/salt/fat/sugar changes flavour character fundamentally, not just extends it
-4. DESIGNED SALTS = FLAVOUR ARCHITECTURE — salt is not neutral; the right salt finishes a dish
-5. DRYING TRANSFORMS — reveals qualities hidden when fresh; dried = different flavour register, not lesser
-6. FERMENTATION AS INVISIBLE SEASONING — garum/amino sauce/shio koji used as invisible depth layer, not identifiable ferment flavour
-7. FAT ELONGATES, WATER PUNCTUATES — use fat where flavour should linger; use acid/water where it should hit bright and exit
-8. BROTH AS PRECISION INSTRUMENT — each Noma broth is a named, specific product with defined flavour purpose
-9. WHOLE-INGREDIENT UTILIZATION — every part of source plant deployed: black currant (unripe berry, ripe berry, shoot, bud, branch), rose (petal, hip, stem), pine (shoot, needle, cone, bark)
-10. THE DEEP LARDER (Gastronomique) — most complex finishing elements live in the background: ant honey, candied tree sap, mushroom garum, Dashi RDX — these are the things that make a dish irreducible
-
-NOMA DRYING PHILOSOPHY:
-"Drying transforms. It shifts how flavour presents itself. It softens some edges, deepens others, and reveals qualities you don't get when ingredients are fresh." Dried ingredients act as connective tissue — linking dish elements into something cohesive. Pumpkin Bushi = pumpkin dried bushi-style → deep, smoky, elegant umami multiplier.
-
-NOMA SPICE MIX SYSTEM (Nordic, not classical trade-route spices):
-Danish Curry Powder, Marigold Spice Mix, Mustard Seed Spice Mix, Mushroom Spice Mix, Roseroot Spice Mix, Berry Spice Mix, Gooseberry Pumpkin Spice Mix, Woodruff & Japanese Quince Za'atar — all built from foraged/regional Nordic ingredients
-
-CROSS-REFERENCE WITH EXISTING BRAIN KNOWLEDGE:
-• Koji enzyme mechanisms + Noma polarity principle = complete extraction decision tree: enzymatic breakdown for taste compounds (water-polar) + fat extraction for aromatic compounds (nonpolar)
-• Marco's Mussel Garum (existing brain) + Noma Self-Clarifying Broth system = complementary: garum as invisible seasoning, self-clarified broth as clean flavour base
-• Patterson's Four Rules (existing brain) + Noma's fat/water duality = operational execution framework: Rule 3 (heavy needs lift) → always acid-based (water/polar); Rule 4 (light needs grounding) → always fat-based (oil/butter/nonpolar)
-• Koji temperature logic (existing brain) matches Noma’s 60°C infusion protocol — both protect volatile compounds from heat degradation
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-NOMA GUIDE TO FERMENTATION — COMPLETE SCIENCE LAYER
-Source: René Redzepi & David Zilber (Full Original Book, 450pp)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-FERMENTATION SCIENCE FOUNDATION:
-Fermentation = transformation by microorganisms via enzymes. Starch and protein molecules too large for taste receptors become amino acids + simple sugars = more obviously delicious. Koji rice has sweetness plain rice lacks. Raw beef fermented into garum has savoriness that speaks on a primitive level.
-
-THREE MICROBIAL PLAYERS:
-• LAB (Lactic Acid Bacteria) — on skins of all fruits/vegetables. Convert sugar → lactic acid → sourness. Anaerobic, halo-tolerant. Used for: all lacto-ferments.
-• AAB (Acetic Acid Bacteria) — convert alcohol → acetic acid. Aerobic (need oxygen). Used for: vinegar, kombucha.
-• Aspergillus oryzae (koji) — proteases (proteins → amino acids → UMAMI) + amylases (starches → sugars → SWEETNESS). Growth: 30°C/86°F. Still enzyme-active at 60°C.
-• Aspergillus sojae — higher protease than A. oryzae → more glutamate → more umami. Preferred for garum and shoyu.
-
-SAFETY: pH below 4.5 + salt above 10% = safe against virtually all pathogens. 1% shift in salt = difference between great ferment and dangerous one. Always non-iodized salt. Water activity: salt binds water molecules → microbes cannot grow.
-
-SALT TABLE (baker’s % = % of main ingredient weight):
-Lacto veg: 2% | Shio Koji: ~5% | Amino paste short: 5% | Garum: 12-13% | Miso: ~12% | Shoyu moromi: 15-16%
-
-TEMPERATURE TABLE:
-Koji growth: 30°C/86°F, 44-48hrs | Lacto: room temp | Garum + black garlic: 60°C/140°F (enzymatic max + Maillard) | DIY: rice cooker/slow cooker keep-warm ≈ 60°C
-
-LACTO SYSTEM: 2% salt, vacuum bag, room temp. Brine: 40g salt/kg water. Fermented berry juice = body + effervescence + saltiness + sweetness + acidity simultaneously. Use as vinaigrette base or dressing for raw seafood.
-
-KOMBUCHA: SCOBY = yeast + AAB cooperative. Yeast → alcohol; AAB → acetic acid. Noma uses as sauce base, vinaigrettes, acid substitute in cold dishes. Harvest at correct sweetness-acid balance.
-
-VINEGAR: Two-stage. Quick method: aquarium air pump + bubbling stone + previous batch as AAB starter, 10-14 days. Spirit vinegars: dilute spirits to 5-7% ABV → AAB convert → vinegar retains spirit character. Target: 5-6% acidity.
-
-KOJI NOMA EXTENSIONS (beyond Koji Alchemy already in brain):
-Pearl Barley Koji = Noma standard (more complex than white rice). Lacto Koji Water: Pearl Barley Koji + water + 5% salt, vacuum bag, room temp 5-6 days → sweet-sour-savory liquid used everywhere. Koji Cure (Shio Koji): 400g koji + 400g water + 60g salt, 1 week → marinade that seasons/tenderizes/infuses simultaneously, deepens for weeks in fridge. Roasted Koji Mole: roast koji at 160°C until deep brown → blend with cream+milk → strain → hot chocolate-like sauce with umami complexity. Koji Stock: 500g dried koji + water, simmer 10 min, strain → versatile umami base.
-
-MISO/PEASO SUBSTRATE SUBSTITUTION: Any protein can become miso. Yellow peas → Peaso (Okasan miso equivalent). Rye → Ryeso (Hatcho miso equivalent). Dried corn nixtamalized → Maizo. Defatted hazelnut pulp → Hazelnut miso. Principle: every region makes miso from locally abundant protein. Peaso Water (yellow pea cooking liquid) = concentrated umami reduction base used throughout Noma kitchen.
-
-SHOYU: Koji grown directly on legume+wheat → moromi brine 15-16% salinity → 6-12+ months. A. sojae preferred: higher protease → richer umami. Yellow Pea Shoyu = Noma version. Coffee Shoyu reduced to glaze → lacquer for fish.`;
+function rndRegressStage(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
+  if(!p || !rndCanEdit(p)) return;
+  var idx = rndGetStageIndex(p.stage);
+  if(idx > 0){
+    p.stage = PIPELINE_STAGES[idx-1].id;
+    saveRndProjects(projects);
+    renderRndList();
+    openRndProject(id);
+  }
 }
+window.rndRegressStage = rndRegressStage;
 
-function callRndAPI(sys, userMsg, cb){
-  var key = localStorage.getItem('cultivate_api_key') || '';
-  if(!key){ cb('No API key configured', null); return; }
+/* ======================================================
+   RENDER PROJECT LIST
+====================================================== */
+function renderRndList(){
+  var el = document.getElementById('rnd-list');
+  if(!el) return;
+  var projects = rndGetVisibleProjects();
+  if(!projects.length){
+    el.innerHTML = '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:2.5rem;text-align:center;color:var(--t4)"><div style="font-family:var(--fd);font-size:1.6rem;font-weight:300;margin-bottom:.5rem">No R&D Projects</div><div style="font-size:.9rem">Start a new ingredient or recipe development project above.</div></div>';
+    return;
+  }
 
-  var knowledgeContext = 'CULTIVATE STUDIO — FULL CULINARY KNOWLEDGE BASE\n\nApply all of the following to your research framework:\n\n' + getCultivateBookKnowledge();
+  // Group by stage
+  var byStage = {};
+  PIPELINE_STAGES.forEach(function(s){ byStage[s.id] = []; });
+  projects.forEach(function(p){ (byStage[p.stage] || byStage['concept']).push(p); });
 
-  var messages = [
-    {role:'user', content: knowledgeContext},
-    {role:'assistant', content: 'Understood. I have absorbed the full Cultivate Studio culinary knowledge base — Art of Flavor, Koji Alchemy, Noma Building Flavour, and Noma Fermentation. I will apply all frameworks, ratios, science, and principles to this research project.'},
-    {role:'user', content: userMsg}
-  ];
-
-  fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key': key,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body: JSON.stringify({
-      model:'claude-sonnet-4-5',
-      max_tokens: 4000,
-      system: sys,
-      messages: messages
-    })
-  }).then(function(r){
-    if(!r.ok) return r.json().then(function(e){ throw new Error(e.error && e.error.message ? e.error.message : JSON.stringify(e)); });
-    return r.json();
-  }).then(function(d){
-    var txt = (d.content||[]).filter(function(c){ return c.type==='text'; }).map(function(c){ return c.text||''; }).join('');
-    if(!txt){
-      console.error('[RND API] Empty. stop_reason:', d.stop_reason, 'content:', JSON.stringify(d.content||[]).substring(0,300));
-      cb('Empty response — stop_reason: ' + d.stop_reason, null);
-      return;
-    }
-    cb(null, txt);
-  }).catch(function(e){
-    console.error('[RND API] Error:', e);
-    cb(e.message||String(e), null);
+  var html = '';
+  PIPELINE_STAGES.forEach(function(s){
+    var list = byStage[s.id];
+    if(!list.length) return;
+    html += '<div style="margin-bottom:1.8rem">';
+    html += '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.7rem">';
+    html += '<div style="width:8px;height:8px;border-radius:50%;background:'+s.color+'"></div>';
+    html += '<div style="font-family:var(--fm);font-size:.73rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4)">'+s.label+' — '+list.length+' project'+(list.length!==1?'s':'')+'</div>';
+    html += '</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">';
+    list.forEach(function(p){
+      var stageInfo = PIPELINE_STAGES.find(function(x){ return x.id===p.stage; }) || PIPELINE_STAGES[0];
+      var pct = Math.round(((rndGetStageIndex(p.stage))/(PIPELINE_STAGES.length-1))*100);
+      html += '<div onclick="openRndProject(\''+p.id+'\')" class="rnd-card" style="position:relative">';
+      // Progress bar top
+      html += '<div style="height:3px;background:var(--sand);border-radius:2px 2px 0 0;overflow:hidden;margin:-1rem -1rem .8rem"><div style="height:100%;width:'+pct+'%;background:'+stageInfo.color+';transition:width .4s"></div></div>';
+      html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;margin-bottom:.3rem">';
+      html += '<div style="font-family:var(--fd);font-size:1.05rem;font-weight:400;color:var(--t)">'+escHtml(p.name)+'</div>';
+      html += '<span style="font-family:var(--fm);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:white;background:'+stageInfo.color+';padding:.13rem .4rem;border-radius:2px;white-space:nowrap">'+stageInfo.label+'</span>';
+      html += '</div>';
+      html += '<div style="font-size:.8rem;color:var(--t3);margin-bottom:.4rem">'+escHtml(p.chef);
+      if(rndIsAdmin() && p.outlet && p.outlet !== 'central') html += ' · <span style="color:#534AB7">'+escHtml(p.outlet)+'</span>';
+      html += ' · '+p.sessions.length+' session'+(p.sessions.length!==1?'s':'')+'</div>';
+      html += '<div style="font-size:.78rem;color:var(--t4);line-height:1.5">'+escHtml((p.idea||'').substring(0,90))+(p.idea && p.idea.length>90?'...':'')+'</div>';
+      html += '<div style="display:flex;align-items:center;gap:.4rem;margin-top:.6rem">';
+      html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.12rem .35rem;border-radius:2px;background:'+(p.type==='ingredient'?'rgba(106,140,106,.2)':'rgba(194,116,74,.2)')+';color:'+(p.type==='ingredient'?'var(--moss)':'var(--terracotta)')+'">'+p.type+'</span>';
+      if(p.matrixData) html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.12rem .35rem;border-radius:2px;background:rgba(194,116,74,.15);color:var(--terracotta)">★ '+p.matrixData.score+'</span>';
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '</div></div>';
   });
+  el.innerHTML = html;
 }
 
-
-function addRndSession(id){
-  var noteEl = document.getElementById('rnd-session-note-'+id);
-  var statusEl = document.getElementById('rnd-session-status-'+id);
-  if(!noteEl || !noteEl.value.trim()){ alert('Add your testing notes first.'); return; }
-
+/* ======================================================
+   OPEN PROJECT — PIPELINE VIEW
+====================================================== */
+function openRndProject(id){
   var projects = getRndProjects();
   var p = projects.find(function(x){ return x.id===id; });
   if(!p) return;
+  var det = document.getElementById('rnd-detail');
+  det.style.display = 'block';
+  det.scrollIntoView({behavior:'smooth'});
 
-  var sessionNote = noteEl.value.trim();
-  var newStatus = statusEl ? statusEl.value : p.status;
-  var sessionNum = p.sessions.length + 1;
+  var stageIdx = rndGetStageIndex(p.stage);
+  var stageInfo = PIPELINE_STAGES[stageIdx];
+  var canEdit = rndCanEdit(p);
 
-  // Save session immediately
-  var session = {
-    date: new Date().toISOString(),
-    note: sessionNote,
-    status: newStatus,
-    sessionNum: sessionNum,
-    aiAnalysis: null
-  };
-  p.sessions.push(session);
-  p.status = newStatus;
-  saveRndProjects(projects);
-  noteEl.value = '';
+  // ── Pipeline progress bar ──
+  var pipelineHtml = '<div style="display:flex;gap:0;margin-bottom:1.5rem;overflow-x:auto">';
+  PIPELINE_STAGES.forEach(function(s, i){
+    var done = i < stageIdx;
+    var active = i === stageIdx;
+    var bg = done ? s.color : (active ? s.color : 'var(--sand)');
+    var opacity = done ? '.55' : (active ? '1' : '.4');
+    pipelineHtml += '<div style="flex:1;min-width:72px;text-align:center;padding:.45rem .3rem;background:'+bg+';opacity:'+opacity+';transition:all .3s;'+(i===0?'border-radius:6px 0 0 6px':'')+(i===PIPELINE_STAGES.length-1?'border-radius:0 6px 6px 0':'')+(i>0?'border-left:1px solid rgba(255,255,255,.25)':'')+'">';
+    pipelineHtml += '<div style="font-family:var(--fm);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:white;opacity:'+(done||active?'1':'.7')+'">'+s.label+'</div>';
+    if(done||active) pipelineHtml += '<div style="font-size:.65rem;color:rgba(255,255,255,.9)">'+( done?'✓':'·')+'</div>';
+    pipelineHtml += '</div>';
+  });
+  pipelineHtml += '</div>';
 
-  // Re-render immediately so chef sees the note saved
-  openRndProject(id);
+  // ── Nav buttons ──
+  var navHtml = '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem;flex-wrap:wrap">';
+  navHtml += '<button onclick="document.getElementById(\'rnd-detail\').style.display=\'none\';document.getElementById(\'rnd-list\').scrollIntoView({behavior:\'smooth\'})" style="font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--sand);border-radius:4px;padding:.4rem .8rem;cursor:pointer;color:var(--t4)">← Back to Projects</button>';
+  if(canEdit && stageIdx > 0){
+    navHtml += '<button onclick="rndRegressStage(\''+id+'\')" style="font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--sand);border-radius:4px;padding:.4rem .8rem;cursor:pointer;color:var(--smoke)">← Back Stage</button>';
+  }
+  navHtml += '<div style="flex:1"></div>';
+  navHtml += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:'+stageInfo.color+'">'+stageInfo.label+'</div>';
+  navHtml += '</div>';
 
-  // Now run AI analysis on the new session
-  var analysisEl = document.getElementById('rnd-session-analysis-' + (sessionNum - 1));
-  if(analysisEl){
-    analysisEl.innerHTML = '<div style="color:var(--t4);font-size:.82rem;font-style:italic">AI is analysing your notes...</div>';
+  // ── Stage content ──
+  var stageContent = '';
+  if(p.type === 'ingredient'){
+    stageContent = renderIngredientPipeline(p, canEdit);
+  } else {
+    stageContent = renderRecipePipeline(p, canEdit, stageIdx);
   }
 
+  // For APPROVED stage, the final card is self-contained — no outer wrapper needed
+  if(p.stage === 'approved'){
+    det.innerHTML =
+      '<div style="margin-bottom:.5rem">' +
+      navHtml +
+      '</div>' +
+      stageContent;
+  } else {
+    det.innerHTML =
+      '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:1.5rem;color:var(--t)">' +
+      navHtml +
+      '<div style="font-family:var(--fd);font-size:1.8rem;font-weight:300;color:var(--t);letter-spacing:.03em;margin-bottom:.3rem">'+escHtml(p.name)+'</div>' +
+      '<div style="font-size:.83rem;color:var(--t3);margin-bottom:1rem">'+escHtml(p.chef)+' · Started '+new Date(p.created).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+(rndIsAdmin()&&p.outlet&&p.outlet!=='central'?' · <span style="color:#534AB7">'+escHtml(p.outlet)+'</span>':'')+'</div>' +
+      pipelineHtml +
+      stageContent +
+      '</div>';
+  }
+}
+window.openRndProject = openRndProject;
+
+/* ======================================================
+   INGREDIENT PIPELINE
+====================================================== */
+function renderIngredientPipeline(p, canEdit){
+  var html = '';
+  var stageIdx = rndGetStageIndex(p.stage);
+
+  // Original concept
+  html += '<div style="background:white;border:1px solid var(--sand);border-radius:6px;padding:1rem;margin-bottom:1.2rem">';
+  html += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--terracotta);margin-bottom:.4rem">Original Concept</div>';
+  html += '<div style="font-size:.9rem;color:var(--t);line-height:1.7;white-space:pre-wrap">'+escHtml(p.idea)+'</div>';
+  html += '</div>';
+
+  // AI Framework
+  if(p.framework){
+    html += '<div style="margin-bottom:1.4rem">';
+    html += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:.8rem">AI Development Framework</div>';
+    html += '<div style="font-size:.88rem;color:var(--t);line-height:1.7">'+p.framework+'</div>';
+    html += '</div>';
+  }
+
+  // Sessions
+  html += renderSessionsBlock(p, canEdit);
+
+  // Add session form
+  if(canEdit && p.stage !== 'approved'){
+    html += renderAddSessionForm(p);
+  }
+
+  // Approve → Seasonality
+  if(canEdit){
+    if(!p.approved){
+      html += '<div style="padding-top:1rem;border-top:1px solid var(--sand);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem">';
+      html += '<button class="btn-p" onclick="rndApproveIngredient(\''+p.id+'\')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Seasonality</button>';
+      html += '<button onclick="deleteRndProject(\''+p.id+'\')" style="font-size:.8rem;color:var(--t4);background:none;border:none;cursor:pointer">Delete project</button>';
+      html += '</div>';
+    } else {
+      html += '<div style="padding-top:1rem;border-top:1px solid var(--sand);color:#5a7a5a;font-size:.88rem">✅ Approved — added to Seasonality</div>';
+    }
+  }
+
+  return html;
+}
+
+
+/* ======================================================
+   COLLAPSIBLE FRAMEWORK SECTIONS
+====================================================== */
+function sanitiseFrameworkHtml(raw){
+  var s = raw || '';
+  // Strip markdown code fences (```html, ```json, ```)
+  s = s.replace(/^```[a-z]*\n?/gim, '').replace(/```$/gim, '');
+  // Strip entire outer dark wrapper divs by removing all inline background styles
+  s = s.replace(/style="[^"]*background[^"]*"/gi, function(m){
+    // Keep the style attr but blank out background declarations
+    return m.replace(/background(-color)?\s*:\s*[^;"']+;?/gi, '');
+  });
+  s = s.replace(/style='[^']*background[^']*'/gi, function(m){
+    return m.replace(/background(-color)?\s*:\s*[^;"']+;?/gi, '');
+  });
+  // Fix white text on now-transparent backgrounds
+  s = s.replace(/color\s*:\s*(#fff|#ffffff|white|rgba?\(255[^)]*\))(?=[^-])/gi, 'color:var(--t)');
+  // If it's plain text (no HTML tags) convert line breaks to <br>
+  if(s.indexOf('<') < 0 || s.indexOf('<div') < 0){
+    s = s.replace(/\n/g, '<br>');
+  }
+  return s.trim();
+}
+
+function renderCollapsibleFramework(frameworkHtml, uid){
+  var clean = sanitiseFrameworkHtml(frameworkHtml);
+  
+  // Split on numbered section headers — works with various AI HTML output formats
+  // Try splitting on the numbered heading pattern regardless of HTML tags wrapping it
+  var sections = [];
+  
+  // Method 0: plain text numbered sections (primary — matches new prompt format)
+  // Pattern: "1. SECTION TITLE\n\nContent..."
+  var plainParts = clean.replace(/<br>/gi,'\n').replace(/<[^>]*>/g,'').split(/\n(?=\d{1,2}\. [A-Z])/);
+  if(plainParts.length > 2){
+    plainParts.forEach(function(chunk){
+      chunk = chunk.trim();
+      if(!chunk) return;
+      var firstNL = chunk.indexOf('\n');
+      var title = firstNL > 0 ? chunk.substring(0, firstNL).trim() : chunk.substring(0,80);
+      var body = firstNL > 0 ? chunk.substring(firstNL).trim() : '';
+      // Convert remaining plain text to readable HTML
+      var bodyHtml = body.replace(/\n\n/g,'</p><p style="margin:.5rem 0">').replace(/\n/g,'<br>');
+      sections.push({title: title, body: '<p style="margin:0 0 .5rem">'+bodyHtml+'</p>'});
+    });
+  }
+  
+  // Method 1: split on <h3> or <h4> tags
+  if(sections.length < 3){
+    sections = [];
+    var h3split = clean.split(/<h[234][^>]*>/i);
+    if(h3split.length > 3){
+      h3split.forEach(function(chunk, i){
+        if(!chunk.trim() || i === 0) return;
+        var titleEnd = chunk.indexOf('</h');
+        var title = chunk.substring(0, titleEnd < 0 ? 80 : Math.min(titleEnd, 80)).replace(/<[^>]*>/g,'').trim();
+        var body = titleEnd >= 0 ? chunk.substring(chunk.indexOf('>',titleEnd)+1) : chunk;
+        sections.push({title: title, body: body});
+      });
+    }
+  }
+  
+  // Method 2: split on <strong> numbered headings
+  if(sections.length < 3){
+    sections = [];
+    var strongSplit = clean.split(/<strong[^>]*>/i);
+    if(strongSplit.length > 3){
+      strongSplit.forEach(function(chunk, i){
+        if(!chunk.trim() || i === 0) return;
+        var titleEnd = chunk.indexOf('</strong>');
+        if(titleEnd < 0) return;
+        var title = chunk.substring(0, titleEnd).replace(/<[^>]*>/g,'').trim();
+        if(!/^\d/.test(title) && !/^[A-Z]/.test(title)) return;
+        sections.push({title: title, body: chunk.substring(titleEnd + 9)});
+      });
+    }
+  }
+  
+  var html = '<div style="margin-bottom:1.4rem">';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">';
+  html += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4)">AI Development Framework</div>';
+  html += '<button onclick="rndToggleAll(\''+uid+'\',event)" style="font-family:var(--fm);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;background:none;border:1px solid var(--sand);border-radius:3px;padding:.2rem .5rem;cursor:pointer;color:var(--t4)" id="'+uid+'-toggle-btn">Expand All</button>';
+  html += '</div>';
+
+  if(sections.length >= 3){
+    sections.forEach(function(sec, i){
+      var sid = uid+'-s'+i;
+      var titleText = sec.title.replace(/<[^>]*>/g,'').substring(0,70);
+      html += '<div style="border:1px solid var(--sand);border-radius:6px;overflow:hidden;margin-bottom:.45rem">';
+      html += '<div onclick="rndToggleSection(\''+sid+'\',event)" style="background:var(--oat);padding:.65rem 1rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none">';
+      html += '<span style="font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--terracotta)">'+escHtml(titleText)+'</span>';
+      html += '<span id="'+sid+'-arrow" style="font-size:.65rem;color:var(--t4);transition:transform .25s">&#9660;</span>';
+      html += '</div>';
+      var _secBody = sec.body.replace(/style="[^"]*background[^"]*"/gi, 'style="background:transparent"').replace(/style='[^']*background[^']*'/gi, "style='background:transparent'");
+      html += '<div id="'+sid+'" style="display:none;padding:.9rem 1rem 1rem;font-size:.86rem;color:var(--t)!important;line-height:1.75;background:white!important">'+_secBody+'</div>';
+      html += '</div>';
+    });
+  } else {
+    // Fallback — single collapsible block with all content
+    var sid = uid+'-s0';
+    html += '<div style="border:1px solid var(--sand);border-radius:6px;overflow:hidden">';
+    html += '<div onclick="rndToggleSection(\''+sid+'\',event)" style="background:var(--oat);padding:.65rem 1rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none">';
+    html += '<span style="font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--terracotta)">Research Framework</span>';
+    html += '<span id="'+sid+'-arrow" style="font-size:.65rem;color:var(--t4);transition:transform .25s">&#9660;</span>';
+    html += '</div>';
+    var _cleanBody = clean.replace(/style="[^"]*background[^"]*"/gi, 'style="background:transparent"');
+    html += '<div id="'+sid+'" style="display:none;padding:.9rem 1rem 1rem;font-size:.86rem;color:var(--t)!important;line-height:1.75;background:white!important">'+_cleanBody+'</div>';
+    html += '</div>';
+  }
+
+  html += '</div>';
+  return html;
+}
+window.rndToggleSection = function(sid, evt){
+  if(evt) evt.stopPropagation();
+  var el = document.getElementById(sid);
+  var arrow = document.getElementById(sid+'-arrow');
+  if(!el) return;
+  var open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  if(arrow) arrow.style.transform = open ? '' : 'rotate(180deg)';
+};
+
+window.rndToggleAll = function(uid, evt){
+  var btn = document.getElementById(uid+'-toggle-btn');
+  if(!btn && evt) btn = evt.target || evt.currentTarget;
+  if(!btn) return;
+  var expanding = btn.textContent.trim() === 'Expand All';
+  btn.textContent = expanding ? 'Collapse All' : 'Expand All';
+  var i = 0;
+  while(true){
+    var el = document.getElementById(uid+'-s'+i);
+    if(!el) break;
+    var arrow = document.getElementById(uid+'-s'+i+'-arrow');
+    el.style.display = expanding ? 'block' : 'none';
+    if(arrow) arrow.style.transform = expanding ? 'rotate(180deg)' : '';
+    i++;
+  }
+};
+
+/* ======================================================
+   SPIDER / RADAR GRAPH SVG
+====================================================== */
+window.renderSpiderGraph = function(axes, containerId){
+  if(!axes || !axes.length) return '';
+  var N = axes.length;
+  var cx = 160, cy = 160, R = 120;
+  var angleStep = (2 * Math.PI) / N;
+  
+  // Grid rings
+  var svgParts = [];
+  svgParts.push('<svg viewBox="0 0 320 320" width="260" height="260" style="display:block;margin:0 auto">');
+  
+  // Grid circles
+  [0.25,0.5,0.75,1].forEach(function(t){
+    var pts = [];
+    for(var i=0;i<N;i++){
+      var angle = i * angleStep - Math.PI/2;
+      pts.push((cx + R*t*Math.cos(angle)).toFixed(1)+','+(cy + R*t*Math.sin(angle)).toFixed(1));
+    }
+    svgParts.push('<polygon points="'+pts.join(' ')+'" fill="none" stroke="rgba(180,170,160,.35)" stroke-width="1"/>');
+  });
+  
+  // Axis lines
+  for(var i=0;i<N;i++){
+    var angle = i * angleStep - Math.PI/2;
+    svgParts.push('<line x1="'+cx+'" y1="'+cy+'" x2="'+(cx+R*Math.cos(angle)).toFixed(1)+'" y2="'+(cy+R*Math.sin(angle)).toFixed(1)+'" stroke="rgba(180,170,160,.4)" stroke-width="1"/>');
+  }
+  
+  // Data polygon
+  var dataPts = [];
+  axes.forEach(function(ax, i){
+    var val = Math.min(10, Math.max(0, parseFloat(ax.score)||0)) / 10;
+    var angle = i * angleStep - Math.PI/2;
+    dataPts.push((cx + R*val*Math.cos(angle)).toFixed(1)+','+(cy + R*val*Math.sin(angle)).toFixed(1));
+  });
+  svgParts.push('<polygon points="'+dataPts.join(' ')+'" fill="rgba(194,116,74,.2)" stroke="var(--terracotta,#C2744A)" stroke-width="2" stroke-linejoin="round"/>');
+  
+  // Data dots
+  axes.forEach(function(ax, i){
+    var val = Math.min(10, Math.max(0, parseFloat(ax.score)||0)) / 10;
+    var angle = i * angleStep - Math.PI/2;
+    var x = (cx + R*val*Math.cos(angle)).toFixed(1);
+    var y = (cy + R*val*Math.sin(angle)).toFixed(1);
+    svgParts.push('<circle cx="'+x+'" cy="'+y+'" r="4" fill="var(--terracotta,#C2744A)" stroke="white" stroke-width="1.5"/>');
+  });
+  
+  // Labels
+  axes.forEach(function(ax, i){
+    var angle = i * angleStep - Math.PI/2;
+    var lx = (cx + (R+22)*Math.cos(angle)).toFixed(1);
+    var ly = (cy + (R+22)*Math.sin(angle)).toFixed(1);
+    var anchor = Math.cos(angle) > 0.1 ? 'start' : (Math.cos(angle) < -0.1 ? 'end' : 'middle');
+    var shortName = (ax.name||'').replace('Creative Frontier','Creative').replace('Aromatic complexity','Aromatic').replace('Texture contrast','Texture').replace('Umami depth','Umami').replace('Fat expression','Fat').replace('Acid structure','Acid').replace('Concept integrity','Concept');
+    svgParts.push('<text x="'+lx+'" y="'+ly+'" text-anchor="'+anchor+'" dominant-baseline="middle" font-family="DM Mono,monospace" font-size="9" fill="rgba(80,70,60,.7)" letter-spacing="0.3">'+escHtml(shortName.toUpperCase())+'</text>');
+    svgParts.push('<text x="'+lx+'" y="'+(parseFloat(ly)+11).toFixed(1)+'" text-anchor="'+anchor+'" dominant-baseline="middle" font-family="Cormorant Garamond,serif" font-size="11" fill="rgba(194,116,74,.9)">'+ax.score+'</text>');
+  });
+  
+  svgParts.push('</svg>');
+  return svgParts.join('');
+}
+
+/* ======================================================
+   RECIPE PIPELINE — STAGE RENDERER
+====================================================== */
+function renderRecipePipeline(p, canEdit, stageIdx){
+  var stage = p.stage;
+
+  if(stage === 'concept' || stage === 'rnd') return renderStageRnD(p, canEdit);
+  if(stage === 'recipe')   return renderStageRecipe(p, canEdit);
+  if(stage === 'costing')  return renderStageCosting(p, canEdit);
+  if(stage === 'matrix')   return renderStageMatrix(p, canEdit);
+  if(stage === 'pickup')   return renderStagePickup(p, canEdit);
+  if(stage === 'approved') return renderStageApproved(p, canEdit);
+  return renderStageRnD(p, canEdit);
+}
+
+/* ── Stage: Concept / R&D ── */
+function renderStageRnD(p, canEdit){
+  var html = '';
+
+  // Original concept panel
+  html += '<div style="background:linear-gradient(135deg,#f0eeff,#ede8ff);border:1px solid #C8C0F0;border-radius:8px;padding:1rem 1.1rem;margin-bottom:1.2rem">';
+  html += '<div style="font-family:var(--fm);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#534AB7;margin-bottom:.35rem">Original Concept</div>';
+  html += '<div style="font-family:var(--fd);font-size:1.2rem;font-weight:300;color:var(--t);margin-bottom:.3rem">'+escHtml(p.name)+'</div>';
+  html += '<div style="font-size:.87rem;color:var(--smoke);line-height:1.65;white-space:pre-wrap">'+escHtml(p.idea)+'</div>';
+  if(p.technique || p.cuisine || p.format){
+    html += '<div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.7rem">';
+    if(p.technique) html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .42rem;border-radius:2px;background:rgba(83,74,183,.15);color:#534AB7">'+escHtml(p.technique)+'</span>';
+    if(p.cuisine) html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .42rem;border-radius:2px;background:rgba(106,140,106,.15);color:var(--moss)">'+escHtml(p.cuisine)+'</span>';
+    if(p.format) html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .42rem;border-radius:2px;background:rgba(194,116,74,.15);color:var(--terracotta)">'+escHtml(p.format)+'</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // AI Framework — collapsible
+  if(p.framework){
+    html += renderCollapsibleFramework(p.framework, p.id+'-rnd-fw');
+  }
+
+  // Sessions
+  html += renderSessionsBlock(p, canEdit);
+  if(canEdit) html += renderAddSessionForm(p);
+
+  // Advance to Recipe stage
+  if(canEdit && p.stage !== 'approved'){
+    html += '<div style="padding-top:1rem;border-top:1px solid var(--sand);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem">';
+    html += '<div style="display:flex;gap:.6rem;flex-wrap:wrap">';
+    html += '<button class="btn-p" onclick="rndGenerateRecipeCard(\''+p.id+'\')" id="rnd-gen-recipe-btn-'+p.id+'" style="background:#C8902A;border-color:#C8902A">✦ AI Generate Recipe Card →</button>';
+    if(p.recipeData) html += '<button class="btn-g" onclick="rndAdvanceStage(\''+p.id+'\')">Recipe ready — Continue →</button>';
+    html += '</div>';
+    html += '<button onclick="deleteRndProject(\''+p.id+'\')" style="font-size:.8rem;color:var(--t4);background:none;border:none;cursor:pointer">Delete</button>';
+    html += '</div>';
+  }
+
+  return html;
+}
+
+/* ── Stage: Recipe ── */
+function renderStageRecipe(p, canEdit){
+  var rd = p.recipeData || { ingredients:[], method:[], portions:10, notes:'', allergens:[], description:'', category:'' };
+  var html = '<div style="background:white;border:1px solid var(--sand);border-radius:8px;overflow:hidden;margin-bottom:1.2rem">';
+
+  // Header
+  html += '<div style="background:var(--parchment);padding:.7rem 1.1rem;border-bottom:1px solid var(--sand);display:flex;align-items:center;justify-content:space-between">';
+  html += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--terracotta)">Recipe Card</div>';
+  html += '<div style="display:flex;gap:.5rem">';
+  if(canEdit) html += '<button onclick="rndRegenerateRecipe(\''+p.id+'\')" class="btn-sm" id="rnd-regen-btn-'+p.id+'">✦ Regenerate</button>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '<div style="padding:1.2rem">';
+
+  // Description
+  if(rd.description){
+    html += '<div style="font-size:.9rem;color:var(--smoke);line-height:1.65;margin-bottom:1rem;font-style:italic">'+escHtml(rd.description)+'</div>';
+  }
+
+  // Portions scale
+  html += '<div style="background:var(--parchment);border:1px solid var(--sand);border-radius:6px;padding:.5rem .9rem;margin-bottom:1rem;display:flex;align-items:center;gap:.8rem">';
+  html += '<label style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--smoke)">Portions</label>';
+  html += '<input type="number" value="'+(rd.portions||10)+'" min="1" id="rnd-portions-'+p.id+'" style="width:58px;border:1px solid var(--sand);background:white;padding:.28rem .45rem;font-family:var(--fd);font-size:.92rem;text-align:center;color:var(--ash);outline:none;border-radius:3px">';
+  html += '<span style="font-family:var(--fm);font-size:.72rem;color:var(--t4)">Base</span>';
+  html += '</div>';
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1.4fr;gap:1.8rem">';
+
+  // Ingredients
+  html += '<div>';
+  html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Ingredients</div>';
+  html += '<div id="rnd-ing-list-'+p.id+'">';
+  if(canEdit){
+    (rd.ingredients||[]).forEach(function(ing, i){
+      html += '<div style="display:flex;gap:.4rem;align-items:center;padding:.3rem 0;border-bottom:1px solid var(--border)">';
+      html += '<input class="fi" style="flex:1;margin-bottom:0;padding:.25rem .4rem;font-size:.85rem" value="'+escHtml(ing.name||'')+'" onchange="rndUpdateIngredient(\''+p.id+'\','+i+',\'name\',this.value)" placeholder="Ingredient">';
+      html += '<input class="fi" style="width:80px;margin-bottom:0;padding:.25rem .4rem;font-size:.85rem;text-align:right" value="'+escHtml(ing.qty||'')+'" onchange="rndUpdateIngredient(\''+p.id+'\','+i+',\'qty\',this.value)" placeholder="Qty">';
+      html += '<button onclick="rndRemoveIngredient(\''+p.id+'\','+i+')" style="border:none;background:none;color:var(--t4);cursor:pointer;font-size:.9rem;padding:.2rem">×</button>';
+      html += '</div>';
+    });
+    html += '<button onclick="rndAddIngredient(\''+p.id+'\')" style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.32rem .75rem;border-radius:4px;cursor:pointer;border:1px dashed var(--sand);background:none;color:var(--t4);margin-top:.5rem;width:100%">+ Add Ingredient</button>';
+  } else {
+    (rd.ingredients||[]).forEach(function(ing){
+      html += '<div style="display:flex;justify-content:space-between;padding:.38rem 0;border-bottom:1px solid var(--border);font-size:.89rem">'+escHtml(ing.name||'')+'<span style="font-family:var(--fm);font-size:.75rem;color:var(--smoke)">'+escHtml(ing.qty||'')+'</span></div>';
+    });
+  }
+  html += '</div></div>';
+
+  // Method
+  html += '<div>';
+  html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Method</div>';
+  html += '<div id="rnd-method-list-'+p.id+'">';
+  if(canEdit){
+    (rd.method||[]).forEach(function(step, i){
+      html += '<div style="display:flex;gap:.6rem;align-items:flex-start;padding:.4rem 0;border-bottom:1px solid var(--border)">';
+      html += '<span style="font-family:var(--fm);font-size:.7rem;color:var(--terracotta);min-width:18px;margin-top:.2rem">'+(i+1)+'</span>';
+      html += '<textarea class="fi" style="flex:1;margin-bottom:0;padding:.25rem .4rem;font-size:.85rem;min-height:52px;resize:vertical" onchange="rndUpdateMethod(\''+p.id+'\','+i+',this.value)">'+escHtml(step||'')+'</textarea>';
+      html += '<button onclick="rndRemoveMethod(\''+p.id+'\','+i+')" style="border:none;background:none;color:var(--t4);cursor:pointer;font-size:.9rem;padding:.2rem">×</button>';
+      html += '</div>';
+    });
+    html += '<button onclick="rndAddMethod(\''+p.id+'\')" style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.32rem .75rem;border-radius:4px;cursor:pointer;border:1px dashed var(--sand);background:none;color:var(--t4);margin-top:.5rem;width:100%">+ Add Step</button>';
+  } else {
+    (rd.method||[]).forEach(function(step, i){
+      html += '<div style="display:flex;gap:.8rem;padding:.5rem 0;border-bottom:1px solid var(--border);font-size:.89rem;line-height:1.65">';
+      html += '<span style="font-family:var(--fm);font-size:.7rem;color:var(--terracotta);min-width:18px">'+(i+1)+'</span>'+escHtml(step||'');
+      html += '</div>';
+    });
+  }
+  html += '</div></div>';
+  html += '</div>'; // grid
+
+  // Allergens
+  var allergenList = ['Gluten','Dairy','Eggs','Nuts','Shellfish','Fish','Sesame','Soy','Peanuts','Celery'];
+  html += '<div style="margin-top:1rem"><div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.5rem">Allergens</div>';
+  html += '<div style="display:flex;gap:.35rem;flex-wrap:wrap">';
+  allergenList.forEach(function(a){
+    var on = (rd.allergens||[]).indexOf(a) >= 0;
+    html += '<button onclick="rndToggleAllergen(\''+p.id+'\',\''+a+'\')" style="font-family:var(--fm);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.22rem .5rem;border-radius:3px;border:1px solid '+(on?'var(--terracotta)':'var(--sand)')+';background:'+(on?'var(--terracotta)':'none')+';color:'+(on?'white':'var(--smoke)')+';cursor:pointer">'+a+'</button>';
+  });
+  html += '</div></div>';
+
+  // Notes
+  html += '<div style="margin-top:1rem"><div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.4rem">Notes</div>';
+  html += '<textarea class="fi" style="min-height:60px" onchange="rndSaveNotes(\''+p.id+'\',this.value)" placeholder="Plating notes, chef commentary, seasonal context...">'+escHtml(rd.notes||'')+'</textarea>';
+  html += '</div>';
+
+  html += '</div></div>'; // padding + card
+
+  // Nav
+  if(canEdit){
+    html += '<div style="display:flex;gap:.6rem;flex-wrap:wrap">';
+    html += '<button class="btn-p" onclick="rndAdvanceStage(\''+p.id+'\')" style="background:#6B8C6B;border-color:#6B8C6B">Recipe complete → Costing</button>';
+    html += '</div>';
+  }
+
+  return html;
+}
+
+/* ── Stage: Costing ── */
+function renderStageCosting(p, canEdit){
+  var cd = p.costingData || { rows:[], sellPrice:0 };
+  var rows = cd.rows || [];
+
+  // Auto-populate rows from recipe ingredients if empty
+  if(!rows.length && p.recipeData && p.recipeData.ingredients && p.recipeData.ingredients.length){
+    rows = (p.recipeData.ingredients||[]).map(function(ing){ return {name:ing.name||'', qty:ing.qty||'', price:0}; });
+  }
+
+  var totalCost = rows.reduce(function(sum, r){ return sum + (parseFloat(r.price)||0); }, 0);
+  var sellPrice = parseFloat(cd.sellPrice)||0;
+  var foodCostPct = sellPrice > 0 ? Math.round((totalCost/sellPrice)*100) : 0;
+  var margin = sellPrice - totalCost;
+
+  var html = '<div style="background:white;border:1px solid var(--sand);border-radius:8px;overflow:hidden;margin-bottom:1.2rem">';
+  html += '<div style="background:var(--parchment);padding:.7rem 1.1rem;border-bottom:1px solid var(--sand)"><div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--terracotta)">Recipe Costing</div></div>';
+  html += '<div style="padding:1.2rem">';
+
+  // Headers
+  html += '<div style="display:grid;grid-template-columns:1fr 80px 100px 70px;gap:.3rem;padding:.35rem 0;border-bottom:2px solid var(--border);margin-bottom:.15rem">';
+  ['Ingredient','Qty / Unit','Price (THB)','Total'].forEach(function(h){
+    html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4)">'+h+'</span>';
+  });
+  html += '</div>';
+
+  rows.forEach(function(row, i){
+    var rowTotal = (parseFloat(row.price)||0);
+    html += '<div style="display:grid;grid-template-columns:1fr 80px 100px 70px;gap:.3rem;padding:.38rem 0;border-bottom:1px solid var(--border);align-items:center">';
+    html += '<span style="font-size:.87rem;color:var(--t)">'+escHtml(row.name||'')+'</span>';
+    html += '<span style="font-family:var(--fm);font-size:.72rem;color:var(--t4)">'+escHtml(row.qty||'')+'</span>';
+    if(canEdit){
+      html += '<input type="number" value="'+(row.price||0)+'" min="0" step="0.01" onchange="rndUpdateCostRow(\''+p.id+'\','+i+',this.value)" style="border:1px solid var(--sand);background:var(--parchment);padding:.22rem .45rem;font-family:var(--fm);font-size:.75rem;width:90px;text-align:right;border-radius:3px;outline:none">';
+    } else {
+      html += '<span style="font-family:var(--fm);font-size:.75rem;color:var(--smoke)">'+rowTotal.toFixed(2)+'</span>';
+    }
+    html += '<span style="font-family:var(--fm);font-size:.75rem;color:var(--smoke)">'+rowTotal.toFixed(2)+'</span>';
+    html += '</div>';
+  });
+
+  // ── Budget target field
+  var targetPct = parseFloat(cd.targetPct)||28;
+
+  // Summary
+  html += '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:8px;padding:.9rem 1rem;margin-top:1.1rem">';
+  // Target % field
+  html += '<div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem;padding-bottom:.6rem;border-bottom:1px solid var(--sand)">';
+  html += '<label style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--smoke)">Target Food Cost %</label>';
+  if(canEdit){
+    html += '<input type="number" value="'+targetPct+'" min="1" max="99" step="1" onchange="rndUpdateCostTarget(\''+p.id+'\',this.value)" style="border:1px solid var(--sand);background:white;padding:.28rem .45rem;font-family:var(--fm);font-size:.82rem;width:60px;text-align:right;border-radius:3px;outline:none">%';
+  } else {
+    html += '<span style="font-family:var(--fm);font-size:.82rem;color:var(--t)">'+targetPct+'%</span>';
+  }
+  html += '</div>';
+  html += '<div style="display:flex;justify-content:space-between;padding:.3rem 0;font-size:.88rem"><span style="color:var(--smoke)">Total Food Cost</span><span style="font-family:var(--fm);font-size:.85rem;color:var(--t)">'+totalCost.toFixed(0)+' THB</span></div>';
+  html += '<div style="display:flex;align-items:center;gap:.7rem;padding:.3rem 0;border-top:1px solid var(--sand);margin-top:.25rem">';
+  html += '<label style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--smoke)">Sell Price</label>';
+  if(canEdit){
+    html += '<input type="number" value="'+sellPrice+'" min="0" step="10" onchange="rndUpdateSellPrice(\''+p.id+'\',this.value)" style="border:1px solid var(--sand);background:white;padding:.35rem .55rem;font-family:var(--fm);font-size:.85rem;width:100px;text-align:right;border-radius:4px;outline:none"> THB';
+  } else {
+    html += '<span style="font-family:var(--fm);font-size:.85rem;color:var(--t)">'+sellPrice.toFixed(0)+' THB</span>';
+  }
+  html += '</div>';
+  if(sellPrice > 0){
+    var fcColor = foodCostPct <= targetPct ? 'var(--moss)' : foodCostPct <= targetPct+8 ? '#C8902A' : 'var(--terracotta)';
+    var fcStatus = foodCostPct <= targetPct ? '✓ ON BUDGET' : foodCostPct <= targetPct+8 ? '▲ WATCH' : '▲ OVER BUDGET';
+    var fcStatusColor = foodCostPct <= targetPct ? 'var(--moss)' : foodCostPct <= targetPct+8 ? '#C8902A' : 'var(--terracotta)';
+    html += '<div style="border-top:1px solid var(--sand);margin-top:.5rem;padding-top:.6rem">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">';
+    html += '<span style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--smoke)">Food Cost %</span>';
+    html += '<div style="display:flex;align-items:center;gap:.5rem">';
+    html += '<span style="font-family:var(--fm);font-size:.85rem;color:'+fcColor+';font-weight:600">'+foodCostPct+'%</span>';
+    html += '<span style="font-family:var(--fm);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .45rem;border-radius:3px;background:'+fcStatusColor+';color:white">'+fcStatus+'</span>';
+    html += '</div></div>';
+    // Visual bar: actual vs target
+    var barActual = Math.min(100, foodCostPct);
+    var barTarget = Math.min(100, targetPct);
+    html += '<div style="position:relative;height:8px;background:var(--sand);border-radius:4px;overflow:visible;margin-bottom:.4rem">';
+    html += '<div style="height:100%;width:'+barActual+'%;background:'+fcColor+';border-radius:4px;transition:width .3s"></div>';
+    html += '<div style="position:absolute;top:-3px;left:'+barTarget+'%;width:2px;height:14px;background:var(--smoke);border-radius:1px" title="Target: '+targetPct+'%"></div>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between;font-family:var(--fm);font-size:.6rem;letter-spacing:.07em;text-transform:uppercase;color:var(--t4)">';
+    html += '<span>0%</span><span>Target: '+targetPct+'%</span><span>Actual: '+foodCostPct+'%</span><span>100%</span>';
+    html += '</div>';
+    html += '</div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:.4rem 0;font-size:.88rem;border-top:1px solid var(--sand);margin-top:.5rem"><span style="color:var(--smoke)">Gross Profit</span><span style="font-family:var(--fm);font-size:.85rem;color:var(--moss)">'+margin.toFixed(0)+' THB</span></div>';
+  }
+  html += '</div>';
+  html += '</div></div>';
+
+  if(canEdit){
+    html += '<div style="display:flex;gap:.6rem;flex-wrap:wrap">';
+    html += '<button class="btn-p" onclick="rndAdvanceStage(\''+p.id+'\')" style="background:#C2744A;border-color:#C2744A">Costing done → Run Matrix</button>';
+    html += '</div>';
+  }
+  return html;
+}
+
+/* ── Stage: Matrix ── */
+function renderStageMatrix(p, canEdit){
+  var html = '<div style="background:white;border:1px solid var(--sand);border-radius:8px;overflow:hidden;margin-bottom:1.2rem">';
+  html += '<div style="background:var(--parchment);padding:.7rem 1.1rem;border-bottom:1px solid var(--sand);display:flex;align-items:center;justify-content:space-between">';
+  html += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--terracotta)">Flavour Matrix Intelligence</div>';
+  if(canEdit) html += '<button onclick="rndRunMatrix(\''+p.id+'\')" id="rnd-matrix-btn-'+p.id+'" style="font-family:var(--fm);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;padding:.4rem 1rem;border-radius:5px;cursor:pointer;background:var(--terracotta);color:white;border:none">✦ Run Matrix</button>';
+  html += '</div><div style="padding:1.2rem">';
+
+  if(!p.matrixData){
+    html += '<div style="text-align:center;padding:2rem 1rem" id="rnd-matrix-empty-'+p.id+'">';
+    html += '<div style="font-size:2rem;opacity:.2;margin-bottom:.6rem">◎</div>';
+    html += '<p style="font-size:.88rem;color:var(--t4);line-height:1.6;margin-bottom:1rem">Run the Matrix to analyse this dish — flavour balance, axes, creative frontier score, and key insights from the AI brain.</p>';
+    html += '</div>';
+    html += '<div style="display:none;text-align:center;padding:2rem" id="rnd-matrix-running-'+p.id+'">';
+    html += '<div style="width:28px;height:28px;border:2px solid var(--sand);border-top-color:var(--terracotta);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .8rem"></div>';
+    html += '<div style="font-family:var(--fm);font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4)">Analysing flavour architecture...</div>';
+    html += '</div>';
+  } else {
+    var md = p.matrixData;
+    html += '<div style="background:linear-gradient(135deg,#FDF5EE,#FAF0E6);border:1px solid #E8D4C0;border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.4rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">';
+    html += '<div>';
+    html += '<div style="font-family:var(--fd);font-size:1.2rem;font-weight:300;color:var(--t);margin-bottom:.2rem">'+escHtml(md.verdict||'')+'</div>';
+    html += '<div style="font-size:.87rem;color:var(--smoke);line-height:1.65;max-width:480px">'+escHtml(md.summary||'')+'</div>';
+    html += '</div>';
+    html += '<div style="text-align:center"><div style="font-family:var(--fd);font-size:3rem;font-weight:300;color:var(--terracotta);line-height:1">'+escHtml(String(md.score||''))+'</div><div style="font-family:var(--fm);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4)">Matrix Score</div></div>';
+    html += '</div>';
+
+    if(md.axes && md.axes.length){
+      html += '<div style="margin-bottom:1.4rem">';
+      md.axes.forEach(function(ax){
+        var pct = Math.round((parseFloat(ax.score)||0)*10);
+        html += '<div style="display:flex;align-items:center;gap:.8rem;padding:.45rem 0;border-bottom:1px solid var(--border)">';
+        html += '<span style="font-family:var(--fm);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--smoke);min-width:140px">'+escHtml(ax.name||'')+'</span>';
+        html += '<div style="flex:1;height:6px;background:var(--sand);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:var(--terracotta);border-radius:3px"></div></div>';
+        html += '<span style="font-family:var(--fm);font-size:.72rem;color:var(--t4);min-width:28px;text-align:right">'+ax.score+'</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    if(md.insights && md.insights.length){
+      html += '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1.2rem">';
+      html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem">Key Insights</div>';
+      md.insights.forEach(function(ins){
+        html += '<div style="display:flex;gap:.65rem;padding:.4rem 0;font-size:.86rem;line-height:1.6;color:var(--smoke);border-bottom:1px solid var(--border)">';
+        html += '<div style="width:6px;height:6px;border-radius:50%;background:var(--terracotta);margin-top:.45rem;flex-shrink:0"></div>'+escHtml(ins||'');
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+  }
+
+  html += '</div></div>';
+
+  if(canEdit && p.matrixData){
+    html += '<div style="display:flex;gap:.6rem;flex-wrap:wrap">';
+    html += '<button class="btn-p" onclick="rndAdvanceStage(\''+p.id+'\')" style="background:#2A7A6B;border-color:#2A7A6B">Matrix done → Pickup Chart</button>';
+    html += '</div>';
+  }
+  return html;
+}
+
+/* ── Stage: Pickup ── */
+function renderStagePickup(p, canEdit){
+  var pd = p.pickupData || { steps:[], garnish:'', timing:'', temperature:'', notes:'', cutlery:'', allergens:[], drinkPairing:'' };
+  var html = '<div style="background:white;border:1px solid var(--sand);border-radius:8px;overflow:hidden;margin-bottom:1.2rem">';
+  html += '<div style="background:var(--parchment);padding:.7rem 1.1rem;border-bottom:1px solid var(--sand)"><div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--terracotta)">Pickup Chart</div></div>';
+  html += '<div style="padding:1.2rem">';
+
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem">';
+
+  // Left: plating steps
+  html += '<div>';
+  html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Plating Steps</div>';
+  html += '<div id="rnd-pickup-steps-'+p.id+'">';
+  (pd.steps||[]).forEach(function(step, i){
+    var nn = (i+1) < 10 ? '0'+(i+1) : ''+(i+1);
+    html += '<div style="display:flex;gap:.7rem;padding:.55rem 0;border-bottom:1px solid var(--border);align-items:flex-start">';
+    html += '<span style="font-family:var(--fm);font-size:.68rem;color:var(--terracotta);min-width:20px;margin-top:.15rem">'+nn+'</span>';
+    if(canEdit){
+      html += '<input class="fi" style="flex:1;margin-bottom:0;padding:.28rem .5rem;font-size:.85rem" value="'+escHtml(step||'')+'" onchange="rndUpdatePickupStep(\''+p.id+'\','+i+',this.value)" placeholder="Plating step...">';
+      html += '<button onclick="rndRemovePickupStep(\''+p.id+'\','+i+')" style="border:none;background:none;color:var(--t4);cursor:pointer;font-size:.9rem">×</button>';
+    } else {
+      html += '<span style="font-size:.87rem;color:var(--t)">'+escHtml(step||'')+'</span>';
+    }
+    html += '</div>';
+  });
+  if(canEdit){
+    html += '<button onclick="rndAddPickupStep(\''+p.id+'\')" style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.32rem .75rem;border-radius:4px;cursor:pointer;border:1px dashed var(--sand);background:none;color:var(--t4);margin-top:.5rem;width:100%">+ Add Step</button>';
+  }
+  html += '</div></div>';
+
+  // Right: service specs + matrix mini
+  html += '<div>';
+  html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Service Specs</div>';
+
+  var specs = [
+    {key:'garnish', label:'Garnish', ph:'Garnish elements'},
+    {key:'timing', label:'Service Timing', ph:'e.g. à la minute, 2 min hold'},
+    {key:'temperature', label:'Service Temp', ph:'e.g. Serve at 62°C, cold'}
+  ];
+  specs.forEach(function(sp){
+    html += '<div style="margin-bottom:.8rem"><label class="fl">'+sp.label+'</label>';
+    if(canEdit){
+      html += '<input class="fi" style="margin-bottom:0" value="'+escHtml((pd[sp.key]||''))+'" oninput="rndUpdatePickupSpec(\''+p.id+'\',\''+sp.key+'\',this.value)" placeholder="'+sp.ph+'">';
+    } else {
+      html += '<div style="font-size:.87rem;color:var(--t)">'+escHtml(pd[sp.key]||'—')+'</div>';
+    }
+    html += '</div>';
+  });
+
+  // Matrix mini-card
+  if(p.matrixData){
+    var md = p.matrixData;
+    html += '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:6px;padding:.7rem;margin-top:.9rem;display:flex;align-items:center;gap:.9rem">';
+    html += '<div><div style="font-family:var(--fm);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-bottom:.25rem">Matrix Score</div>';
+    html += '<div style="font-family:var(--fd);font-size:1.6rem;font-weight:300;color:var(--terracotta)">'+md.score+'</div></div>';
+    html += '<div style="font-size:.78rem;color:var(--smoke);line-height:1.5;flex:1">'+escHtml((md.verdict||''))+'</div>';
+    html += '</div>';
+  }
+
+  html += '</div>';
+  html += '</div>'; // grid
+
+  // Notes
+  html += '<div style="margin-top:1rem"><label class="fl">Pickup Notes</label>';
+  if(canEdit){
+    html += '<textarea class="fi" style="min-height:56px" onchange="rndUpdatePickupSpec(\''+p.id+'\',\'notes\',this.value)" placeholder="Additional notes for service team...">'+escHtml(pd.notes||'')+'</textarea>';
+  } else {
+    if(pd.notes) html += '<div style="font-size:.87rem;color:var(--t)">'+escHtml(pd.notes)+'</div>';
+  }
+  html += '</div>';
+
+  html += '</div></div>';
+
+  if(canEdit){
+    html += '<div style="display:flex;gap:.6rem;flex-wrap:wrap">';
+    html += '<button class="btn-p" onclick="rndFinalizeCard(\''+p.id+'\')" style="background:#3a6a3a;border-color:#3a6a3a">✓ Finalise Recipe Card →</button>';
+    html += '</div>';
+  }
+  return html;
+}
+
+/* ── Stage: Approved ── */
+function renderStageApproved(p, canEdit){
+  return renderFinalRecipeCard(p, canEdit);
+}
+
+function renderFinalRecipeCard(p, canEdit){
+  var rd = p.recipeData || {};
+  var cd = p.costingData || {};
+  var md = p.matrixData;
+  var pd = p.pickupData || {};
+  var rows = cd.rows || [];
+  var totalCost = rows.reduce(function(sum,r){ return sum+(parseFloat(r.price)||0); }, 0);
+  var sellPrice = parseFloat(cd.sellPrice)||0;
+  var foodCostPct = sellPrice > 0 ? Math.round((totalCost/sellPrice)*100) : 0;
+  var targetPct = parseFloat(cd.targetPct)||28;
+  var tabId = 'rnd-card-tab-'+p.id;
+
+  var html = '';
+
+  // ── Hero ──
+  html += '<div style="background:white;border:1px solid var(--border);border-radius:12px;box-shadow:0 4px 24px rgba(60,48,36,.1);overflow:hidden;margin-bottom:1.2rem">';
+  html += '<div style="position:relative;height:220px;background:linear-gradient(135deg,#2A1F12,#4A3020,#6B4A2A);display:flex;align-items:center;justify-content:center;overflow:hidden">';
+  html += '<span style="font-family:Cormorant Garamond,serif;font-size:1rem;color:rgba(255,255,255,.18);letter-spacing:.2em;text-transform:uppercase">Photo</span>';
+  html += '<div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(20,12,6,.72) 0%,transparent 60%)"></div>';
+  html += '<div style="position:absolute;bottom:0;left:0;right:0;padding:1.2rem 1.5rem">';
+  html += '<div style="font-family:var(--fd);font-size:2rem;font-weight:300;color:white;letter-spacing:.04em;line-height:1.05;margin-bottom:.4rem">'+escHtml(p.name)+'</div>';
+  html += '<div style="display:flex;gap:.35rem;flex-wrap:wrap">';
+  if(rd.category) html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.18rem .5rem;border-radius:2px;background:rgba(255,255,255,.18);color:white;border:1px solid rgba(255,255,255,.3)">'+escHtml(rd.category)+'</span>';
+  if(p.outlet && p.outlet!=='central') html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.18rem .5rem;border-radius:2px;background:rgba(106,140,106,.35);color:#C8F0C8;border:1px solid rgba(106,140,106,.4)">'+escHtml(p.outlet)+'</span>';
+  (rd.allergens||[]).forEach(function(a){ html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.18rem .5rem;border-radius:2px;background:rgba(194,116,74,.35);color:#FFD4B8;border:1px solid rgba(194,116,74,.4)">'+escHtml(a)+'</span>'; });
+  html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;padding:.18rem .5rem;border-radius:2px;background:rgba(83,74,183,.35);color:#D0CCFF;border:1px solid rgba(83,74,183,.4)">R&amp;D Origin</span>';
+  html += '</div></div>';
+  html += '<button onclick="alert(\'Photo generation coming soon\')" style="position:absolute;top:1rem;right:1rem;font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.4rem .85rem;border-radius:4px;cursor:pointer;background:rgba(83,74,183,.8);color:white;border:1px solid rgba(83,74,183,.6)">✦ Generate Photo</button>';
+  html += '</div>';
+
+  // ── Compact stage tracker (all complete) ──
+  html += '<div style="display:flex;gap:0;overflow-x:auto">';
+  var pStages = [{label:'Concept',color:'#4a90d9'},{label:'R&D',color:'#534AB7'},{label:'Recipe',color:'#C8902A'},{label:'Costing',color:'#6B8C6B'},{label:'Matrix',color:'#C2744A'},{label:'Pickup',color:'#2A7A6B'},{label:'Approved',color:'#3a6a3a'}];
+  pStages.forEach(function(s,i){
+    html += '<div style="flex:1;min-width:60px;text-align:center;padding:.4rem .2rem;background:'+s.color+';'+(i===0?'border-radius:0':'')+(i===pStages.length-1?'border-radius:0':'')+(i>0?'border-left:1px solid rgba(255,255,255,.2)':'')+'">';
+    html += '<div style="font-family:var(--fm);font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:white;opacity:.9">'+s.label+'</div>';
+    html += '<div style="font-size:.6rem;color:rgba(255,255,255,.8)">✓</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // ── Status bar ──
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.65rem 1.5rem;background:var(--parchment);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:.5rem">';
+  html += '<div style="display:flex;gap:1rem;flex-wrap:wrap">';
+  var statuses = [{dot:'#4A6B4A',label:'Recipe'},{dot:'#4A6B4A',label:'Costing'},{dot:'#4A6B4A',label:'Pickup chart'},{dot:'#534AB7',label:'R&D linked'},{dot:'#C2744A',label:'Matrix scored'}];
+  statuses.forEach(function(s){ html += '<div style="display:flex;align-items:center;gap:.3rem;font-family:var(--fm);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--smoke)"><div style="width:6px;height:6px;border-radius:50%;background:'+s.dot+'"></div>'+s.label+'</div>'; });
+  html += '</div>';
+  html += '<div style="display:flex;gap:.5rem">';
+  if(canEdit) html += '<button onclick="rndRegressStage(\''+p.id+'\')" class="btn-sm">Edit</button>';
+  html += '<button onclick="rndCardTab(\''+p.id+'\',\'pickup\')" style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .7rem;border-radius:4px;cursor:pointer;background:var(--terracotta);color:white;border:none">Pickup Chart</button>';
+  html += '</div></div>';
+
+  // ── Tabs ──
+  html += '<div style="display:flex;border-bottom:1px solid var(--border);background:white;overflow-x:auto">';
+  var tabs = [{id:'recipe',label:'Recipe'},{id:'pickup',label:'Pickup Chart'},{id:'costing',label:'Costing'},{id:'rnd',label:'R&D Origin'},{id:'intel',label:'Intelligence'}];
+  tabs.forEach(function(t,i){
+    html += '<div onclick="rndCardTab(\''+p.id+'\',\''+t.id+'\')" id="'+tabId+'-'+t.id+'" style="font-family:var(--fm);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;padding:.85rem 1.3rem;cursor:pointer;color:'+(i===0?'var(--terracotta)':'var(--t4)')+';border-bottom:2px solid '+(i===0?'var(--terracotta)':'transparent')+';white-space:nowrap;transition:all .15s">'+t.label+'</div>';
+  });
+  html += '</div>';
+
+  // ══════════════════════════════════════
+  // PANEL: RECIPE
+  // ══════════════════════════════════════
+  html += '<div id="'+tabId+'-panel-recipe" style="padding:1.6rem">';
+  html += '<div style="background:var(--parchment);border:1px solid var(--sand);border-radius:6px;padding:.5rem .9rem;margin-bottom:1rem;display:flex;align-items:center;gap:.8rem">';
+  html += '<label style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--smoke)">Portions</label>';
+  html += '<span style="font-family:var(--fd);font-size:.95rem;color:var(--t)">'+(rd.portions||10)+'</span>';
+  html += '<span style="font-family:var(--fm);font-size:.72rem;color:var(--t4)">Base</span>';
+  html += '</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1.4fr;gap:1.8rem">';
+  // Ingredients
+  html += '<div>';
+  html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Ingredients</div>';
+  html += '<ul style="list-style:none">';
+  (rd.ingredients||[]).forEach(function(ing){ html += '<li style="display:flex;justify-content:space-between;align-items:baseline;padding:.38rem 0;border-bottom:1px solid var(--border);font-size:.89rem">'+escHtml(ing.name||'')+'<span style="font-family:var(--fm);font-size:.75rem;color:var(--smoke)">'+escHtml(ing.qty||'')+'</span></li>'; });
+  html += '</ul></div>';
+  // Method
+  html += '<div>';
+  html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Method</div>';
+  html += '<ol style="list-style:none">';
+  (rd.method||[]).forEach(function(step, mi){ html += '<li style="display:flex;gap:.8rem;padding:.6rem 0;border-bottom:1px solid var(--border);font-size:.89rem;line-height:1.65"><span style="font-family:var(--fm);font-size:.7rem;color:var(--terracotta);min-width:18px;margin-top:.1rem;flex-shrink:0">'+(mi+1)+'</span>'+escHtml(step||'')+'</li>'; });
+  html += '</ol>';
+  if(rd.notes){
+    html += '<div style="margin-top:1rem"><div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.5rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Chef Notes</div>';
+    html += '<p style="font-size:.86rem;line-height:1.7;color:var(--smoke);font-style:italic;margin-top:.35rem">'+escHtml(rd.notes)+'</p></div>';
+  }
+  html += '</div>';
+  html += '</div></div>';
+
+  // ══════════════════════════════════════
+  // PANEL: PICKUP CHART
+  // ══════════════════════════════════════
+  html += '<div id="'+tabId+'-panel-pickup" style="display:none;padding:1.6rem">';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.4rem">';
+  // Left: photo + service fields
+  html += '<div>';
+  html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.5rem">Dish Photo</div>';
+  html += '<div style="border:2px dashed var(--sand);border-radius:8px;background:var(--oat);min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.85rem"><div style="font-size:1.4rem;opacity:.35">📷</div><div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4)">Upload photo</div></div>';
+  html += '<div style="border:2px dashed #C8C0F0;border-radius:8px;background:#F5F4FF;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;margin-bottom:.85rem">';
+  html += '<div style="font-size:1rem;opacity:.6">✦</div>';
+  html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#534AB7">Generate with AI</div>';
+  html += '<div style="font-size:.72rem;color:#534AB7;opacity:.7;text-align:center;padding:0 1rem">Professional food photo from<br>dish + ingredients</div></div>';
+  // Service specs left column
+  var specsL = [{key:'cutlery',label:'Cutlery',ph:'e.g. Fork · Knife'},{key:'drinkPairing',label:'Beverage Suggestions',ph:'e.g. Sake · Riesling'},{key:'notes',label:'Description',ph:'Dish description for service team...'}];
+  specsL.forEach(function(sp){
+    html += '<div style="margin-bottom:.65rem"><label style="font-family:var(--fm);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);display:block;margin-bottom:.28rem">'+sp.label+'</label>';
+    if(canEdit){
+      html += '<input class="fi" style="margin-bottom:0;font-size:.87rem" value="'+escHtml(pd[sp.key]||'')+'" onchange="rndUpdatePickupSpec(\''+p.id+'\',\''+sp.key+'\',this.value)" placeholder="'+sp.ph+'">';
+    } else {
+      html += '<div style="font-size:.87rem;color:var(--t)">'+escHtml(pd[sp.key]||'—')+'</div>';
+    }
+    html += '</div>';
+  });
+  // Dietary tags
+  html += '<div style="margin-bottom:.65rem"><label style="font-family:var(--fm);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);display:block;margin-bottom:.28rem">Dietary Tags</label>';
+  html += '<div style="display:flex;gap:.3rem;flex-wrap:wrap">';
+  var allergenList = ['Dairy','Gluten','Eggs','Nuts','Shellfish','Fish','Sesame','Soy','Peanuts','GF','Vegan'];
+  allergenList.forEach(function(a){
+    var on = (pd.allergens||[]).indexOf(a) >= 0;
+    html += '<button onclick="rndTogglePickupAllergen(\''+p.id+'\',\''+a+'\')" style="font-family:var(--fm);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.22rem .5rem;border-radius:3px;border:1px solid '+(on?'var(--terracotta)':'var(--sand)')+';background:'+(on?'var(--terracotta)':'none')+';color:'+(on?'white':'var(--smoke)')+';cursor:pointer;transition:all .15s">'+a+'</button>';
+  });
+  html += '</div></div>';
+  // Matrix mini
+  if(md){
+    html += '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:6px;padding:.7rem;margin-top:.4rem">';
+    html += '<div style="font-family:var(--fm);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-bottom:.2rem">Flavour Matrix</div>';
+    html += '<div style="display:flex;align-items:center;gap:.7rem">';
+    html += '<div style="font-family:var(--fd);font-size:1.6rem;font-weight:300;color:var(--terracotta)">'+md.score+'</div>';
+    html += '<div style="font-size:.78rem;color:var(--smoke);line-height:1.5">'+escHtml(md.verdict||'')+'</div></div></div>';
+  }
+  html += '</div>';
+  // Right: plating steps
+  html += '<div>';
+  html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Plating Steps</div>';
+  html += '<div id="'+tabId+'-plating-steps">';
+  (pd.steps||[]).forEach(function(step, i){
+    var nn = (i+1) < 10 ? '0'+(i+1) : ''+(i+1);
+    html += '<div style="display:flex;gap:.7rem;padding:.55rem 0;border-bottom:1px solid var(--border);align-items:flex-start">';
+    html += '<span style="font-family:var(--fm);font-size:.68rem;color:var(--terracotta);min-width:20px;margin-top:.15rem">'+nn+'</span>';
+    if(canEdit){
+      html += '<input class="fi" style="flex:1;margin-bottom:0;padding:.32rem .6rem;font-size:.85rem" value="'+escHtml(step||'')+'" oninput="rndUpdatePickupStep(\''+p.id+'\','+i+',this.value)" placeholder="Describe this plating step...">';
+      html += '<button onclick="rndRemovePickupStep(\''+p.id+'\','+i+')" style="border:none;background:none;color:var(--t4);cursor:pointer;font-size:.9rem;padding:.2rem;margin-left:.2rem">x</button>';
+    } else {
+      html += '<span style="font-size:.87rem;color:var(--t);line-height:1.55">'+escHtml(step||'')+'</span>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+  if(canEdit){
+    html += '<button onclick="rndAddPickupStep(\''+p.id+'\')" style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.32rem .75rem;border-radius:4px;cursor:pointer;border:1px dashed var(--sand);background:none;color:var(--t4);margin-top:.5rem;width:100%;transition:all .15s">+ Add Step</button>';
+  }
+  // Devas preview card
+  if(rd.ingredients && rd.ingredients.length){
+    var mainIngs = (rd.ingredients||[]).slice(0,5);
+    var condIngs = (rd.ingredients||[]).slice(5,10);
+    html += '<div style="background:white;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:1.1rem">';
+    html += '<div style="background:#1A2340;color:white;padding:.55rem 1rem;display:flex;align-items:center;justify-content:space-between">';
+    html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;opacity:.65">'+(p.outlet||'IC Phuket')+' · IC Phuket</span>';
+    html += '<span style="font-family:Cormorant Garamond,serif;font-size:1.05rem;font-weight:300;letter-spacing:.06em">'+escHtml(p.name)+'</span>';
+    html += '</div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr 80px">';
+    html += '<div style="padding:.65rem .85rem;border-right:1px solid var(--border)"><div style="font-family:var(--fm);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);margin-bottom:.4rem">Main Ingredients</div><ul style="list-style:none">';
+    mainIngs.forEach(function(i){ html += '<li style="font-size:.78rem;color:var(--t);padding:.12rem 0">· '+escHtml(i.name||'')+'</li>'; });
+    html += '</ul></div>';
+    html += '<div style="padding:.65rem .85rem;border-right:1px solid var(--border)"><div style="font-family:var(--fm);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--t4);margin-bottom:.4rem">Condiments</div><ul style="list-style:none">';
+    condIngs.forEach(function(i){ html += '<li style="font-size:.78rem;color:var(--t);padding:.12rem 0">· '+escHtml(i.name||'')+'</li>'; });
+    html += '</ul></div>';
+    html += '<div style="display:flex;align-items:center;justify-content:center;background:var(--oat)">';
+    if(md) html += renderSpiderGraph([{name:'',score:md.score||8}], tabId+'-mini');
+    html += '</div></div>';
+    // Footer
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--border)">';
+    html += '<div style="padding:.45rem .85rem;border-right:1px solid var(--border)">';
+    html += '<div style="font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-bottom:.22rem">Cutlery</div><div id="rnd-devas-cutlery-'+p.id+'" style="font-size:.76rem;color:var(--smoke)">'+escHtml(pd.cutlery||'—')+'</div>';
+    html += '<div style="font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-bottom:.22rem;margin-top:.4rem">Dietary</div><div style="font-size:.76rem;color:var(--smoke)">'+escHtml((pd.allergens||[]).join(' · ')||'—')+'</div>';
+    html += '</div>';
+    html += '<div style="padding:.45rem .85rem">';
+    html += '<div style="font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-bottom:.22rem">Beverage</div><div id="rnd-devas-bev-'+p.id+'" style="font-size:.76rem;color:var(--smoke)">'+escHtml(pd.drinkPairing||'—')+'</div>';
+    if(md) html += '<div style="font-family:var(--fm);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-bottom:.22rem;margin-top:.4rem">Matrix verdict</div><div style="font-size:.76rem;color:var(--terracotta)">'+escHtml(md.verdict||'')+' · '+escHtml(String(md.score||''))+'</div>';
+    html += '</div></div></div>';
+  }
+  html += '</div>';
+  html += '</div></div>';
+
+  // ══════════════════════════════════════
+  // PANEL: COSTING
+  // ══════════════════════════════════════
+  html += '<div id="'+tabId+'-panel-costing" style="display:none;padding:1.6rem">';
+  html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Ingredient Costs — '+(rd.portions||10)+' Portions</div>';
+  html += '<div style="display:grid;grid-template-columns:1fr 80px 90px 65px;gap:.3rem;padding:.35rem 0;border-bottom:2px solid var(--border);margin-bottom:.15rem">';
+  ['Ingredient','Qty','Price/kg ฿','Cost ฿'].forEach(function(h){ html += '<span style="font-family:var(--fm);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4)">'+h+'</span>'; });
+  html += '</div>';
+  rows.forEach(function(r,i){
+    html += '<div style="display:flex;align-items:center;padding:.4rem 0;border-bottom:1px solid var(--border);gap:.5rem;font-size:.87rem">';
+    html += '<span style="flex:1;color:var(--t)">'+escHtml(r.name||'')+'</span>';
+    html += '<span style="font-family:var(--fm);font-size:.72rem;color:var(--t4);min-width:78px">'+escHtml(r.qty||'')+'</span>';
+    if(canEdit){
+      html += '<input type="number" value="'+(r.price||0)+'" min="0" step="0.01" onchange="rndUpdateCostRow(\''+p.id+'\','+i+',this.value)" style="border:1px solid var(--sand);background:var(--parchment);padding:.22rem .45rem;font-family:var(--fm);font-size:.75rem;width:66px;text-align:right;border-radius:3px;outline:none;color:var(--t)">';
+    } else {
+      html += '<span style="font-family:var(--fm);font-size:.75rem;color:var(--smoke);min-width:66px;text-align:right">'+(parseFloat(r.price)||0).toFixed(0)+'</span>';
+    }
+    html += '<span style="font-family:var(--fm);font-size:.75rem;color:var(--smoke);min-width:58px;text-align:right">'+(parseFloat(r.price)||0).toFixed(2)+'</span>';
+    html += '</div>';
+  });
+  html += '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:8px;padding:.9rem 1rem;margin-top:1.1rem">';
+  html += '<div style="display:flex;justify-content:space-between;padding:.3rem 0;font-size:.88rem"><span style="color:var(--smoke)">Total food cost ('+( rd.portions||10)+' portions)</span><span style="font-family:var(--fm);font-size:.85rem">฿'+totalCost.toFixed(2)+'</span></div>';
+  html += '<div style="display:flex;justify-content:space-between;padding:.3rem 0;font-size:.88rem"><span style="color:var(--smoke)">Cost per portion</span><span style="font-family:var(--fm);font-size:.85rem">฿'+(totalCost/(rd.portions||10)).toFixed(2)+'</span></div>';
+  html += '<div style="display:flex;align-items:center;gap:.7rem;margin-top:.5rem">';
+  html += '<label style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--smoke)">Selling price</label>';
+  if(canEdit){
+    html += '<input type="number" value="'+sellPrice+'" min="0" step="10" onchange="rndUpdateSellPrice(\''+p.id+'\',this.value)" style="border:1px solid var(--sand);background:white;padding:.35rem .55rem;font-family:var(--fm);font-size:.85rem;width:85px;text-align:right;border-radius:4px;outline:none;color:var(--t)">';
+    html += '<span style="font-family:var(--fm);font-size:.75rem;color:var(--smoke)">THB</span>';
+  } else {
+    html += '<span style="font-family:var(--fm);font-size:.85rem;color:var(--t)">฿'+sellPrice.toFixed(0)+' THB</span>';
+  }
+  html += '</div>';
+  if(sellPrice > 0){
+    var fcColor = foodCostPct <= targetPct ? 'var(--moss)' : foodCostPct <= targetPct+8 ? '#C8902A' : 'var(--terracotta)';
+    var gpPct = Math.round(((sellPrice - totalCost/( rd.portions||10))/sellPrice)*100);
+    html += '<div style="display:flex;justify-content:space-between;padding:.35rem 0;font-size:.88rem;font-weight:600;border-top:1px solid var(--sand);margin-top:.4rem;padding-top:.5rem"><span style="color:var(--smoke)">Food cost %</span><span style="font-family:var(--fm);font-size:.85rem;color:'+fcColor+'">'+foodCostPct+'%</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:.3rem 0;font-size:.88rem"><span style="color:var(--smoke)">Gross profit per portion</span><span style="font-family:var(--fm);font-size:.85rem;color:var(--moss)">฿'+(sellPrice - totalCost/(rd.portions||10)).toFixed(2)+'</span></div>';
+    html += '<div style="display:flex;justify-content:space-between;padding:.3rem 0;font-size:.88rem"><span style="color:var(--smoke)">GP %</span><span style="font-family:var(--fm);font-size:.85rem;color:var(--moss)">'+gpPct+'%</span></div>';
+  }
+  html += '</div>';
+  if(sellPrice > 0){
+    var onBudget = foodCostPct <= targetPct;
+    var bgColor = onBudget ? '#EFF9EF' : '#FEF5EE';
+    var borderColor = onBudget ? '#B8DEB8' : '#EED4B8';
+    var labelColor = onBudget ? 'var(--moss)' : 'var(--terracotta)';
+    var labelText = onBudget ? '\u2713 On target' : '\u25b2 Over target';
+    var msgText = onBudget ? 'Food cost below '+targetPct+'% target. Strong margin.' : 'Food cost '+foodCostPct+'% exceeds '+targetPct+'% target. Review pricing.';
+    html += '<div style="margin-top:.9rem;padding:.65rem .85rem;background:'+bgColor+';border:1px solid '+borderColor+';border-radius:6px;font-size:.82rem;color:var(--smoke)">';
+    html += '<span style="font-family:var(--fm);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:'+labelColor+'">'+labelText+'</span>&nbsp; '+msgText;
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // ══════════════════════════════════════
+  // PANEL: R&D ORIGIN — matches sample exactly
+  // ══════════════════════════════════════
+  html += '<div id="'+tabId+'-panel-rnd" style="display:none;padding:1.6rem">';
+  // Linked project header — info display + separate nav button
+  html += '<div style="background:linear-gradient(135deg,#f0eeff,#ede8ff);border:1px solid #C8C0F0;border-radius:8px;padding:1rem 1.1rem;margin-bottom:1.2rem">';
+  html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.35rem">';
+  html += '<div style="font-family:var(--fm);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#534AB7">R&amp;D Lab — Linked Project</div>';
+  html += '<button onclick="rndOpenFromCard(\''+p.id+'\',event)" style="font-family:var(--fm);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:#534AB7;background:rgba(83,74,183,.1);border:1px solid rgba(83,74,183,.3);border-radius:3px;padding:.18rem .5rem;cursor:pointer;white-space:nowrap">Open in R&amp;D Lab &#8594;</button>';
+  html += '</div>';
+  html += '<div style="font-family:Cormorant Garamond,serif;font-size:1.25rem;font-weight:300;color:var(--t)">'+escHtml(p.name)+'</div>';
+  html += '<div style="font-size:.8rem;color:var(--smoke);margin-top:.2rem">Led by: '+escHtml(p.chef||'')+' · Started: '+new Date(p.created).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+' · '+p.sessions.length+' session'+(p.sessions.length!==1?'s':'')+' · '+(p.approved?'Approved':'In progress')+'</div>';
+  html += '</div>';
+  // Research hypothesis (first session or idea)
+  if(p.idea){
+    html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Research Hypothesis</div>';
+    html += '<p style="font-size:.87rem;line-height:1.7;color:var(--smoke);margin-bottom:1.2rem">'+escHtml(p.idea)+'</p>';
+  }
+  // Sessions — collapsible accordions (last session open by default)
+  if(p.sessions && p.sessions.length){
+    html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Testing Log</div>';
+    var stageColors = ['#E8A050','#5a7a5a','#534AB7'];
+    var stageBgs = ['var(--oat)','#f0f5f0','#f5f4ff'];
+    var stageLabels = ['Testing','In Development','Approved'];
+    p.sessions.forEach(function(s, i){
+      var col = stageColors[Math.min(i, stageColors.length-1)];
+      var bg = stageBgs[Math.min(i, stageBgs.length-1)];
+      var dateStr = new Date(s.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+      var sid = 'rnd-sess-card-'+p.id+'-'+i;
+      var isOpen = (i === p.sessions.length - 1);
+      html += '<div style="border:1px solid var(--border);border-left:3px solid '+col+';border-radius:6px;overflow:hidden;margin-bottom:.75rem">';
+      html += '<div onclick="rndToggleSection(\''+sid+'\',event)" style="background:'+bg+';padding:.55rem .85rem;display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none">';
+      html += '<div style="display:flex;align-items:center;gap:.65rem">';
+      html += '<span style="font-family:var(--fm);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:'+col+';color:white;padding:.13rem .42rem;border-radius:3px">Session '+(i+1)+'</span>';
+      html += '<span style="font-family:var(--fm);font-size:.65rem;color:var(--t4)">'+dateStr+' · '+escHtml(stageLabels[Math.min(i,stageLabels.length-1)])+'</span>';
+      html += '</div>';
+      html += '<span id="'+sid+'-arrow" style="font-size:.65rem;color:var(--t4);transition:transform .2s;transform:'+(isOpen?'rotate(180deg)':'')+' ">&#9660;</span>';
+      html += '</div>';
+      html += '<div id="'+sid+'" style="display:'+(isOpen?'block':'none')+'">';
+      html += '<div style="padding:.6rem .85rem;font-size:.85rem;color:var(--t);line-height:1.65;border-bottom:1px solid var(--border)">'+escHtml(s.note||'')+'</div>';
+      if(s.aiAnalysis){
+        var _ana = String(s.aiAnalysis||'').replace(/```[a-z]*/g,'').replace(/```/g,'').replace(/<[^>]*>/g,' ').replace(/[ \t]+/g,' ').trim().substring(0,600);
+        html += '<div style="padding:.6rem .85rem;font-size:.82rem;color:var(--smoke);line-height:1.65;background:#FDFCFF">';
+        html += '<div style="font-family:var(--fm);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6B8C6B;margin-bottom:.3rem">R&amp;D Analysis</div>';
+        html += escHtml(_ana);
+        html += '</div>';
+      }
+      html += '</div>';
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+
+  // ══════════════════════════════════════
+  // PANEL: INTELLIGENCE
+  // ══════════════════════════════════════
+  html += '<div id="'+tabId+'-panel-intel" style="display:none;padding:1.6rem">';
+  if(!md){
+    html += '<div style="text-align:center;padding:2.5rem 1rem">';
+    html += '<div style="font-size:2rem;opacity:.3;margin-bottom:.6rem">&#x25C8;</div>';
+    html += '<p style="font-size:.88rem;color:var(--t4);line-height:1.6;margin-bottom:1rem">Run the Flavour Matrix on this dish to score it across 8 axes — balance, tension, Creative Frontier, and more.</p>';
+    html += '<button onclick="rndRunMatrix(\''+p.id+'\')" style="font-family:var(--fm);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;padding:.5rem 1.2rem;border-radius:6px;cursor:pointer;background:var(--terracotta);color:white;border:none">Run Flavour Matrix</button>';
+    html += '</div>';
+  } else {
+    // Score + verdict hero
+    html += '<div style="background:linear-gradient(135deg,#FDF5EE,#FAF0E6);border:1px solid #E8D4C0;border-radius:8px;padding:1rem 1.2rem;margin-bottom:1.4rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap">';
+    html += '<div style="flex:1"><div style="font-family:Cormorant Garamond,serif;font-size:1.3rem;font-weight:300;color:var(--t);margin-bottom:.3rem">'+escHtml(md.verdict||'')+'</div>';
+    html += '<div style="font-size:.87rem;color:var(--smoke);line-height:1.65;max-width:480px">'+escHtml(md.summary||'')+'</div></div>';
+    html += '<div style="text-align:center"><div style="font-family:Cormorant Garamond,serif;font-size:3rem;font-weight:300;color:var(--terracotta);line-height:1">'+escHtml(String(md.score||''))+'</div>';
+    html += '<div style="font-family:var(--fm);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-top:.2rem">Overall score</div></div>';
+    html += '</div>';
+    // Radar
+    if(md.axes && md.axes.length){
+      html += '<div style="display:flex;justify-content:center;margin-bottom:1.4rem">';
+      html += renderSpiderGraph(md.axes, tabId+'-intel-radar');
+      html += '</div>';
+      html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Axis Breakdown</div>';
+      html += '<div style="margin-bottom:1.4rem">';
+      md.axes.forEach(function(ax){
+        var pct = Math.round((parseFloat(ax.score)||0)*10);
+        var barCol = pct >= 85 ? 'var(--moss)' : 'var(--terracotta)';
+        html += '<div style="display:flex;align-items:center;gap:.8rem;padding:.45rem 0;border-bottom:1px solid var(--border)">';
+        html += '<span style="font-family:var(--fm);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--smoke);min-width:130px">'+escHtml(ax.name||'')+'</span>';
+        html += '<div style="flex:1;height:6px;background:var(--sand);border-radius:3px;overflow:hidden"><div style="height:100%;width:'+pct+'%;background:'+barCol+';border-radius:3px;transition:width .6s ease"></div></div>';
+        html += '<span style="font-family:var(--fm);font-size:.72rem;color:var(--t4);min-width:28px;text-align:right">'+ax.score+'</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    // Key insights
+    if(md.insights && md.insights.length){
+      html += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:.7rem;padding-bottom:.35rem;border-bottom:1px solid var(--border)">Key Insights</div>';
+      html += '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:8px;padding:1rem 1.1rem;margin-bottom:1.2rem">';
+      md.insights.forEach(function(ins){ html += '<div style="display:flex;gap:.65rem;padding:.4rem 0;font-size:.86rem;line-height:1.6;color:var(--smoke);border-bottom:1px solid var(--border)"><div style="width:6px;height:6px;border-radius:50%;background:var(--terracotta);margin-top:.45rem;flex-shrink:0"></div>'+escHtml(ins||'')+'</div>'; });
+      html += '</div>';
+    }
+    // Action buttons
+    html += '<div style="display:flex;gap:.6rem;margin-top:.4rem">';
+    html += '<button onclick="rndRunMatrix(\''+p.id+'\')" style="font-family:var(--fm);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;padding:.35rem .85rem;border-radius:6px;cursor:pointer;background:var(--terracotta);color:white;border:none">Re-run Matrix</button>';
+    html += '<button onclick="rndCardTab(\''+p.id+'\',\'pickup\')" style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .7rem;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:white;color:var(--smoke)">View in Pickup Chart &#8594;</button>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // ── Export bar ──
+  html += '<div style="display:flex;gap:.55rem;padding:.9rem 1.6rem;border-top:1px solid var(--border);background:var(--parchment);flex-wrap:wrap;align-items:center">';
+  html += '<span style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--t4);margin-right:.3rem">Export</span>';
+  html += '<button onclick="window.print()" style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .7rem;border-radius:4px;cursor:pointer;background:var(--terracotta);color:white;border:none">PDF Pickup Chart</button>';
+  html += '<button onclick="rndOpenPptxSlide(\''+p.id+'\')" class="btn-sm">PPTX Slide</button>';
+  html += '<button onclick="window.print()" class="btn-sm">Print Card</button>';
+  html += '<button onclick="rndShareCard(\''+p.id+'\')" class="btn-sm">Share</button>';
+  html += '</div>';
+
+  html += '</div>'; // card close
+  return html;
+}
+
+/* ======================================================
+   CARD TAB SWITCHER
+====================================================== */
+window.rndCardTab = function(pid, tab){
+  var tabId = 'rnd-card-tab-'+pid;
+  var panels = ['recipe','pickup','costing','rnd','intel'];
+  panels.forEach(function(t){
+    var btn = document.getElementById(tabId+'-'+t);
+    var panel = document.getElementById(tabId+'-panel-'+t);
+    if(btn){ btn.style.borderBottomColor = t===tab?'var(--terracotta)':'transparent'; btn.style.color = t===tab?'var(--terracotta)':'var(--t4)'; }
+    if(panel){
+      panel.style.display = t===tab?'block':'none';
+      if(t===tab) panel.classList.add('rnd-active-panel');
+      else panel.classList.remove('rnd-active-panel');
+    }
+  });
+};
+
+/* ======================================================
+   INLINE EDIT HELPERS
+====================================================== */
+function rndSaveField(id, fieldPath, value){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
+  if(!p) return;
+  var keys = fieldPath.split('.');
+  var obj = p;
+  for(var i=0;i<keys.length-1;i++){
+    if(!obj[keys[i]]) obj[keys[i]] = {};
+    obj = obj[keys[i]];
+  }
+  obj[keys[keys.length-1]] = value;
+  saveRndProjects(projects);
+}
+
+window.rndUpdateIngredient = function(id, i, field, val){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p||!p.recipeData||!p.recipeData.ingredients[i]) return;
+  p.recipeData.ingredients[i][field] = val;
+  saveRndProjects(projects);
+};
+window.rndRemoveIngredient = function(id, i){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p||!p.recipeData) return;
+  p.recipeData.ingredients.splice(i,1);
+  saveRndProjects(projects);
+  openRndProject(id);
+};
+window.rndAddIngredient = function(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p){ return; }
+  if(!p.recipeData) p.recipeData = {ingredients:[],method:[],portions:10,notes:'',allergens:[]};
+  p.recipeData.ingredients.push({name:'',qty:''});
+  saveRndProjects(projects);
+  openRndProject(id);
+};
+window.rndUpdateMethod = function(id, i, val){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p||!p.recipeData) return;
+  p.recipeData.method[i] = val;
+  saveRndProjects(projects);
+};
+window.rndRemoveMethod = function(id, i){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p||!p.recipeData) return;
+  p.recipeData.method.splice(i,1);
+  saveRndProjects(projects);
+  openRndProject(id);
+};
+window.rndAddMethod = function(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p){ return; }
+  if(!p.recipeData) p.recipeData = {ingredients:[],method:[],portions:10,notes:'',allergens:[]};
+  p.recipeData.method.push('');
+  saveRndProjects(projects);
+  openRndProject(id);
+};
+window.rndToggleAllergen = function(id, a){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p||!p.recipeData) return;
+  if(!p.recipeData.allergens) p.recipeData.allergens = [];
+  var idx = p.recipeData.allergens.indexOf(a);
+  if(idx>=0) p.recipeData.allergens.splice(idx,1); else p.recipeData.allergens.push(a);
+  saveRndProjects(projects);
+  openRndProject(id);
+};
+window.rndSaveNotes = function(id, val){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p||!p.recipeData) return;
+  p.recipeData.notes = val;
+  saveRndProjects(projects);
+};
+window.rndUpdateCostRow = function(id, i, val){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  if(!p.costingData) p.costingData = {rows:[],sellPrice:0};
+  // Sync rows from recipe if needed
+  if(!p.costingData.rows.length && p.recipeData && p.recipeData.ingredients){
+    p.costingData.rows = p.recipeData.ingredients.map(function(ing){return{name:ing.name,qty:ing.qty,price:0};});
+  }
+  if(p.costingData.rows[i]) p.costingData.rows[i].price = parseFloat(val)||0;
+  saveRndProjects(projects);
+  openRndProject(id);
+};
+window.rndUpdateCostTarget = function(id, val){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  if(!p.costingData) p.costingData={rows:[],sellPrice:0,targetPct:28};
+  p.costingData.targetPct = parseFloat(val)||28;
+  saveRndProjects(projects);
+  openRndProject(id);
+};
+window.rndUpdateSellPrice = function(id, val){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  if(!p.costingData) p.costingData={rows:[],sellPrice:0};
+  p.costingData.sellPrice = parseFloat(val)||0;
+  saveRndProjects(projects);
+  openRndProject(id);
+};
+window.rndAddPickupStep = function(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  if(!p.pickupData) p.pickupData = {steps:[],garnish:'',timing:'',temperature:'',notes:'',cutlery:'',allergens:[],drinkPairing:''};
+  p.pickupData.steps.push('');
+  saveRndProjects(projects);
+  // Refresh only the plating steps section — don't re-render whole card
+  var stepsEl = document.getElementById('rnd-card-tab-'+id+'-plating-steps');
+  if(stepsEl){
+    var steps = p.pickupData.steps;
+    var html = '';
+    steps.forEach(function(step, i){
+      var nn = (i+1) < 10 ? '0'+(i+1) : ''+(i+1);
+      html += '<div style="display:flex;gap:.7rem;padding:.55rem 0;border-bottom:1px solid var(--border);align-items:flex-start">';
+      html += '<span style="font-family:var(--fm);font-size:.68rem;color:var(--terracotta);min-width:20px;margin-top:.15rem">'+nn+'</span>';
+      html += '<input class="fi" style="flex:1;margin-bottom:0;padding:.32rem .6rem;font-size:.85rem" value="'+String(step||'')+'" oninput="rndUpdatePickupStep(\''+id+'\','+i+',this.value)" placeholder="Describe this plating step...">';
+      html += '</div>';
+    });
+    html += '<button data-pid="'+id+'" onclick="rndAddPickupStep(this.dataset.pid)" style="font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.32rem .75rem;border-radius:4px;cursor:pointer;border:1px dashed var(--sand);background:none;color:var(--t4);margin-top:.5rem;width:100%">+ Add Step</button>';
+    stepsEl.innerHTML = html;
+    // Focus the new input
+    var inputs = stepsEl.querySelectorAll('input');
+    if(inputs.length) inputs[inputs.length-1].focus();
+  } else {
+    // Fallback: full re-render then switch to pickup tab
+    openRndProject(id);
+    setTimeout(function(){ rndCardTab(id,'pickup'); }, 50);
+  }
+};
+window.rndRemovePickupStep = function(id, i){ i = parseInt(i)||0;
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p||!p.pickupData) return;
+  p.pickupData.steps.splice(i,1);
+  saveRndProjects(projects);
+  rndAddPickupStep._refreshSteps(id, p);
+};
+// Helper shared by add/remove
+rndAddPickupStep._refreshSteps = function(id, p){
+  var stepsEl = document.getElementById("rnd-card-tab-"+id+"-plating-steps");
+  if(!stepsEl){ openRndProject(id); setTimeout(function(){ rndCardTab(id,"pickup"); },50); return; }
+  var steps = (p.pickupData||{}).steps||[];
+  var html = "";
+  for(var si=0; si<steps.length; si++){
+    var nn = (si+1)<10 ? "0"+(si+1) : ""+(si+1);
+    html += "<div style=\"display:flex;gap:.7rem;padding:.55rem 0;border-bottom:1px solid var(--border);align-items:flex-start\">";
+    html += "<span style=\"font-family:var(--fm);font-size:.68rem;color:var(--terracotta);min-width:20px;margin-top:.15rem\">"+nn+"</span>";
+    html += "<input class=\"fi\" style=\"flex:1;margin-bottom:0;padding:.32rem .6rem;font-size:.85rem\" value=\""+String(steps[si]||"")+"\" data-idx=\""+si+"\" oninput=\"rndUpdatePickupStep(this.dataset.pid,this.dataset.idx,this.value)\" data-pid=\""+id+"\" placeholder=\"Describe this plating step...\">";
+    html += "<button data-ridx=\""+si+"\" data-pid2=\""+id+"\" onclick=\"rndRemovePickupStep(this.dataset.pid2,this.dataset.ridx)\" style=\"border:none;background:none;color:var(--t4);cursor:pointer;font-size:.9rem;padding:.2rem\">x</button>";
+    html += "</div>";
+  }
+  html += "<button data-pid3=\""+id+"\" onclick=\"rndAddPickupStep(this.dataset.pid3)\" style=\"font-family:var(--fm);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;padding:.32rem .75rem;border-radius:4px;cursor:pointer;border:1px dashed var(--sand);background:none;color:var(--t4);margin-top:.5rem;width:100%\">+ Add Step</button>";
+  stepsEl.innerHTML = html;
+};
+
+window.rndUpdatePickupSpec = function(id, key, val){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  if(!p.pickupData) p.pickupData={steps:[],garnish:'',timing:'',temperature:'',notes:'',cutlery:'',allergens:[],drinkPairing:''};
+  p.pickupData[key] = val;
+  saveRndProjects(projects);
+  // Live-update Devas footer display
+  var cutleryEl = document.getElementById('rnd-devas-cutlery-'+id);
+  var bevEl = document.getElementById('rnd-devas-bev-'+id);
+  if(cutleryEl && key==='cutlery') cutleryEl.textContent = val||'—';
+  if(bevEl && key==='drinkPairing') bevEl.textContent = val||'—';
+};
+
+/* ======================================================
+   AI ACTIONS
+====================================================== */
+
+// Generate recipe card from R&D sessions + framework
+window.rndGenerateRecipeCard = function(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  var btn = document.getElementById('rnd-gen-recipe-btn-'+id);
+  if(btn){ btn.disabled=true; btn.textContent='AI generating recipe...'; }
+
+  var prompt = 'PROJECT: '+p.name+'\nCONCEPT: '+p.idea+'\nTECHNIQUE: '+(p.technique||'Open')+'\nCUISINE: '+(p.cuisine||'Open')+'\nFORMAT: '+(p.format||'Open')+'\n\n';
+  if(p.framework) prompt += 'R&D FRAMEWORK:\n'+p.framework.replace(/<[^>]*>/g,'').substring(0,1500)+'\n\n';
+  p.sessions.forEach(function(s,i){ prompt += 'SESSION '+(i+1)+' NOTES:\n'+s.note+'\n'; if(s.aiAnalysis) prompt += 'ANALYSIS:\n'+s.aiAnalysis.replace(/<[^>]*>/g,'').substring(0,500)+'\n'; });
+  prompt += '\n\nGenerate a complete structured recipe card for this dish. Respond ONLY with valid JSON (no markdown). Format:\n{"name":"","description":"","category":"","portions":10,"ingredients":[{"name":"","qty":""}],"method":["step1","step2"],"allergens":["Dairy"],"notes":""}';
+
+  callRndAPI(buildRndSystemPrompt(), prompt, function(err, txt){
+    if(btn){ btn.disabled=false; btn.textContent='✦ AI Generate Recipe Card →'; }
+    if(err){ alert('AI error: '+err); return; }
+    try{
+      var clean = txt.replace(/```json|```/g,'').trim();
+      var rd = JSON.parse(clean);
+      var projects2 = getRndProjects();
+      var p2 = projects2.find(function(x){return x.id===id;});
+      if(!p2) return;
+      p2.recipeData = rd;
+      p2.stage = 'recipe';
+      // Pre-populate costing rows
+      p2.costingData = { rows: (rd.ingredients||[]).map(function(ing){return{name:ing.name,qty:ing.qty,price:0};}), sellPrice:0 };
+      saveRndProjects(projects2);
+      renderRndList();
+      openRndProject(id);
+    } catch(e){
+      // If JSON fails, create minimal structure
+      var projects3 = getRndProjects();
+      var p3 = projects3.find(function(x){return x.id===id;});
+      if(!p3) return;
+      p3.recipeData = {name:p.name,description:'',category:'',portions:10,ingredients:[],method:[txt.replace(/<[^>]*>/g,'').substring(0,500)],allergens:[],notes:''};
+      p3.stage = 'recipe';
+      saveRndProjects(projects3);
+      renderRndList();
+      openRndProject(id);
+    }
+  });
+};
+
+// Regenerate recipe at Recipe stage
+window.rndRegenerateRecipe = function(id){
+  if(!confirm('Regenerate the recipe card? This will overwrite the current card with a new AI version.')) return;
+  window.rndGenerateRecipeCard(id);
+};
+
+// Run Matrix analysis
+window.rndRunMatrix = function(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  var btn = document.getElementById('rnd-matrix-btn-'+id);
+  var empty = document.getElementById('rnd-matrix-empty-'+id);
+  var running = document.getElementById('rnd-matrix-running-'+id);
+  if(btn){ btn.disabled=true; btn.textContent='Analysing...'; }
+  if(empty) empty.style.display='none';
+  if(running) running.style.display='block';
+
+  var rd = p.recipeData || {};
+  var ingredients = (rd.ingredients||[]).map(function(i){return i.name+' '+i.qty;}).join(', ');
+  var method = (rd.method||[]).join(' · ');
+
+  var prompt = 'DISH: '+p.name+'\nDESCRIPTION: '+(rd.description||p.idea)+'\nCUISINE: '+(p.cuisine||'Modern')+'\nFORMAT: '+(p.format||'')+'\nINGREDIENTS: '+ingredients+'\nMETHOD SUMMARY: '+method+'\n\nRun a complete Flavour Matrix analysis. Use all embedded chef and flavour knowledge. Respond ONLY with valid JSON (no markdown):\n{"score":"8.4","verdict":"Classical Correct / Tension Opportunity / Creative Frontier","summary":"2-3 sentence analysis","axes":[{"name":"Balance","score":"8.4"},{"name":"Acid structure","score":"8.8"},{"name":"Fat expression","score":"7.9"},{"name":"Texture contrast","score":"8.6"},{"name":"Aromatic complexity","score":"8.1"},{"name":"Umami depth","score":"8.5"},{"name":"Creative Frontier","score":"9.0"},{"name":"Concept integrity","score":"8.8"}],"insights":["insight1","insight2","insight3","insight4"]}';
+
+  callRndAPI(buildRndSystemPrompt(), prompt, function(err, txt){
+    if(btn){ btn.disabled=false; btn.textContent='✦ Run Matrix'; }
+    if(running) running.style.display='none';
+    if(err){ alert('Matrix error: '+err); return; }
+    try{
+      var clean = txt.replace(/```json|```/g,'').trim();
+      var md = JSON.parse(clean);
+      var projects2 = getRndProjects();
+      var p2 = projects2.find(function(x){return x.id===id;});
+      if(!p2) return;
+      p2.matrixData = md;
+      saveRndProjects(projects2);
+      renderRndList();
+      openRndProject(id);
+    } catch(e){
+      alert('Could not parse Matrix result. Try again.');
+    }
+  });
+};
+
+window.rndTogglePickupAllergen = function(id, a){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  if(!p.pickupData) p.pickupData={steps:[],garnish:'',timing:'',temperature:'',notes:'',cutlery:'',allergens:[],drinkPairing:''};
+  if(!p.pickupData.allergens) p.pickupData.allergens=[];
+  var idx = p.pickupData.allergens.indexOf(a);
+  if(idx>=0) p.pickupData.allergens.splice(idx,1); else p.pickupData.allergens.push(a);
+  saveRndProjects(projects);
+  openRndProject(id);
+};
+
+window.rndGenerateDrinkPairing = function(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  var btn = document.getElementById('rnd-drink-btn-'+id);
+  // Check both the pickup stage input and the final card input
+  var input = document.getElementById('rnd-drink-'+id) || document.getElementById('rnd-card-bev-'+id);
+  if(btn){ btn.disabled=true; btn.textContent='Thinking...'; }
+  var rd = p.recipeData||{};
+  var ingredients = (rd.ingredients||[]).map(function(i){return i.name;}).join(', ');
+  var prompt = 'DISH: '+p.name+'\nCUISINE: '+(p.cuisine||'Modern')+'\nFORMAT: '+(p.format||'Fine Dining')+'\nINGREDIENTS: '+ingredients+'\nKEY TECHNIQUE: '+(p.technique||'')+'\n'+(p.matrixData?'FLAVOUR PROFILE: '+p.matrixData.verdict+'. Score: '+p.matrixData.score:'')+'\n\nSuggest 2-3 specific drink pairings (wine, sake, beer, cocktail, or non-alcoholic). Be precise — name specific styles, producers if relevant, or cocktail specs. Format as a single concise line: e.g. Aged junmai sake / dry Riesling / yuzu highball. No preamble, no explanation — just the suggestion line.';
+  callRndAPI(buildRndSystemPrompt(), prompt, function(err, txt){
+    if(btn){ btn.disabled=false; btn.textContent='✦ AI Suggest'; }
+    if(err||!txt) return;
+    var suggestion = txt.replace(/<[^>]*>/g,'').replace(/\n/g,' ').trim();
+    var projects2 = getRndProjects();
+    var p2 = projects2.find(function(x){return x.id===id;});
+    if(!p2) return;
+    if(!p2.pickupData) p2.pickupData={steps:[],garnish:'',timing:'',temperature:'',notes:'',cutlery:'',allergens:[],drinkPairing:''};
+    p2.pickupData.drinkPairing = suggestion;
+    saveRndProjects(projects2);
+    if(input) input.value = suggestion;
+    openRndProject(id);
+  });
+};
+
+// Finalise card — move to approved
+window.rndFinalizeCard = function(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  p.stage = 'approved';
+  p.approved = true;
+  saveRndProjects(projects);
+  // Inject to recipes
+  injectRndToRecipes(p);
+  renderRndList();
+  openRndProject(id);
+  if(typeof showToast === 'function') showToast(p.name+' — Recipe Card finalised');
+};
+
+// Copy card text to clipboard
+window.rndOpenPptxSlide = function(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  var rd = p.recipeData||{};
+  var md = p.matrixData;
+  var pd = p.pickupData||{};
+  var win = window.open('','_blank','width=1024,height=768');
+  if(!win) return;
+  var ings = (rd.ingredients||[]).slice(0,6).map(function(i){ return '<li>'+i.name+' <span>'+i.qty+'</span></li>'; }).join('');
+  var steps = (pd.steps||[]).map(function(s,i){ return '<li><span class=n>'+(i+1)+'</span>'+s+'</li>'; }).join('');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+
+    '*{box-sizing:border-box;margin:0;padding:0}'+
+    'body{font-family:Nunito,sans-serif;background:#1A2340;color:white;min-height:100vh;display:flex;flex-direction:column;padding:2rem}'+
+    'h1{font-family:"Cormorant Garamond",serif;font-size:3rem;font-weight:300;letter-spacing:.04em;margin-bottom:.5rem}'+
+    '.tags{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.5rem}'+
+    '.tag{font-family:"DM Mono",monospace;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .55rem;border-radius:2px;background:rgba(255,255,255,.15);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.25)}'+
+    '.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;flex:1}'+
+    '.col h3{font-family:"DM Mono",monospace;font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:.8rem;padding-bottom:.4rem;border-bottom:1px solid rgba(255,255,255,.15)}'+
+    'ul{list-style:none}'+
+    'li{font-size:.88rem;color:rgba(255,255,255,.85);padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.08)}'+
+    'li span{font-family:"DM Mono",monospace;font-size:.72rem;color:rgba(255,255,255,.45);float:right}'+
+    '.n{font-family:"DM Mono",monospace;font-size:.7rem;color:#C2744A;min-width:18px;display:inline-block;float:none}'+
+    '.matrix{background:rgba(194,116,74,.15);border:1px solid rgba(194,116,74,.3);border-radius:8px;padding:1rem;text-align:center;margin-top:1rem}'+
+    '.score{font-family:"Cormorant Garamond",serif;font-size:3rem;font-weight:300;color:#C2744A;line-height:1}'+
+    '.verdict{font-size:.78rem;color:rgba(255,255,255,.6);margin-top:.3rem}'+
+    '.footer{margin-top:1.5rem;display:flex;justify-content:space-between;font-family:"DM Mono",monospace;font-size:.62rem;color:rgba(255,255,255,.3);letter-spacing:.1em;text-transform:uppercase}'+
+    '@media print{body{background:#1A2340!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}'+
+    '</style></head><body>'+
+    '<h1>'+p.name+'</h1>'+
+    '<div class=tags>'+
+    (rd.category?'<span class=tag>'+rd.category+'</span>':'')+
+    (p.outlet&&p.outlet!=='central'?'<span class=tag>'+p.outlet+'</span>':'')+
+    (rd.allergens||[]).map(function(a){return'<span class=tag>'+a+'</span>';}).join('')+
+    '</div>'+
+    '<div class=grid>'+
+    '<div class=col><h3>Ingredients</h3><ul>'+ings+'</ul></div>'+
+    '<div class=col><h3>Plating Steps</h3><ul>'+steps+'</ul>'+
+    (pd.cutlery?'<div style="margin-top:1rem;font-size:.8rem;color:rgba(255,255,255,.6)"><strong>Cutlery:</strong> '+pd.cutlery+'</div>':'')+
+    (pd.drinkPairing?'<div style="margin-top:.4rem;font-size:.8rem;color:rgba(255,255,255,.6)"><strong>Beverage:</strong> '+pd.drinkPairing+'</div>':'')+
+    '</div>'+
+    '<div class=col><h3>Matrix</h3>'+
+    (md?'<div class=matrix><div class=score>'+md.score+'</div><div class=verdict>'+md.verdict+'</div></div>':'<p style="font-size:.8rem;opacity:.4">Matrix not run</p>')+
+    '</div>'+
+    '</div>'+
+    '<div class=footer><span>Cultivate Studio · IC Phuket</span><span>'+new Date().toLocaleDateString('en-GB')+'</span></div>'+
+    '<div style="position:fixed;bottom:1.5rem;right:1.5rem;display:flex;gap:.6rem">'+
+    '<button onclick="window.print()" style="font-family:Nunito,sans-serif;font-size:.8rem;padding:.5rem 1.2rem;background:#C2744A;color:white;border:none;border-radius:6px;cursor:pointer;letter-spacing:.08em;text-transform:uppercase">Print / Save PDF</button>'+
+    '<button onclick="window.close()" style="font-family:Nunito,sans-serif;font-size:.8rem;padding:.5rem 1rem;background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);border-radius:6px;cursor:pointer">Close</button>'+
+    '</div>'+
+    '</body></html>');
+  win.document.close();
+};
+
+window.rndShareCard = function(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  var rd = p.recipeData||{};
+  var text = p.name+'\n'+
+    'Outlet: '+(p.outlet||'Central')+'\n'+
+    'Chef: '+p.chef+'\n'+
+    (p.matrixData?'Matrix: '+p.matrixData.score+' — '+p.matrixData.verdict+'\n':'')+
+    '\nIngredients:\n'+(rd.ingredients||[]).map(function(i){return'  '+i.name+' — '+i.qty;}).join('\n')+
+    '\n\nCultivate Studio · IC Phuket';
+  if(navigator.share){
+    navigator.share({title:p.name, text:text}).catch(function(){});
+  } else {
+    navigator.clipboard && navigator.clipboard.writeText(text).then(function(){
+      if(typeof showToast==='function') showToast('Recipe card copied to clipboard');
+      else alert('Copied to clipboard');
+    });
+  }
+};
+
+window.rndOpenFromCard = function(id, evt){
+  if(evt) evt.stopPropagation();
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
+  if(!p) return;
+  var det = document.getElementById('rnd-detail');
+  if(!det) return;
+
+  // Render full R&D development view directly — bypasses the approved stage loop
+  var canEdit = rndCanEdit(p);
+  var html = '';
+
+  // Nav bar
+  html += '<div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem;flex-wrap:wrap">';
+  html += '<button onclick="det=document.getElementById(\'rnd-detail\');det.style.display=\'none\'" style="font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--sand);border-radius:4px;padding:.4rem .8rem;cursor:pointer;color:var(--t4)">&#8592; Back to Card</button>';
+  html += '<div style="flex:1"></div>';
+  html += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:#534AB7">R&amp;D Development History</div>';
+  html += '</div>';
+
+  // Concept header
+  html += '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:1.5rem;color:var(--t)">';
+  html += '<div style="font-family:var(--fd);font-size:1.6rem;font-weight:300;color:var(--t);letter-spacing:.03em;margin-bottom:.2rem">'+escHtml(p.name)+'</div>';
+  html += '<div style="font-size:.83rem;color:var(--t3);margin-bottom:1.2rem">'+escHtml(p.chef)+' &middot; Started '+new Date(p.created).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+' &middot; '+p.sessions.length+' session'+(p.sessions.length!==1?'s':'')+' &middot; Approved</div>';
+
+  // Pipeline tracker — all complete
+  html += '<div style="display:flex;gap:0;overflow-x:auto;margin-bottom:1.5rem">';
+  var pStages=[{label:'Concept',color:'#4a90d9'},{label:'R&D',color:'#534AB7'},{label:'Recipe',color:'#C8902A'},{label:'Costing',color:'#6B8C6B'},{label:'Matrix',color:'#C2744A'},{label:'Pickup',color:'#2A7A6B'},{label:'Approved',color:'#3a6a3a'}];
+  pStages.forEach(function(s,i){
+    html += '<div style="flex:1;min-width:60px;text-align:center;padding:.4rem .2rem;background:'+s.color+';'+(i>0?'border-left:1px solid rgba(255,255,255,.2)':'')+'">';
+    html += '<div style="font-family:var(--fm);font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:white;opacity:.9">'+s.label+'</div>';
+    html += '<div style="font-size:.6rem;color:rgba(255,255,255,.8)">&#10003;</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // Original concept
+  html += '<div style="background:linear-gradient(135deg,#f0eeff,#ede8ff);border:1px solid #C8C0F0;border-radius:8px;padding:1rem 1.1rem;margin-bottom:1.2rem">';
+  html += '<div style="font-family:var(--fm);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:#534AB7;margin-bottom:.35rem">Original Concept</div>';
+  html += '<div style="font-family:Cormorant Garamond,serif;font-size:1.1rem;font-weight:300;color:var(--t);margin-bottom:.3rem">'+escHtml(p.name)+'</div>';
+  html += '<div style="font-size:.87rem;color:var(--smoke);line-height:1.65">'+escHtml(p.idea||'')+'</div>';
+  if(p.technique||p.cuisine||p.format){
+    html += '<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem">';
+    if(p.technique) html += '<span style="font-family:var(--fm);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .42rem;border-radius:2px;background:rgba(83,74,183,.12);color:#534AB7">'+escHtml(p.technique)+'</span>';
+    if(p.cuisine)   html += '<span style="font-family:var(--fm);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .42rem;border-radius:2px;background:rgba(106,140,106,.12);color:var(--moss)">'+escHtml(p.cuisine)+'</span>';
+    if(p.format)    html += '<span style="font-family:var(--fm);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .42rem;border-radius:2px;background:rgba(194,116,74,.12);color:var(--terracotta)">'+escHtml(p.format)+'</span>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // AI Framework — collapsible
+  if(p.framework){
+    html += renderCollapsibleFramework(p.framework, id+'-rnd-card-fw');
+  }
+
+  // Sessions
+  if(p.sessions && p.sessions.length){
+    html += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:1rem">Research Log &mdash; '+p.sessions.length+' Session'+(p.sessions.length!==1?'s':'')+'</div>';
+    var stageColors=['#E8A050','#5a7a5a','#534AB7'];
+    var stageBgs=['var(--oat)','#f0f5f0','#f5f4ff'];
+    var stageLabels=['Testing','In Development','Approved'];
+    p.sessions.forEach(function(s,i){
+      var col=stageColors[Math.min(i,stageColors.length-1)];
+      var bg=stageBgs[Math.min(i,stageBgs.length-1)];
+      var dateStr=new Date(s.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+      var sid='rnd-fc-sess-'+id+'-'+i;
+      var isOpen=(i===p.sessions.length-1);
+      html += '<div style="margin-bottom:1rem;border:1px solid var(--sand);border-left:3px solid '+col+';border-radius:6px;overflow:hidden">';
+      html += '<div onclick="rndToggleSection(\''+sid+'\',event)" style="background:'+bg+';padding:.55rem 1rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between">';
+      html += '<div style="display:flex;align-items:center;gap:.65rem">';
+      html += '<span style="font-family:var(--fm);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;background:'+col+';color:white;padding:.13rem .42rem;border-radius:3px">Session '+(i+1)+'</span>';
+      html += '<span style="font-family:var(--fm);font-size:.65rem;color:var(--t4)">'+dateStr+' &middot; '+escHtml(stageLabels[Math.min(i,stageLabels.length-1)])+'</span>';
+      html += '</div>';
+      html += '<span id="'+sid+'-arrow" style="font-size:.65rem;color:var(--t4);transition:transform .2s;transform:'+(isOpen?'rotate(180deg)':'')+'">&#9660;</span>';
+      html += '</div>';
+      html += '<div id="'+sid+'" style="display:'+(isOpen?'block':'none')+'">';
+      html += '<div style="padding:.7rem 1rem;font-size:.85rem;color:var(--t);line-height:1.65;border-bottom:1px solid var(--sand)">'+escHtml(s.note||'')+'</div>';
+      if(s.aiAnalysis){
+        var _ana=String(s.aiAnalysis||'').replace(/```[a-z]*/g,'').replace(/```/g,'').replace(/<[^>]*>/g,' ').replace(/[ 	]+/g,' ').trim().substring(0,600);
+        html += '<div style="padding:.7rem 1rem;font-size:.82rem;color:var(--smoke);line-height:1.65;background:#FDFCFF">';
+        html += '<div style="font-family:var(--fm);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#6B8C6B;margin-bottom:.3rem">R&amp;D Analysis</div>';
+        html += escHtml(_ana);
+        html += '</div>';
+      }
+      html += '</div></div>';
+    });
+  } else {
+    html += '<div style="background:white;border:1px solid var(--sand);border-radius:6px;padding:1.2rem;text-align:center;color:var(--t4);font-size:.88rem">No sessions recorded for this project.</div>';
+  }
+
+  html += '</div>'; // oat container
+
+  det.innerHTML = html;
+  det.style.display = 'block';
+  det.scrollIntoView({behavior:'smooth'});
+};
+
+window.rndCopyCardText = function(id){
+  var projects = getRndProjects();
+  var p = projects.find(function(x){return x.id===id;});
+  if(!p) return;
+  var rd = p.recipeData || {};
+  var lines = [p.name,'','INGREDIENTS'];
+  (rd.ingredients||[]).forEach(function(i){ lines.push('  '+i.name+' — '+i.qty); });
+  lines.push('','METHOD');
+  (rd.method||[]).forEach(function(s,i){ lines.push((i+1)+'. '+s); });
+  if(p.matrixData) lines.push('','MATRIX SCORE: '+p.matrixData.score+' — '+p.matrixData.verdict);
+  navigator.clipboard && navigator.clipboard.writeText(lines.join('\n'));
+  if(typeof showToast === 'function') showToast('Recipe card copied');
+};
+
+/* ======================================================
+   SESSIONS (shared by ingredient + recipe R&D stage)
+====================================================== */
+function renderSessionsBlock(p, canEdit){
+  if(!p.sessions || !p.sessions.length) return '';
+  var html = '<div style="margin-bottom:1.4rem">';
+  html += '<div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:1rem">Research Log — '+p.sessions.length+' Session'+(p.sessions.length!==1?'s':'')+'</div>';
+  p.sessions.forEach(function(s, i){
+    var stageColor = '#C8902A';
+    var dateStr = new Date(s.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+    var noteId = 'sess-note-'+p.id+'-'+i;
+    var anaId  = 'sess-ana-'+p.id+'-'+i;
+    html += '<div style="margin-bottom:1rem;border:1px solid var(--sand);border-left:3px solid '+stageColor+';border-radius:6px;overflow:hidden;background:white">';
+    // Session header — always visible
+    html += '<div style="background:var(--oat);padding:.55rem 1rem;display:flex;justify-content:space-between;align-items:center">';
+    html += '<span style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:white;background:'+stageColor+';padding:.2rem .55rem;border-radius:3px">Session '+(i+1)+'</span>';
+    html += '<span style="font-size:.75rem;color:var(--t4)">'+dateStr+'</span>';
+    html += '</div>';
+    var noteId = 'snote-'+p.id+'-'+i;
+    var anaId  = 'sana-'+p.id+'-'+i;
+    // Notes — collapsible
+    html += '<div style="border-top:1px solid var(--sand)">';
+    html += '<div onclick="rndToggleSection(\''+noteId+'\',event)" style="background:var(--oat);padding:.52rem 1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center">';
+    html += '<span style="font-family:var(--fm);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--terracotta)">Research Notes</span>';
+    html += '<span id="'+noteId+'-arrow" style="font-size:.65rem;color:var(--t4);transition:transform .2s">&#9660;</span>';
+    html += '</div>';
+    html += '<div id="'+noteId+'" style="display:none;padding:.8rem 1rem;font-size:.87rem;color:var(--t);line-height:1.7;white-space:pre-wrap;background:white">'+escHtml(s.note)+'</div>';
+    html += '</div>';
+    // Analysis — collapsible
+    html += '<div id="rnd-session-analysis-'+i+'" style="border-top:1px solid var(--sand)">';
+    html += '<div onclick="rndToggleSection(\''+anaId+'\',event)" style="background:var(--oat);padding:.52rem 1rem;cursor:pointer;display:flex;justify-content:space-between;align-items:center">';
+    html += '<span style="font-family:var(--fm);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:#6B8C6B">R&amp;D Analysis</span>';
+    html += '<span id="'+anaId+'-arrow" style="font-size:.65rem;color:var(--t4);transition:transform .2s">&#9660;</span>';
+    html += '</div>';
+    if(s.aiAnalysis){
+      html += '<div id="'+anaId+'" style="display:none;padding:.8rem 1rem;font-size:.85rem;color:var(--t);line-height:1.7;background:white">'+s.aiAnalysis+'</div>';
+    } else {
+      html += '<div id="'+anaId+'" style="display:none;padding:.65rem 1rem;display:flex;align-items:center;gap:.8rem;background:white">';
+      html += '<span style="color:var(--t4);font-size:.82rem;font-style:italic">No analysis yet</span>';
+      html += '<button onclick="runRndSessionAnalysis(\''+p.id+'\','+i+')" style="font-size:.75rem;font-family:var(--fm);letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--sand);border-radius:3px;padding:.25rem .6rem;cursor:pointer;color:var(--t3)">Analyse</button>';
+      html += '</div>';
+    }
+    html += '</div></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderAddSessionForm(p){
+  var html = '<div style="background:white;border:1px solid var(--sand);border-radius:6px;padding:1rem;margin-bottom:1.2rem">';
+  html += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:.6rem">Add Test Session Notes</div>';
+  html += '<textarea class="fi" id="rnd-session-note-'+p.id+'" rows="4" placeholder="Document today\'s test — what you tried, temperatures, ratios, results, what worked, what failed..."></textarea>';
+  html += '<div style="display:flex;gap:.6rem;margin-top:.6rem">';
+  html += '<button class="btn-p" onclick="addRndSession(\''+p.id+'\')">Save Session Notes</button>';
+  html += '</div></div>';
+  return html;
+}
+
+/* ======================================================
+   SESSION MANAGEMENT (keep existing logic)
+====================================================== */
+function addRndSession(id){
+  var noteEl = document.getElementById('rnd-session-note-'+id);
+  if(!noteEl || !noteEl.value.trim()){ alert('Add your testing notes first.'); return; }
+  var projects = getRndProjects();
+  var p = projects.find(function(x){ return x.id===id; });
+  if(!p) return;
+  var sessionNote = noteEl.value.trim();
+  var sessionNum = p.sessions.length + 1;
+  var session = { date: new Date().toISOString(), note: sessionNote, sessionNum: sessionNum, aiAnalysis: null };
+  p.sessions.push(session);
+  saveRndProjects(projects);
+  noteEl.value = '';
+  openRndProject(id);
+  // run AI
+  var analysisEl = document.getElementById('rnd-session-analysis-' + (sessionNum - 1));
+  if(analysisEl) analysisEl.innerHTML = '<div style="color:var(--t4);font-size:.82rem;font-style:italic">AI is analysing...</div>';
   runRndSessionAnalysis(id, sessionNum - 1);
 }
 window.addRndSession = addRndSession;
@@ -18350,94 +19891,58 @@ function runRndSessionAnalysis(projectId, sessionIndex){
   var projects = getRndProjects();
   var p = projects.find(function(x){ return x.id===projectId; });
   if(!p) return;
-
   var session = p.sessions[sessionIndex];
   if(!session) return;
-
-  // Build context: original framework + all previous sessions + new notes
   var sessionHistory = '';
   p.sessions.forEach(function(s, i){
-    sessionHistory += '\nSESSION ' + (i+1) + ' — ' + new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + ' — Stage: ' + s.status + '\n';
-    sessionHistory += 'Notes: ' + s.note + '\n';
-    if(s.aiAnalysis) sessionHistory += 'Previous AI Analysis: ' + s.aiAnalysis.replace(/<[^>]*>/g,'') + '\n';
+    sessionHistory += '\nSESSION '+(i+1)+' — '+new Date(s.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'\nNotes: '+s.note+'\n';
+    if(s.aiAnalysis) sessionHistory += 'Previous Analysis: '+s.aiAnalysis.replace(/<[^>]*>/g,'').substring(0,300)+'\n';
   });
-
-  var analysisPrompt = 'RESEARCH PROJECT: ' + p.name + '\n' +
-    'TYPE: ' + p.type + '\n' +
-    'ORIGINAL CONCEPT: ' + p.idea + '\n\n' +
-    'ORIGINAL FRAMEWORK SUMMARY:\n' + (p.framework || '').replace(/<[^>]*>/g,'').substring(0, 2000) + '\n\n' +
-    'FULL SESSION HISTORY:\n' + sessionHistory + '\n\n' +
-    'You are the R&D researcher reviewing Session ' + (sessionIndex+1) + ' notes above. ' +
-    'Analyse the results as a researcher would — read the data, identify what it tells you, what it confirms or contradicts from the framework hypothesis, what variables may be at play, and define precisely what should happen in the next session. ' +
-    'Structure your response as:\n' +
-    '1. DATA READING — what the session notes tell us scientifically\n' +
-    '2. HYPOTHESIS STATUS — confirmed / partially confirmed / contradicted / inconclusive, and why\n' +
-    '3. VARIABLES IDENTIFIED — what factors appear to be influencing the result\n' +
-    '4. NEXT SESSION PROTOCOL — exactly what to test next, with parameters (temp, time, ratio, pH target, etc.)\n' +
-    '5. WATCH POINTS — what to observe and measure in the next session\n\n' +
-    'Be precise. No speculation without data basis. If the notes are insufficient to draw conclusions, say so and specify what data is missing.';
-
+  var analysisPrompt = 'RESEARCH PROJECT: '+p.name+'\nTYPE: '+p.type+'\nCONCEPT: '+p.idea+'\n\nFULL SESSION HISTORY:\n'+sessionHistory+'\n\nAnalyse Session '+(sessionIndex+1)+' as a senior culinary researcher. Structure:\n1. DATA READING\n2. HYPOTHESIS STATUS\n3. VARIABLES IDENTIFIED\n4. NEXT SESSION PROTOCOL\n5. WATCH POINTS\n\nBe precise. Use HTML inline styles. No romanticisation.';
   callRndAPI(buildRndSystemPrompt(), analysisPrompt, function(err, txt){
-    var projects2 = getRndProjects();
-    var p2 = projects2.find(function(x){ return x.id===projectId; });
+    var p2 = getRndProjects().find(function(x){return x.id===projectId;});
     if(!p2) return;
-
-    if(!err && txt){
-      p2.sessions[sessionIndex].aiAnalysis = txt;
-      saveRndProjects(projects2);
-    }
-
-    // Re-render to show the analysis — small delay to ensure save completed
+    if(!err && txt){ p2.sessions[sessionIndex].aiAnalysis = txt; saveRndProjects([].concat(getRndProjects().filter(function(x){return x.id!==projectId;}), [p2]).sort(function(a,b){return new Date(b.created)-new Date(a.created);})); }
     setTimeout(function(){ openRndProject(projectId); }, 100);
   });
 }
 window.runRndSessionAnalysis = runRndSessionAnalysis;
 
-function approveRndProject(id){
+/* ======================================================
+   APPROVE INGREDIENT → SEASONALITY
+====================================================== */
+window.rndApproveIngredient = function(id){
+  if(!confirm('Mark as approved and send to Seasonality as R&D ingredient?')) return;
   var projects = getRndProjects();
-  var p = projects.find(function(x){ return x.id===id; });
+  var p = projects.find(function(x){return x.id===id;});
   if(!p) return;
-
-  if(p.type === 'ingredient'){
-    if(confirm('Mark "'+p.name+'" as approved and send to Seasonality as an R&D ingredient?')){
-      p.approved = true;
-      p.status = 'approved';
-      p.allocation = 'seasonality';
-      injectRndToSeasonality(p);
-      saveRndProjects(projects);
-      renderRndList();
-      openRndProject(id);
-      showToast(p.name + ' added to Seasonality as R&D ingredient');
-    }
-  } else {
-    var outlets = typeof getOutletProfiles === 'function' ? getOutletProfiles() : [];
-    var options = '<option value="central">Central (all outlets)</option>';
-    outlets.forEach(function(o){ options += '<option value="'+escHtml(o.name)+'">'+escHtml(o.name)+'</option>'; });
-    var sel = document.getElementById('rnd-allocate-select-'+id);
-    if(sel){
-      p.approved = true;
-      p.status = 'approved';
-      p.allocation = sel.value;
-      injectRndToRecipes(p);
-      saveRndProjects(projects);
-      renderRndList();
-      openRndProject(id);
-      showToast(p.name + ' approved and sent to Recipe Manager');
-    }
-  }
-}
-window.approveRndProject = approveRndProject;
+  p.approved = true;
+  p.stage = 'approved';
+  injectRndToSeasonality(p);
+  saveRndProjects(projects);
+  renderRndList();
+  openRndProject(id);
+  if(typeof showToast === 'function') showToast(p.name+' added to Seasonality as R&D ingredient');
+};
 
 function injectRndToSeasonality(p){
   try {
     var contrib = JSON.parse(localStorage.getItem('cultivate_season_contrib_v1')||'[]');
+    // Use all 12 months (year-round R&D ingredient) — chef can edit in Seasonality
+    var allMonths = [1,2,3,4,5,6,7,8,9,10,11,12];
     contrib.push({
-      id: 'rnd_' + Date.now(),
+      id: 'rnd_'+Date.now(),
+      n: p.name,               // SD uses .n for name
       name: p.name,
+      t: 'r&d',                // SD uses .t for type
       type: 'R&D Development',
-      peakMonths: [],
-      note: 'R&D Lab — ' + p.chef + '. ' + p.idea.substring(0,120) + '...',
+      i: '🧪',                 // emoji icon
+      months: allMonths,       // SD merge reads .months (not peakMonths)
+      peakMonths: allMonths,
+      note: 'R&D Lab — '+p.chef+'. '+(p.idea||'').substring(0,120)+(p.idea&&p.idea.length>120?'...':''),
+      contrib: true,
       source: 'rnd',
+      rndId: p.id,
       date: new Date().toISOString()
     });
     localStorage.setItem('cultivate_season_contrib_v1', JSON.stringify(contrib));
@@ -18447,26 +19952,38 @@ function injectRndToSeasonality(p){
 function injectRndToRecipes(p){
   try {
     var recipes = JSON.parse(localStorage.getItem('cultivate_recipes_v1')||'[]');
+    var rd = p.recipeData || {};
     recipes.push({
-      id: 'rnd_' + Date.now(),
+      id: 'rnd_'+Date.now(),
       name: p.name,
-      outlet: p.allocation || 'central',
+      outlet: p.allocation || p.outlet || 'central',
       type: 'R&D',
-      description: p.idea.substring(0,200),
+      section: p.outlet && p.outlet!=='central' ? 'outlet' : 'production',
+      cat: rd.category || 'R&D',
+      description: (rd.description || p.idea||'').substring(0,200),
+      ingredients: rd.ingredients || [],
+      method: rd.method || [],
+      allergens: rd.allergens || [],
+      notes: rd.notes || '',
       source: 'rnd',
+      rndId: p.id,
+      matrixScore: p.matrixData ? p.matrixData.score : null,
       date: new Date().toISOString()
     });
     localStorage.setItem('cultivate_recipes_v1', JSON.stringify(recipes));
   } catch(e){}
 }
 
+/* ======================================================
+   DELETE
+====================================================== */
 function clearAllRndProjects(){
-  if(!confirm('Clear ALL R&D projects? This will permanently delete every project, framework, and testing log. This cannot be undone.')) return;
+  if(!confirm('Clear ALL R&D projects? This cannot be undone.')) return;
   localStorage.removeItem(RND_KEY);
   document.getElementById('rnd-detail').style.display = 'none';
   document.getElementById('rnd-form').style.display = 'none';
   renderRndList();
-  showToast('R&D Lab cleared');
+  if(typeof showToast==='function') showToast('R&D Lab cleared');
 }
 window.clearAllRndProjects = clearAllRndProjects;
 
@@ -18479,184 +19996,64 @@ function deleteRndProject(id){
 }
 window.deleteRndProject = deleteRndProject;
 
-function statusLabel(s){
-  var map = {concept:'🔵 Concept', in_development:'🟡 In Development', testing:'🟠 Testing', approved:'✅ Approved'};
-  return map[s] || s;
-}
-function statusColor(s){
-  var map = {concept:'#4a90d9', in_development:'#d4a017', testing:'#C2744A', approved:'#5a7a5a'};
-  return map[s] || 'var(--smoke)';
-}
-
-function renderRndList(){
-  var el = document.getElementById('rnd-list');
-  if(!el) return;
-  var projects = getRndProjects();
-  if(!projects.length){
-    el.innerHTML = '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:2.5rem;text-align:center;color:var(--t4)"><div style="font-family:var(--fd);font-size:1.6rem;font-weight:300;margin-bottom:.5rem">No R&D Projects Yet</div><div style="font-size:.9rem">Start a new ingredient or recipe development project above.</div></div>';
-    return;
-  }
-  var grouped = {concept:[], in_development:[], testing:[], approved:[]};
-  projects.forEach(function(p){ (grouped[p.status] || grouped.concept).push(p); });
-  var html = '';
-  [['in_development','Active Projects'],['testing','In Testing'],['concept','Concepts'],['approved','Approved']].forEach(function(pair){
-    var list = grouped[pair[0]];
-    if(!list.length) return;
-    html += '<div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin:.5rem 0 .6rem">'+pair[1]+'</div>';
-    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:1.5rem">';
-    list.forEach(function(p){
-      html += '<div onclick="openRndProject(\''+p.id+'\')\" class="rnd-card">';
-      html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.4rem">';
-      html += '<div style="font-family:var(--fd);font-size:1.05rem;font-weight:400;color:var(--t)">'+escHtml(p.name)+'</div>';
-      html += '<div style="font-family:var(--fm);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:white;background:'+statusColor(p.status)+';padding:.15rem .45rem;border-radius:3px;white-space:nowrap">'+p.type+'</div>';
-      html += '</div>';
-      html += '<div style="font-size:.82rem;color:var(--t3);margin-bottom:.5rem">'+escHtml(p.chef)+' · '+(p.sessions.length)+' test session'+(p.sessions.length!==1?'s':'')+'</div>';
-      html += '<div style="font-size:.8rem;color:var(--t4);line-height:1.5">'+escHtml(p.idea.substring(0,100))+(p.idea.length>100?'...':'')+'</div>';
-      html += '<div style="margin-top:.6rem;font-size:.75rem;color:'+statusColor(p.status)+'">'+statusLabel(p.status)+'</div>';
-      html += '</div>';
-    });
-    html += '</div>';
-  });
-  el.innerHTML = html;
+/* ======================================================
+   API HELPERS (preserved from v1)
+====================================================== */
+function buildRndSystemPrompt(){
+  return [
+    'You are the Cultivate Studio R&D Intelligence Engine — a culinary research system built for Executive Chef Marco Turatti and his R&D team at InterContinental Phuket Resort.',
+    'IDENTITY: Researcher mindset. Think in hypotheses, controlled variables, failure modes, iteration logic.',
+    'Audience: technically literate. Peer-to-peer. Executive Chef level. Never simplify.',
+    'SCIENTIFIC FRAMEWORKS: Enzyme kinetics, water activity, pH dynamics, Maillard reaction, polarity principle.',
+    'FERMENTATION SCIENCE: LAB, AAB, Koji (A. oryzae and A. sojae), salt table, temperature table.',
+    'FLAVOUR SCIENCE: Patterson Four Rules, Seven Dials, Locking and Burying, Noma 10 Principles.',
+    'KNOWLEDGE BASE: Art of Flavor, Koji Alchemy, Noma Guide to Building Flavour, Noma Guide to Fermentation.',
+    'FORMAT: For framework outputs respond in PLAIN TEXT only — no HTML tags, no markdown fences, no code blocks. Use numbered sections exactly as: "1. SECTION TITLE\n\nContent here..." Start each section on a new line with the number and title. For JSON requests respond ONLY with valid JSON — no markdown, no preamble.'
+  ].join('\n');
 }
 
-function openRndProject(id){
-  var projects = getRndProjects();
-  var p = projects.find(function(x){ return x.id===id; });
-  if(!p) return;
-  var det = document.getElementById('rnd-detail');
-  det.style.display = 'block';
-  det.scrollIntoView({behavior:'smooth'});
-
-  var outlets = typeof getOutletProfiles === 'function' ? getOutletProfiles() : [];
-  var outletOptions = '<option value="central">Central (all outlets)</option>';
-  outlets.forEach(function(o){ outletOptions += '<option value="'+escHtml(o.name)+'">'+escHtml(o.name)+'</option>'; });
-
-  var sessionsHtml = '';
-  if(p.sessions.length){
-    sessionsHtml = '<div style="margin-bottom:1.4rem">';
-    sessionsHtml += '<div style="font-family:var(--fm);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--t4);margin-bottom:1rem">Research Log — ' + p.sessions.length + ' Session' + (p.sessions.length!==1?'s':'') + '</div>';
-
-    // Show sessions in chronological order (oldest first = natural research progression)
-    p.sessions.forEach(function(s, i){
-      var stageColor = statusColor(s.status);
-      var dateStr = new Date(s.date).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
-      var timeStr = new Date(s.date).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
-
-      sessionsHtml += '<div style="margin-bottom:1.4rem;border:1px solid var(--sand);border-left:3px solid '+stageColor+';border-radius:6px;overflow:hidden">';
-
-      // Session header
-      sessionsHtml += '<div style="background:var(--oat);padding:.6rem 1rem;display:flex;justify-content:space-between;align-items:center">';
-      sessionsHtml += '<div style="display:flex;align-items:center;gap:.8rem">';
-      sessionsHtml += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:white;background:'+stageColor+';padding:.2rem .55rem;border-radius:3px">Session ' + (i+1) + '</div>';
-      sessionsHtml += '<div style="font-family:var(--fm);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:'+stageColor+'">'+statusLabel(s.status)+'</div>';
-      sessionsHtml += '</div>';
-      sessionsHtml += '<div style="font-size:.75rem;color:var(--t4)">' + dateStr + ' · ' + timeStr + '</div>';
-      sessionsHtml += '</div>';
-
-      // Chef notes
-      sessionsHtml += '<div style="padding:.8rem 1rem;border-bottom:1px solid var(--sand)">';
-      sessionsHtml += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--terracotta);margin-bottom:.4rem">Research Notes</div>';
-      sessionsHtml += '<div style="font-size:.87rem;color:var(--t);line-height:1.7;white-space:pre-wrap">'+escHtml(s.note)+'</div>';
-      sessionsHtml += '</div>';
-
-      // AI analysis
-      sessionsHtml += '<div style="padding:.8rem 1rem" id="rnd-session-analysis-'+i+'">';
-      if(s.aiAnalysis){
-        sessionsHtml += '<div style="font-family:var(--fm);font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sage);margin-bottom:.5rem">R&D Analysis</div>';
-        sessionsHtml += '<div style="font-size:.85rem;color:var(--t);line-height:1.7">'+s.aiAnalysis+'</div>';
-      } else {
-        sessionsHtml += '<div style="display:flex;align-items:center;gap:.8rem">';
-        sessionsHtml += '<div style="color:var(--t4);font-size:.82rem;font-style:italic">No analysis yet</div>';
-        sessionsHtml += '<button onclick="runRndSessionAnalysis(\''+p.id+'\','+i+')" style="font-size:.75rem;font-family:var(--fm);letter-spacing:.1em;text-transform:uppercase;background:none;border:1px solid var(--sand);border-radius:3px;padding:.25rem .6rem;cursor:pointer;color:var(--t3)">Re-analyse</button>';
-        sessionsHtml += '</div>';
-      }
-      sessionsHtml += '</div>';
-
-      sessionsHtml += '</div>';
-    });
-    sessionsHtml += '</div>';
-  }
-
-  var approvalHtml = '';
-  if(!p.approved){
-    if(p.type==='recipe'){
-      approvalHtml = '<div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">';
-      approvalHtml += '<select id="rnd-allocate-select-'+p.id+'" class="fi" style="max-width:220px">'+outletOptions+'</select>';
-      approvalHtml += '<button class="btn-p" onclick="approveRndProject(\''+p.id+'\')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Recipes</button>';
-      approvalHtml += '</div>';
-    } else {
-      approvalHtml = '<button class="btn-p" onclick="approveRndProject(\''+p.id+'\')" style="background:#5a7a5a;border-color:#5a7a5a">✓ Approve &amp; Send to Seasonality</button>';
-    }
-  } else {
-    approvalHtml = '<div style="color:#5a7a5a;font-size:.88rem">✅ Approved — sent to '+(p.type==='ingredient'?'Seasonality':'Recipe Manager ('+p.allocation+')')+'</div>';
-  }
-
-  det.innerHTML =
-    '<div style="background:var(--oat);border:1px solid var(--sand);border-radius:10px;padding:1.5rem">' +
-
-    // Header
-    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.2rem">' +
-    '<div>' +
-    '<div style="font-family:var(--fd);font-size:1.8rem;font-weight:300;color:var(--t);letter-spacing:.03em">'+escHtml(p.name)+'</div>' +
-    '<div style="font-size:.83rem;color:var(--t3);margin-top:.25rem">'+escHtml(p.chef)+' · Started '+new Date(p.created).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'</div>' +
-    '</div>' +
-    '<div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center">' +
-    '<span style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;background:'+statusColor(p.status)+';color:white;padding:.2rem .6rem;border-radius:3px">'+statusLabel(p.status)+'</span>' +
-    '<span style="font-family:var(--fm);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;background:var(--sage);color:white;padding:.2rem .6rem;border-radius:3px">'+p.type+'</span>' +
-    '</div>' +
-    '</div>' +
-
-    // Concept
-    '<div style="background:white;border:1px solid var(--sand);border-radius:6px;padding:1rem;margin-bottom:1.2rem">' +
-    '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--terracotta);margin-bottom:.4rem">Original Concept</div>' +
-    '<div style="font-size:.9rem;color:var(--t);line-height:1.7;white-space:pre-wrap">'+escHtml(p.idea)+'</div>' +
-    '</div>' +
-
-    // AI Framework
-    '<div style="margin-bottom:1.4rem">' +
-    '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:.8rem">AI Development Framework</div>' +
-    '<div style="font-size:.88rem;color:var(--t);line-height:1.7">'+(p.framework || '<span style="color:var(--t4)">Generating...</span>')+'</div>' +
-    '</div>' +
-
-    // Sessions log
-    sessionsHtml +
-
-    // Add session
-    '<div style="background:white;border:1px solid var(--sand);border-radius:6px;padding:1rem;margin-bottom:1.2rem">' +
-    '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4);margin-bottom:.6rem">Add Test Session Notes</div>' +
-    '<select id="rnd-session-status-'+p.id+'" class="fi" style="margin-bottom:.6rem;max-width:220px">' +
-    '<option value="in_development">In Development</option>' +
-    '<option value="testing">Testing</option>' +
-    '<option value="concept">Back to Concept</option>' +
-    '</select>' +
-    '<textarea class="fi" id="rnd-session-note-'+p.id+'" rows="4" placeholder="Document today\'s test — what you tried, temperatures, ratios, results, what worked, what failed, next steps..."></textarea>' +
-    '<div style="display:flex;gap:.6rem;margin-top:.6rem">' +
-    '<button class="btn-p" onclick="addRndSession(\''+p.id+'\')">Save Session Notes</button>' +
-    '</div>' +
-    '</div>' +
-
-    // Approval
-    '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.8rem;padding-top:1rem;border-top:1px solid var(--sand)">' +
-    approvalHtml +
-    '<button onclick="deleteRndProject(\''+p.id+'\')" style="font-size:.8rem;color:var(--t4);background:none;border:none;cursor:pointer;padding:.3rem">Delete project</button>' +
-    '</div>' +
-
-    '</div>';
+function buildRndFrameworkPrompt(p){
+  var typeLabel = p.type === 'ingredient' ? 'INGREDIENT RESEARCH PROJECT' : 'RECIPE RESEARCH PROJECT';
+  return typeLabel+'\n\nPROJECT: '+p.name+'\nLED BY: '+p.chef+'\nTECHNIQUE: '+(p.technique||'Open')+'\nCUISINE: '+(p.cuisine||'Open')+'\nFORMAT: '+(p.format||'Open')+'\n\nBRIEF:\n'+p.idea+'\n\n---\n\nGenerate a full R&D framework with these sections:\n1. RESEARCH HYPOTHESIS\n2. SCIENTIFIC OPPORTUNITY ANALYSIS\n3. CONTROL & VARIABLE MAP\n4. TESTING PROTOCOL — PHASED\n5. MEASUREMENT CRITERIA\n6. FAILURE MODE ANALYSIS\n7. COMPOUND & FLAVOUR SCIENCE\n8. ITERATION DECISION TREE\n9. WASTE & BY-PRODUCT RESEARCH\n10. REFERENCE LITERATURE\n\nUse HTML inline styles. Precise. No romanticisation.';
 }
-window.openRndProject = openRndProject;
 
-// Init
+function getCultivateBookKnowledge(){ return ''; } // preserved for compatibility
+
+function callRndAPI(sys, userMsg, cb){
+  var key = localStorage.getItem('cultivate_api_key') || '';
+  if(!key){ cb('No API key configured', null); return; }
+  fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body: JSON.stringify({
+      model:'claude-sonnet-4-5',
+      max_tokens: 4000,
+      system: sys,
+      messages: [{role:'user', content: userMsg}]
+    })
+  }).then(function(r){
+    if(!r.ok) return r.json().then(function(e){ throw new Error(e.error&&e.error.message?e.error.message:JSON.stringify(e)); });
+    return r.json();
+  }).then(function(d){
+    var txt = (d.content||[]).filter(function(c){return c.type==='text';}).map(function(c){return c.text||'';}).join('');
+    if(!txt){ cb('Empty response — stop_reason: '+d.stop_reason, null); return; }
+    cb(null, txt);
+  }).catch(function(e){ cb(e.message||String(e), null); });
+}
+
+/* ======================================================
+   INIT
+====================================================== */
 document.addEventListener('DOMContentLoaded', function(){
   renderRndList();
 });
 
-// Re-render when page becomes visible
-var _origShowPage = window.showPage;
-if(typeof _origShowPage === 'function'){
+// Hook into showPage
+var _origShowPageRnD = window.showPage;
+if(typeof _origShowPageRnD === 'function'){
   window.showPage = function(id){
-    _origShowPage(id);
-    if(id==='rnd') renderRndList();
+    _origShowPageRnD(id);
+    if(id==='rnd') initRndPage();
   };
 }
 
