@@ -19091,7 +19091,7 @@ function buildRndSystemPrompt(){
 
 function buildRndFrameworkPrompt(p){
   var typeLabel = p.type === 'ingredient' ? 'INGREDIENT RESEARCH PROJECT' : 'RECIPE RESEARCH PROJECT';
-  return typeLabel+'\n\nPROJECT: '+p.name+'\nLED BY: '+p.chef+'\nTECHNIQUE: '+(p.technique||'Open')+'\nCUISINE: '+(p.cuisine||'Open')+'\nFORMAT: '+(p.format||'Open')+'\n\nBRIEF:\n'+p.idea+'\n\n---\n\nGenerate a full R&D framework with these sections:\n1. RESEARCH HYPOTHESIS\n2. SCIENTIFIC OPPORTUNITY ANALYSIS\n3. CONTROL & VARIABLE MAP\n4. TESTING PROTOCOL — PHASED\n5. MEASUREMENT CRITERIA\n6. FAILURE MODE ANALYSIS\n7. COMPOUND & FLAVOUR SCIENCE\n8. ITERATION DECISION TREE\n9. WASTE & BY-PRODUCT RESEARCH\n10. REFERENCE LITERATURE\n\nUse HTML inline styles. Precise. No romanticisation.';
+  return typeLabel+'\n\nPROJECT: '+p.name+'\nLED BY: '+p.chef+'\nTECHNIQUE: '+(p.technique||'Open')+'\nCUISINE: '+(p.cuisine||'Open')+'\nFORMAT: '+(p.format||'Open')+'\n\nBRIEF:\n'+p.idea+'\n\n---\n\nGenerate a full R&D framework with these sections:\n1. RESEARCH HYPOTHESIS\n2. SCIENTIFIC OPPORTUNITY ANALYSIS\n3. CONTROL & VARIABLE MAP\n4. TESTING PROTOCOL — PHASED\n5. MEASUREMENT CRITERIA\n6. FAILURE MODE ANALYSIS\n7. COMPOUND & FLAVOUR SCIENCE\n8. ITERATION DECISION TREE\n9. WASTE & BY-PRODUCT RESEARCH\n10. REFERENCE LITERATURE\n\nReturn PLAIN TEXT ONLY. No HTML tags. Each section starts on its own line:\n1. SECTION TITLE\nContent...\n\n2. NEXT TITLE\nContent...\n\nPrecise. No romanticisation.';
 }
 
 function getCultivateBookKnowledge(){ return ''; } // preserved for compatibility
