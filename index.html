@@ -17416,6 +17416,8 @@ function renderCollapsibleFramework(frameworkHtml, uid){
     .replace(/<[^>]*>/g, '')           // strip remaining tags
     .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ')
     .replace(/\n{3,}/g, '\n\n')        // collapse excess newlines
+    .replace(/\*\*/g, '')               // strip markdown bold
+    .replace(/#+\s/g, '')               // strip markdown headers
     .trim();
 
   var sections = [];
