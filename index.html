@@ -17405,28 +17405,39 @@ function sanitiseFrameworkHtml(raw){
 function renderCollapsibleFramework(frameworkHtml, uid){
   var raw = frameworkHtml || '';
 
-  // ── STEP 1: strip markdown fences ──────────────────────────
+  // Strip markdown fences
   raw = raw.replace(/^```[a-z]*\n?/gim,'').replace(/```$/gim,'');
 
-  // ── STEP 2: try to split into sections ─────────────────────
+  // Convert ALL block-level tags to newlines BEFORE stripping
+  // This ensures sections separated by </div><div> or <br> become \n
+  var asText = raw
+    .replace(/<\/?(div|p|li|h[1-6]|section|article|header|br\s*\/?)[\s>][^>]*>/gi, '\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]*>/g, '')           // strip remaining tags
+    .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ')
+    .replace(/\n{3,}/g, '\n\n')        // collapse excess newlines
+    .trim();
+
   var sections = [];
 
-  // Method A: plain text numbered — "1. TITLE\nContent"
-  // Works when AI returns plain text or text with <br>
-  var asText = raw.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]*>/g,'').trim();
-  var plainParts = asText.split(/\n(?=\d{1,2}\.\s+[A-Z])/);
-  if(plainParts.length >= 3){
-    plainParts.forEach(function(chunk){
+  // Split on numbered section headers: "1. TITLE" at start of line
+  var parts = asText.split(/\n(?=\d{1,2}\.\s+[A-Z])/);
+
+  if(parts.length >= 3){
+    parts.forEach(function(chunk){
       chunk = chunk.trim(); if(!chunk) return;
       var nl = chunk.indexOf('\n');
-      var title = nl > 0 ? chunk.substring(0,nl).trim() : chunk.substring(0,80);
+      var title = nl > 0 ? chunk.substring(0,nl).trim() : chunk.substring(0,80).trim();
       var body  = nl > 0 ? chunk.substring(nl).trim() : '';
-      var bodyHtml = body.replace(/\n\n/g,'</p><p style="margin:.4rem 0">').replace(/\n/g,'<br>');
-      sections.push({title:title, body:'<p style="margin:0 0 .4rem">'+bodyHtml+'</p>'});
+      // Remove the number prefix from title for display
+      var bodyHtml = body
+        .replace(/\n\n/g,'</p><p style="margin:.4rem 0">')
+        .replace(/\n/g,'<br>');
+      sections.push({title: title, body: '<p style="margin:0 0 .4rem">'+bodyHtml+'</p>'});
     });
   }
 
-  // Method B: <h2>/<h3>/<h4> tags
+  // Fallback B: try splitting on h2/h3/h4 in original raw
   if(sections.length < 3){
     sections = [];
     var hparts = raw.split(/<h[2-4][^>]*>/i);
@@ -17441,7 +17452,7 @@ function renderCollapsibleFramework(frameworkHtml, uid){
     }
   }
 
-  // Method C: <strong> or <b> numbered headings — "1. TITLE</strong>"
+  // Fallback C: strong/b numbered headings
   if(sections.length < 3){
     sections = [];
     var sparts = raw.split(/<(?:strong|b)[^>]*>/i);
@@ -17451,51 +17462,13 @@ function renderCollapsibleFramework(frameworkHtml, uid){
         var te = chunk.search(/<\/(?:strong|b)>/i); if(te<0) return;
         var title = chunk.substring(0,te).replace(/<[^>]*>/g,'').trim();
         if(!/^\d/.test(title)&&!/^[A-Z]{2}/.test(title)) return;
-        var body  = chunk.substring(te).replace(/<\/(?:strong|b)>/i,'');
+        var body = chunk.substring(te).replace(/<\/(?:strong|b)>/i,'');
         sections.push({title:title, body:body});
       });
     }
   }
 
-  // Method D: <div> blocks that start with a numbered heading pattern
-  if(sections.length < 3){
-    sections = [];
-    var divparts = raw.split(/<div[^>]*>/i);
-    if(divparts.length >= 4){
-      divparts.forEach(function(chunk){
-        var text = chunk.replace(/<[^>]*>/g,'').trim();
-        if(/^\d{1,2}\.\s+[A-Z]/.test(text)){
-          var nl = text.indexOf('\n');
-          var title = nl>0 ? text.substring(0,nl).trim() : text.substring(0,80);
-          var bodyEnd = chunk.indexOf('</div>'); if(bodyEnd<0) bodyEnd=chunk.length;
-          sections.push({title:title, body:chunk.substring(0,bodyEnd)});
-        }
-      });
-    }
-  }
-
-  // Method E: split on any line that is ONLY uppercase / numbered heading (plain text fallback)
-  if(sections.length < 3){
-    sections = [];
-    var lines = asText.split('\n');
-    var cur = null;
-    lines.forEach(function(line){
-      var t = line.trim();
-      if(/^\d{1,2}\.\s+[A-Z][A-Z\s&—\-]+$/.test(t)){
-        if(cur) sections.push(cur);
-        cur = {title:t, body:''};
-      } else if(cur){
-        cur.body += (cur.body?'\n':'')+line;
-      }
-    });
-    if(cur) sections.push(cur);
-    // Convert plain body to html
-    sections.forEach(function(s){
-      s.body = '<p style="margin:0">'+s.body.replace(/\n\n/g,'</p><p style="margin:.4rem 0">').replace(/\n/g,'<br>')+'</p>';
-    });
-  }
-
-  // ── STEP 3: build accordion HTML ───────────────────────────
+  // Build accordion
   var html = '<div style="margin-bottom:1.4rem">';
   html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">';
   html += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4)">AI Development Framework</div>';
@@ -17516,10 +17489,11 @@ function renderCollapsibleFramework(frameworkHtml, uid){
       html += '</div>';
     });
   } else {
-    // Fallback — one block, sanitised
+    // Single fallback block
     var sid = uid+'-s0';
-    var fallback = raw.replace(/style="[^"]*background[^"]*"/gi,'style="background:transparent"')
-                      .replace(/color\s*:\s*(#fff|#ffffff|white)[^;"]*/gi,'color:var(--t)');
+    var fallback = raw
+      .replace(/style="[^"]*background[^"]*"/gi,'style="background:transparent"')
+      .replace(/color\s*:\s*(#fff|#ffffff|white)[^;"]*/gi,'color:var(--t)');
     if(fallback.indexOf('<')<0) fallback = fallback.replace(/\n/g,'<br>');
     html += '<div style="border:1px solid var(--sand);border-radius:6px;overflow:hidden">';
     html += '<div onclick="rndToggleSection(\''+sid+'\',event)" style="background:var(--oat);padding:.65rem 1rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none">';
@@ -17533,6 +17507,7 @@ function renderCollapsibleFramework(frameworkHtml, uid){
   html += '</div>';
   return html;
 }
+
 window.rndToggleSection = function(sid, evt){
   if(evt) evt.stopPropagation();
   var el = document.getElementById(sid);
