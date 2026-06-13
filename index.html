@@ -16990,6 +16990,45 @@ setTimeout(()=>{ syncOutlets(); updateCtx(); },3000);
 console.log('[Cultivate Agent v3] Ready. Outlets:',S.outlets.length,'Research:',Object.keys(S.research).length);
 })();
 </script>
+<script>
+(function(){
+  var el = document.getElementById('csa-pill');
+  if(!el) return;
+  var dragging=false, startX, startY, origLeft, origBottom;
+  el.addEventListener('mousedown',function(e){
+    dragging=false; startX=e.clientX; startY=e.clientY;
+    origLeft=el.getBoundingClientRect().left;
+    origBottom=window.innerHeight-el.getBoundingClientRect().bottom;
+  });
+  document.addEventListener('mousemove',function(e){
+    if(e.buttons!==1) return;
+    var dx=e.clientX-startX, dy=e.clientY-startY;
+    if(!dragging&&Math.abs(dx)+Math.abs(dy)>5) dragging=true;
+    if(!dragging) return;
+    var nL=Math.max(0,Math.min(window.innerWidth-el.offsetWidth,origLeft+dx));
+    var nB=Math.max(0,Math.min(window.innerHeight-el.offsetHeight,origBottom-dy));
+    el.style.left=nL+'px'; el.style.right='auto';
+    el.style.top='auto'; el.style.bottom=nB+'px';
+  });
+  document.addEventListener('mouseup',function(){dragging=false;});
+  var tX,tY,tL,tB,tD=false;
+  el.addEventListener('touchstart',function(e){
+    var t=e.touches[0]; tX=t.clientX; tY=t.clientY; tD=false;
+    tL=el.getBoundingClientRect().left;
+    tB=window.innerHeight-el.getBoundingClientRect().bottom;
+  },{passive:true});
+  el.addEventListener('touchmove',function(e){
+    var t=e.touches[0],dx=t.clientX-tX,dy=t.clientY-tY;
+    if(!tD&&Math.abs(dx)+Math.abs(dy)>8) tD=true;
+    if(!tD) return; e.preventDefault();
+    var nL=Math.max(0,Math.min(window.innerWidth-el.offsetWidth,tL+dx));
+    var nB=Math.max(0,Math.min(window.innerHeight-el.offsetHeight,tB-dy));
+    el.style.left=nL+'px'; el.style.right='auto';
+    el.style.top='auto'; el.style.bottom=nB+'px';
+  },{passive:false});
+  el.addEventListener('touchend',function(){tD=false;});
+})();
+</script>
 
 
 
