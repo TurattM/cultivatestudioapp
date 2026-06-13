@@ -17403,59 +17403,99 @@ function sanitiseFrameworkHtml(raw){
 }
 
 function renderCollapsibleFramework(frameworkHtml, uid){
-  var clean = sanitiseFrameworkHtml(frameworkHtml);
-  
-  // Split on numbered section headers — works with various AI HTML output formats
-  // Try splitting on the numbered heading pattern regardless of HTML tags wrapping it
+  var raw = frameworkHtml || '';
+
+  // ── STEP 1: strip markdown fences ──────────────────────────
+  raw = raw.replace(/^```[a-z]*\n?/gim,'').replace(/```$/gim,'');
+
+  // ── STEP 2: try to split into sections ─────────────────────
   var sections = [];
-  
-  // Method 0: plain text numbered sections (primary — matches new prompt format)
-  // Pattern: "1. SECTION TITLE\n\nContent..."
-  var plainParts = clean.replace(/<br>/gi,'\n').replace(/<[^>]*>/g,'').split(/\n(?=\d{1,2}\. [A-Z])/);
-  if(plainParts.length > 2){
+
+  // Method A: plain text numbered — "1. TITLE\nContent"
+  // Works when AI returns plain text or text with <br>
+  var asText = raw.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]*>/g,'').trim();
+  var plainParts = asText.split(/\n(?=\d{1,2}\.\s+[A-Z])/);
+  if(plainParts.length >= 3){
     plainParts.forEach(function(chunk){
-      chunk = chunk.trim();
-      if(!chunk) return;
-      var firstNL = chunk.indexOf('\n');
-      var title = firstNL > 0 ? chunk.substring(0, firstNL).trim() : chunk.substring(0,80);
-      var body = firstNL > 0 ? chunk.substring(firstNL).trim() : '';
-      // Convert remaining plain text to readable HTML
-      var bodyHtml = body.replace(/\n\n/g,'</p><p style="margin:.5rem 0">').replace(/\n/g,'<br>');
-      sections.push({title: title, body: '<p style="margin:0 0 .5rem">'+bodyHtml+'</p>'});
+      chunk = chunk.trim(); if(!chunk) return;
+      var nl = chunk.indexOf('\n');
+      var title = nl > 0 ? chunk.substring(0,nl).trim() : chunk.substring(0,80);
+      var body  = nl > 0 ? chunk.substring(nl).trim() : '';
+      var bodyHtml = body.replace(/\n\n/g,'</p><p style="margin:.4rem 0">').replace(/\n/g,'<br>');
+      sections.push({title:title, body:'<p style="margin:0 0 .4rem">'+bodyHtml+'</p>'});
     });
   }
-  
-  // Method 1: split on <h3> or <h4> tags
+
+  // Method B: <h2>/<h3>/<h4> tags
   if(sections.length < 3){
     sections = [];
-    var h3split = clean.split(/<h[234][^>]*>/i);
-    if(h3split.length > 3){
-      h3split.forEach(function(chunk, i){
-        if(!chunk.trim() || i === 0) return;
-        var titleEnd = chunk.indexOf('</h');
-        var title = chunk.substring(0, titleEnd < 0 ? 80 : Math.min(titleEnd, 80)).replace(/<[^>]*>/g,'').trim();
-        var body = titleEnd >= 0 ? chunk.substring(chunk.indexOf('>',titleEnd)+1) : chunk;
-        sections.push({title: title, body: body});
+    var hparts = raw.split(/<h[2-4][^>]*>/i);
+    if(hparts.length >= 4){
+      hparts.forEach(function(chunk,i){
+        if(i===0||!chunk.trim()) return;
+        var te = chunk.indexOf('</h'); if(te<0) return;
+        var title = chunk.substring(0,te).replace(/<[^>]*>/g,'').trim();
+        var body  = chunk.substring(chunk.indexOf('>',te)+1);
+        if(title) sections.push({title:title, body:body});
       });
     }
   }
-  
-  // Method 2: split on <strong> numbered headings
+
+  // Method C: <strong> or <b> numbered headings — "1. TITLE</strong>"
   if(sections.length < 3){
     sections = [];
-    var strongSplit = clean.split(/<strong[^>]*>/i);
-    if(strongSplit.length > 3){
-      strongSplit.forEach(function(chunk, i){
-        if(!chunk.trim() || i === 0) return;
-        var titleEnd = chunk.indexOf('</strong>');
-        if(titleEnd < 0) return;
-        var title = chunk.substring(0, titleEnd).replace(/<[^>]*>/g,'').trim();
-        if(!/^\d/.test(title) && !/^[A-Z]/.test(title)) return;
-        sections.push({title: title, body: chunk.substring(titleEnd + 9)});
+    var sparts = raw.split(/<(?:strong|b)[^>]*>/i);
+    if(sparts.length >= 4){
+      sparts.forEach(function(chunk,i){
+        if(i===0||!chunk.trim()) return;
+        var te = chunk.search(/<\/(?:strong|b)>/i); if(te<0) return;
+        var title = chunk.substring(0,te).replace(/<[^>]*>/g,'').trim();
+        if(!/^\d/.test(title)&&!/^[A-Z]{2}/.test(title)) return;
+        var body  = chunk.substring(te).replace(/<\/(?:strong|b)>/i,'');
+        sections.push({title:title, body:body});
       });
     }
   }
-  
+
+  // Method D: <div> blocks that start with a numbered heading pattern
+  if(sections.length < 3){
+    sections = [];
+    var divparts = raw.split(/<div[^>]*>/i);
+    if(divparts.length >= 4){
+      divparts.forEach(function(chunk){
+        var text = chunk.replace(/<[^>]*>/g,'').trim();
+        if(/^\d{1,2}\.\s+[A-Z]/.test(text)){
+          var nl = text.indexOf('\n');
+          var title = nl>0 ? text.substring(0,nl).trim() : text.substring(0,80);
+          var bodyEnd = chunk.indexOf('</div>'); if(bodyEnd<0) bodyEnd=chunk.length;
+          sections.push({title:title, body:chunk.substring(0,bodyEnd)});
+        }
+      });
+    }
+  }
+
+  // Method E: split on any line that is ONLY uppercase / numbered heading (plain text fallback)
+  if(sections.length < 3){
+    sections = [];
+    var lines = asText.split('\n');
+    var cur = null;
+    lines.forEach(function(line){
+      var t = line.trim();
+      if(/^\d{1,2}\.\s+[A-Z][A-Z\s&—\-]+$/.test(t)){
+        if(cur) sections.push(cur);
+        cur = {title:t, body:''};
+      } else if(cur){
+        cur.body += (cur.body?'\n':'')+line;
+      }
+    });
+    if(cur) sections.push(cur);
+    // Convert plain body to html
+    sections.forEach(function(s){
+      s.body = '<p style="margin:0">'+s.body.replace(/\n\n/g,'</p><p style="margin:.4rem 0">').replace(/\n/g,'<br>')+'</p>';
+    });
+  }
+
+  // ── STEP 3: build accordion HTML ───────────────────────────
   var html = '<div style="margin-bottom:1.4rem">';
   html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">';
   html += '<div style="font-family:var(--fm);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--t4)">AI Development Framework</div>';
@@ -17463,28 +17503,30 @@ function renderCollapsibleFramework(frameworkHtml, uid){
   html += '</div>';
 
   if(sections.length >= 3){
-    sections.forEach(function(sec, i){
+    sections.forEach(function(sec,i){
       var sid = uid+'-s'+i;
-      var titleText = sec.title.replace(/<[^>]*>/g,'').substring(0,70);
+      var titleText = (sec.title||'Section '+(i+1)).replace(/<[^>]*>/g,'').substring(0,80);
+      var secBody = (sec.body||'').replace(/style="[^"]*background[^"]*"/gi,'style="background:transparent"');
       html += '<div style="border:1px solid var(--sand);border-radius:6px;overflow:hidden;margin-bottom:.45rem">';
       html += '<div onclick="rndToggleSection(\''+sid+'\',event)" style="background:var(--oat);padding:.65rem 1rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none">';
       html += '<span style="font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--terracotta)">'+escHtml(titleText)+'</span>';
       html += '<span id="'+sid+'-arrow" style="font-size:.65rem;color:var(--t4);transition:transform .25s">&#9660;</span>';
       html += '</div>';
-      var _secBody = sec.body.replace(/style="[^"]*background[^"]*"/gi, 'style="background:transparent"').replace(/style='[^']*background[^']*'/gi, "style='background:transparent'");
-      html += '<div id="'+sid+'" style="display:none;padding:.9rem 1rem 1rem;font-size:.86rem;color:var(--t)!important;line-height:1.75;background:white!important">'+_secBody+'</div>';
+      html += '<div id="'+sid+'" style="display:none;padding:.9rem 1rem 1rem;font-size:.86rem;color:var(--t);line-height:1.75;background:white">'+secBody+'</div>';
       html += '</div>';
     });
   } else {
-    // Fallback — single collapsible block with all content
+    // Fallback — one block, sanitised
     var sid = uid+'-s0';
+    var fallback = raw.replace(/style="[^"]*background[^"]*"/gi,'style="background:transparent"')
+                      .replace(/color\s*:\s*(#fff|#ffffff|white)[^;"]*/gi,'color:var(--t)');
+    if(fallback.indexOf('<')<0) fallback = fallback.replace(/\n/g,'<br>');
     html += '<div style="border:1px solid var(--sand);border-radius:6px;overflow:hidden">';
     html += '<div onclick="rndToggleSection(\''+sid+'\',event)" style="background:var(--oat);padding:.65rem 1rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none">';
     html += '<span style="font-family:var(--fm);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--terracotta)">Research Framework</span>';
     html += '<span id="'+sid+'-arrow" style="font-size:.65rem;color:var(--t4);transition:transform .25s">&#9660;</span>';
     html += '</div>';
-    var _cleanBody = clean.replace(/style="[^"]*background[^"]*"/gi, 'style="background:transparent"');
-    html += '<div id="'+sid+'" style="display:none;padding:.9rem 1rem 1rem;font-size:.86rem;color:var(--t)!important;line-height:1.75;background:white!important">'+_cleanBody+'</div>';
+    html += '<div id="'+sid+'" style="display:none;padding:.9rem 1rem 1rem;font-size:.86rem;color:var(--t);line-height:1.75;background:white">'+fallback+'</div>';
     html += '</div>';
   }
 
